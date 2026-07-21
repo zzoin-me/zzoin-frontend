@@ -5,8 +5,7 @@ import { Input } from "@/components/common/Input";
 import { useAuthStore } from "@/stores/authStore";
 import { ApiError } from "@/api/client";
 
-const EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
-const PASSWORD_PATTERN = "(?=.*[A-Za-z])(?=.*\\d).{8,50}";
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -20,6 +19,18 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!email) {
+      setError("이메일을 입력해주세요.");
+      return;
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      setError("올바른 이메일을 입력해주세요.");
+      return;
+    }
+    if (!password) {
+      setError("비밀번호를 입력해주세요.");
+      return;
+    }
     setLoading(true);
     try {
       await loginWithEmail(email, password);
@@ -52,21 +63,21 @@ export default function LoginPage() {
           label="이메일"
           placeholder="이메일을 입력해주세요"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          pattern={EMAIL_PATTERN}
-          title="올바른 이메일 형식을 입력해주세요"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError("");
+          }}
         />
         <Input
           id="password"
           type="password"
           label="비밀번호"
-          placeholder="영문 숫자 포함 8자 이상"
+          placeholder="비밀번호를 입력해주세요"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          pattern={PASSWORD_PATTERN}
-          title="영문과 숫자를 포함하여 8자 이상 50자 이하로 입력해주세요"
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setError("");
+          }}
         />
         {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
         <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
