@@ -1,0 +1,62 @@
+import { Link } from "react-router";
+import { Calendar, ChevronRight, User } from "lucide-react";
+import type { Project } from "@/types";
+
+interface ProjectCardProps {
+  project: Project;
+}
+
+export function ProjectCard({ project }: ProjectCardProps) {
+  return (
+    <Link
+      to={`/projects/${project.id}`}
+      className="flex h-full flex-col overflow-hidden rounded-card border border-grey4 bg-white transition-shadow hover:shadow-sm"
+    >
+      <div className="h-[113px] w-full rounded-t-card bg-grey4">
+        {project.thumbnail && (
+          <img
+            src={project.thumbnail}
+            alt={project.title}
+            className="h-full w-full rounded-t-card object-cover"
+          />
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col gap-[19px] px-4 pb-4 pt-1">
+        <div className="flex flex-col gap-2">
+          <h3 className="truncate font-bold text-[20px] text-grey9">{project.title}</h3>
+          <p className="line-clamp-2 font-regular text-[16px] text-grey9">{project.description}</p>
+        </div>
+
+        <div className="mt-auto flex flex-col gap-2">
+          <div className="flex flex-row gap-4">
+            {project.tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-tag border border-grey5 px-[5px] py-[2px] font-regular text-[12px] text-grey7"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex items-end justify-between">
+            <div className="flex items-center gap-5">
+              <span className="flex items-center gap-1 font-regular text-[12px] text-grey6">
+                <User className="h-4 w-4" aria-hidden />
+                {project.currentMembers}/{project.maxMembers}명
+              </span>
+              <span className="flex items-center gap-1 font-regular text-[12px] text-grey6">
+                <Calendar className="h-4 w-4" aria-hidden />
+                {project.dday}
+              </span>
+            </div>
+            <span className="flex h-[26px] w-[26px] items-center justify-center rounded-card border border-grey6 bg-white">
+              <ChevronRight className="h-4 w-4 text-grey9" aria-hidden />
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
