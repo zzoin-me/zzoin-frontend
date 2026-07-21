@@ -119,8 +119,8 @@ export default function SignupPage() {
   return (
     <div className="flex w-full max-w-[400px] flex-col">
       <header className="mb-8 flex flex-col items-center gap-3 text-center">
-        <div className="h-12 w-12 rounded-card bg-grey9" aria-label="HICC logo" />
-        <h1 className="font-bold text-[20px] text-grey9">HICC</h1>
+        <div className="h-12 w-12 rounded-card bg-grey9" aria-label="Zzoin logo" />
+        <h1 className="font-bold text-[20px] text-grey9">Zzoin</h1>
         <p className="font-regular text-[14px] text-grey6">회원가입이 프로젝트의 첫걸음입니다</p>
       </header>
 
@@ -131,14 +131,14 @@ export default function SignupPage() {
             className="flex w-full items-center justify-center gap-2 rounded-tag border border-grey3 bg-white px-5 py-2.5 font-medium text-[14px] text-grey9 transition-colors hover:bg-grey1"
           >
             <GoogleIcon />
-            구글로 로그인
+            구글로 회원가입
           </button>
           <button
             type="button"
             className="flex w-full items-center justify-center gap-2 rounded-tag bg-[#FEE500] px-5 py-2.5 font-medium text-[14px] text-black transition-filter hover:brightness-95"
           >
             <KakaoIcon />
-            카카오로 로그인
+            카카오로 회원가입
           </button>
           <div className="mt-6 flex justify-center">
             <button

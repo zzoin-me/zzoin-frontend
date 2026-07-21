@@ -40,8 +40,8 @@ export default function LoginPage() {
   return (
     <div className="flex w-full max-w-[400px] flex-col">
       <header className="mb-8 flex flex-col items-center gap-3 text-center">
-        <div className="h-12 w-12 rounded-card bg-grey9" aria-label="HICC logo" />
-        <h1 className="font-bold text-[20px] text-grey9">HICC</h1>
+        <div className="h-12 w-12 rounded-card bg-grey9" aria-label="Zzoin logo" />
+        <h1 className="font-bold text-[20px] text-grey9">Zzoin</h1>
         <p className="font-regular text-[14px] text-grey6">로그인하고 프로젝트를 시작해보세요</p>
       </header>
 
