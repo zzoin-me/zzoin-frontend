@@ -10,8 +10,6 @@ import { sendSignupEmail, verifySignupEmail } from "@/api/auth";
 type Step = "method" | "email" | "password" | "nickname";
 
 const EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
-const PASSWORD_PATTERN = "(?=.*[A-Za-z])(?=.*\\d).{8,50}";
-const NICKNAME_PATTERN = "[a-zA-Z0-9.]{2,50}";
 
 function GoogleIcon() {
   return (
@@ -93,6 +91,18 @@ export default function SignupPage() {
   const handlePasswordNext = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!password) {
+      setError("비밀번호를 입력해주세요.");
+      return;
+    }
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,50}$/.test(password)) {
+      setError("영문과 숫자를 포함하여 8자 이상 50자 이하로 입력해주세요.");
+      return;
+    }
+    if (!passwordConfirm) {
+      setError("비밀번호 확인을 입력해주세요.");
+      return;
+    }
     if (password !== passwordConfirm) {
       setError("비밀번호가 일치하지 않습니다.");
       return;
@@ -103,6 +113,14 @@ export default function SignupPage() {
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!nickname) {
+      setError("닉네임을 입력해주세요.");
+      return;
+    }
+    if (!/^[가-힣a-zA-Z0-9.]{2,50}$/.test(nickname)) {
+      setError("영문, 한글, 숫자, 점으로 구성된 2~50자 닉네임을 입력해주세요.");
+      return;
+    }
     setLoading(true);
     try {
       await signupAndLogin({ nickName: nickname, email, password, signupToken });
@@ -144,7 +162,7 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => setStep("email")}
-              className="flex items-center gap-1.5 font-medium text-[14px] text-grey9 underline underline-offset-4"
+              className="flex items-center gap-1.5 cursor-pointer font-medium text-[14px] text-grey9 underline underline-offset-4`"
             >
               이메일로 계속하기
               <ArrowRight className="h-4 w-4" aria-hidden />
@@ -198,7 +216,7 @@ export default function SignupPage() {
           {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 
           <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading || !codeSent}>
-            {loading ? "인증 중..." : "이메일 인증하기"}
+            {loading ? "인증번호 발송 중" : "이메일 인증 완료하기"}
           </Button>
         </form>
       )}
@@ -211,10 +229,10 @@ export default function SignupPage() {
             label="비밀번호"
             placeholder="영문 숫자 포함 8자 이상"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            pattern={PASSWORD_PATTERN}
-            title="영문과 숫자를 포함하여 8자 이상 50자 이하로 입력해주세요"
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError("");
+            }}
           />
           <Input
             id="password-confirm"
@@ -222,8 +240,10 @@ export default function SignupPage() {
             label="비밀번호 확인"
             placeholder="비밀번호를 다시 입력해주세요"
             value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            required
+            onChange={(e) => {
+              setPasswordConfirm(e.target.value);
+              setError("");
+            }}
           />
           {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
           <Button type="submit" size="lg" className="mt-2 w-full">
@@ -237,12 +257,12 @@ export default function SignupPage() {
           <Input
             id="nickname"
             label="닉네임"
-            placeholder="영문 숫자 점 포함 2~50자"
+            placeholder="영문, 한글, 숫자, 점 2~50자"
             value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            required
-            pattern={NICKNAME_PATTERN}
-            title="영문 숫자 점만 사용하여 2자 이상 50자 이하로 입력해주세요"
+            onChange={(e) => {
+              setNickname(e.target.value);
+              setError("");
+            }}
           />
           {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
           <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
