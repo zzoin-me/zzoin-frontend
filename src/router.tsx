@@ -17,6 +17,7 @@ import MyPageProfilePage from "@/pages/mypage/Profile";
 import MyPageApplicationsPage from "@/pages/mypage/Applications";
 import MyPageProjectsPage from "@/pages/mypage/Projects";
 import MyPageReviewsPage from "@/pages/mypage/Reviews";
+import VerifyUnivPage from "@/pages/mypage/VerifyUniv";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <MyPageIndexPage /> },
           { path: "profile", element: <MyPageProfilePage /> },
+          { path: "verify-univ", element: <VerifyUnivPage /> },
           { path: "applications", element: <MyPageApplicationsPage /> },
           { path: "projects", element: <MyPageProjectsPage /> },
           { path: "reviews", element: <MyPageReviewsPage /> },

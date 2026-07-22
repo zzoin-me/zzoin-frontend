@@ -32,6 +32,8 @@ async function fetchProfileAndSet(): Promise<void> {
       email: profile.email,
       nickname: profile.name,
       profileImage: profile.profileUrl,
+      verified: profile.verified,
+      verifiedEmail: profile.verifiedEmail,
     },
   });
 }

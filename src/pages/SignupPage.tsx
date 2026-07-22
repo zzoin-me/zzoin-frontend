@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/common/Button";
@@ -6,10 +6,10 @@ import { Input } from "@/components/common/Input";
 import { useAuthStore } from "@/stores/authStore";
 import { ApiError } from "@/api/client";
 import { sendSignupEmail, verifySignupEmail } from "@/api/auth";
+import { getUnivs } from "@/api/univ";
+import type { UnivInfo } from "@/api/univ";
 
 type Step = "method" | "email" | "password" | "nickname";
-
-const EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
 
 function GoogleIcon() {
   return (
@@ -58,6 +58,16 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [univs, setUnivs] = useState<UnivInfo[]>([]);
+
+  useEffect(() => {
+    getUnivs()
+      .then(setUnivs)
+      .catch(() => {});
+  }, []);
+
+  const emailDomain = email.includes("@") ? email.split("@")[1] : "";
+  const isUnivEmail = univs.some((u) => u.domain === emailDomain);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,10 +193,13 @@ export default function SignupPage() {
               setEmail(e.target.value);
               setCodeSent(false);
             }}
-            required
-            pattern={EMAIL_PATTERN}
-            title="올바른 이메일 형식을 입력해주세요"
           />
+
+          {isUnivEmail && (
+            <p className="-mt-1 font-medium text-[13px] text-green-600">
+              ✓ 학교 이메일로 회원가입하여 2차 인증을 건너뜁니다!
+            </p>
+          )}
 
           <div className="flex gap-2">
             <div className="flex-1">

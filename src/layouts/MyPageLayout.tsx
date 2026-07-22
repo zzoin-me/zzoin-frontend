@@ -1,6 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { ChevronLeft, LogOut } from "lucide-react";
-import { useAuthStore } from "@/stores/authStore";
+import { ChevronLeft } from "lucide-react";
 
 const desktopMenus = [
   { to: "/mypage", label: "내 프로필", end: true },
@@ -12,7 +11,6 @@ const desktopMenus = [
 export function MyPageLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const logout = useAuthStore((s) => s.logout);
   const isIndex = location.pathname === "/mypage";
 
   return (
@@ -35,16 +33,6 @@ export function MyPageLayout() {
               </NavLink>
             ))}
           </nav>
-          <button
-            onClick={() => {
-              logout();
-              navigate("/");
-            }}
-            className="mt-10 flex items-center gap-2 px-2 py-2 font-medium text-[16px] text-grey7 hover:text-grey9"
-          >
-            <LogOut className="h-5 w-5" aria-hidden />
-            로그아웃
-          </button>
         </aside>
 
         <main className="flex-1 py-6 lg:py-10">

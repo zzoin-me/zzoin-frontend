@@ -57,3 +57,21 @@ export async function refreshTokens(refreshTokenValue: string): Promise<LoginRes
     body: JSON.stringify({ refreshToken: refreshTokenValue }),
   });
 }
+
+export async function sendUnivEmail(email: string): Promise<void> {
+  await apiFetch<void>("/api/auth/email/send", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyUnivEmail(
+  verifyEmail: string,
+  code: string,
+  univId: number,
+): Promise<void> {
+  await apiFetch<void>("/api/auth/email/verify", {
+    method: "POST",
+    body: JSON.stringify({ verifyEmail, code, univId }),
+  });
+}
