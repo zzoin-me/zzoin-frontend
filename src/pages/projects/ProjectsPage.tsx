@@ -57,10 +57,12 @@ export default function ProjectsPage() {
   const [keyword, setKeyword] = useState(searchParams.get("q") ?? "");
   const [isSearching, setIsSearching] = useState(!!searchParams.get("q"));
 
-  const [showFilters, setShowFilters] = useState(false);
-  const [fieldFilter, setFieldFilter] = useState<string | null>(null);
-  const [ddayFilter, setDdayFilter] = useState<number | null>(null);
-  const [countFilter, setCountFilter] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(searchParams.get("filters") === "1");
+  const [fieldFilter, setFieldFilter] = useState<string | null>(searchParams.get("field"));
+  const [ddayFilter, setDdayFilter] = useState<number | null>(
+    searchParams.get("dday") ? Number(searchParams.get("dday")) : null,
+  );
+  const [countFilter, setCountFilter] = useState<string | null>(searchParams.get("count"));
 
   const tabs: FilterTab[] = ["전체", "인기", "신규"];
 
@@ -110,8 +112,21 @@ export default function ProjectsPage() {
     if (page > 1) next.set("page", String(page));
     if (keyword) next.set("q", keyword);
     if (activeTab !== "전체") next.set("tab", activeTab);
+    if (showFilters) next.set("filters", "1");
+    if (fieldFilter) next.set("field", fieldFilter);
+    if (ddayFilter !== null) next.set("dday", String(ddayFilter));
+    if (countFilter) next.set("count", countFilter);
     setSearchParams(next, { replace: true });
-  }, [page, keyword, activeTab, setSearchParams]);
+  }, [
+    page,
+    keyword,
+    activeTab,
+    showFilters,
+    fieldFilter,
+    ddayFilter,
+    countFilter,
+    setSearchParams,
+  ]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -220,14 +235,16 @@ export default function ProjectsPage() {
           </div>
 
           <div>
-            <span className="mb-2 block font-medium text-[14px] text-grey8">마감일</span>
+            <span className="mb-2 block font-medium text-[14px] text-grey8">
+              {fieldFilter ? `${fieldFilter} 모집인원` : "모집 인원"}
+            </span>
             <div className="flex flex-wrap gap-2">
-              {ddayOptions.map((opt) => (
+              {countOptions.map((opt) => (
                 <button
                   key={opt.label}
-                  onClick={() => setDdayFilter(opt.value)}
+                  onClick={() => setCountFilter(opt.value)}
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                    ddayFilter === opt.value
+                    countFilter === opt.value
                       ? "border-primary bg-primary text-white"
                       : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
@@ -239,14 +256,14 @@ export default function ProjectsPage() {
           </div>
 
           <div>
-            <span className="mb-2 block font-medium text-[14px] text-grey8">모집 인원</span>
+            <span className="mb-2 block font-medium text-[14px] text-grey8">마감일</span>
             <div className="flex flex-wrap gap-2">
-              {countOptions.map((opt) => (
+              {ddayOptions.map((opt) => (
                 <button
                   key={opt.label}
-                  onClick={() => setCountFilter(opt.value)}
+                  onClick={() => setDdayFilter(opt.value)}
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                    countFilter === opt.value
+                    ddayFilter === opt.value
                       ? "border-primary bg-primary text-white"
                       : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
