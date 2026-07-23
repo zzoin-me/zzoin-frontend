@@ -67,7 +67,9 @@ export default function SignupPage() {
   }, []);
 
   const emailDomain = email.includes("@") ? email.split("@")[1] : "";
-  const isUnivEmail = univs.some((u) => u.domain === emailDomain);
+  const isUnivEmail = univs.some(
+    (u) => emailDomain === u.domain || emailDomain.endsWith("." + u.domain),
+  );
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
