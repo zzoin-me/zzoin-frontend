@@ -1,6 +1,7 @@
 export type ProjectStatus = "RECRUITING" | "IN_PROGRESS" | "COMPLETED";
 export type CollaborationType = "ONLINE" | "OFFLINE" | "BOTH";
 export type GoalType = "PORTFOLIO" | "PRODUCTION" | "COMPETITION";
+export type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface User {
   id: string;
@@ -25,7 +26,8 @@ export interface UnivInfo {
 export interface Recruitment {
   id: number;
   name: string;
-  count: number;
+  applicantCount: number;
+  recruitmentCount: number;
   qualification: string;
   preferred: string;
 }
@@ -51,9 +53,10 @@ export interface ProjectPreview {
   recruitmentDeadline: string;
   recruitments: string[];
   status: ProjectStatus;
-  currentCount: number;
-  totalCount: number;
+  applicantCount: number;
+  recruitmentCount: number;
   imageUrl: string;
+  authorNickname?: string;
 }
 
 export interface ProjectDetail {
@@ -69,6 +72,7 @@ export interface ProjectDetail {
   imageUrl: string;
   projectStatus: ProjectStatus;
   recruitments: Recruitment[];
+  authorNickname?: string;
 }
 
 export interface CreateProjectRequest {
@@ -136,17 +140,45 @@ export interface UpdateSchoolProfileRequest {
   grade?: number;
 }
 
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail?: string;
-  tags: string[];
-  currentMembers: number;
-  maxMembers: number;
-  dday: string;
-  author: string;
-  status: "recruiting" | "closed";
+export interface ProjectApplicant {
+  applicationId: number;
+  userId: number;
+  nickName: string;
+  profileUrl: string;
+  recruitmentName: string;
+  stackNames: string[];
+  applicationDate: string;
+  letter: string;
+  schoolName: string;
+  major: string;
+  grade: number;
+  ratingAvg: number;
+  status: ApplicationStatus;
+  histories: ProjectMember[];
+}
+
+export interface ProjectMember {
+  projectId: number;
+  projectName: string;
+  joinedAt: string;
+  completedAt: string;
+}
+
+export interface ProjectApplicants {
+  applicants: ProjectApplicant[];
+}
+
+export interface ApplyProjectRequest {
+  recruitmentId: number;
+  letter: string;
+}
+
+export interface DeleteApplicationRequest {
+  applicationId: number;
+}
+
+export interface UpdateApplicantStatusRequest {
+  status: ApplicationStatus;
 }
 
 export interface Post {
