@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { ChevronLeft } from "lucide-react";
+import { WithdrawModal } from "@/components/auth/WithdrawModal";
 
 const desktopMenus = [
   { to: "/mypage", label: "내 프로필", end: true },
@@ -12,6 +14,7 @@ export function MyPageLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isIndex = location.pathname === "/mypage";
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 md:px-8 lg:px-[120px]">
@@ -33,6 +36,13 @@ export function MyPageLayout() {
               </NavLink>
             ))}
           </nav>
+          <button
+            type="button"
+            onClick={() => setWithdrawOpen(true)}
+            className="mt-5 rounded-tag px-2 py-2 text-left font-medium text-[16px] text-red-600 transition-colors hover:text-red-700"
+          >
+            회원 탈퇴
+          </button>
         </aside>
 
         <main className="flex-1 py-6 lg:py-10">
@@ -49,6 +59,7 @@ export function MyPageLayout() {
           <Outlet />
         </main>
       </div>
+      <WithdrawModal isOpen={withdrawOpen} onClose={() => setWithdrawOpen(false)} />
     </div>
   );
 }

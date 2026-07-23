@@ -75,3 +75,16 @@ export async function verifyUnivEmail(
     body: JSON.stringify({ verifyEmail, code, univId }),
   });
 }
+
+export async function sendWithdrawEmail(): Promise<void> {
+  await apiFetch<void>("/api/auth/withdraw", {
+    method: "POST",
+  });
+}
+
+export async function withdraw(code: string): Promise<void> {
+  await apiFetch<void>("/api/auth/withdraw", {
+    method: "DELETE",
+    body: JSON.stringify({ code }),
+  });
+}
