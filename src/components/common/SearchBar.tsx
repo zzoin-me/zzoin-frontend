@@ -32,13 +32,13 @@ export function SearchBar({
         <button
           type="button"
           onClick={onSearch}
-          className="shrink-0 cursor-pointer text-grey6 hover:text-grey9"
+          className="shrink-0 cursor-pointer text-primary hover:opacity-70"
           aria-label="검색"
         >
           <Search className="h-5 w-5" aria-hidden />
         </button>
       )}
-      {!onSearch && <Search className="h-5 w-5 shrink-0 text-grey6" aria-hidden />}
+      {!onSearch && <Search className="h-5 w-5 shrink-0 text-primary" aria-hidden />}
     </div>
   );
 }

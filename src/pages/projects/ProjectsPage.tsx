@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from "lucide-react
 import { SearchBar } from "@/components/common/SearchBar";
 import { ProjectGrid } from "@/components/project/ProjectGrid";
 import { ProjectCard } from "@/components/project/ProjectCard";
+import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton";
 import { RecommendProjectBanner } from "@/components/project/RecommendProjectBanner";
 import { getProjects, type ProjectListParams } from "@/api/projects";
 import { getPageList } from "@/utils/pagination";
@@ -44,6 +45,7 @@ export default function ProjectsPage() {
 
   const [allProjects, setAllProjects] = useState<ProjectPreview[]>([]);
   const [recommendProjects, setRecommendProjects] = useState<ProjectPreview[]>([]);
+  const [recommendLoading, setRecommendLoading] = useState(false);
   const [totalElements, setTotalElements] = useState(0);
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [loading, setLoading] = useState(true);
@@ -91,9 +93,11 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     if (isLoggedIn) {
+      setRecommendLoading(true);
       getProjects({ size: 10 })
         .then((data) => setRecommendProjects(data.content))
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setRecommendLoading(false));
     }
   }, [isLoggedIn]);
 
@@ -121,7 +125,25 @@ export default function ProjectsPage() {
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10">
       {isLoggedIn && !isSearching && (
         <div className="mb-8">
-          <RecommendProjectBanner projects={recommendProjects} nickname={user?.nickname} />
+          {recommendLoading ? (
+            <section className="rounded-card bg-grey2 p-6 md:p-8">
+              <div className="h-7 w-1/3 animate-pulse rounded bg-grey4" />
+              <div className="mt-4 flex gap-6 overflow-hidden">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="w-full shrink-0 md:w-[280px]">
+                    <ProjectCardSkeleton />
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 flex items-center justify-center gap-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-2 w-2 animate-pulse rounded-full bg-grey4" />
+                ))}
+              </div>
+            </section>
+          ) : (
+            <RecommendProjectBanner projects={recommendProjects} nickname={user?.nickname} />
+          )}
         </div>
       )}
 
@@ -137,7 +159,7 @@ export default function ProjectsPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`font-medium text-[16px] transition-colors ${
                   activeTab === tab
-                    ? "text-grey9 underline underline-offset-4"
+                    ? "text-primary underline underline-offset-4"
                     : "text-grey6 hover:text-grey9"
                 }`}
               >
@@ -168,11 +190,7 @@ export default function ProjectsPage() {
                 setCountFilter(null);
               }
             }}
-            className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-medium text-[14px] transition-colors ${
-              showFilters
-                ? "border-grey9 bg-grey9 text-white"
-                : "border-grey3 bg-white text-grey7 hover:border-grey5 hover:text-grey9"
-            }`}
+            className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border border-primary bg-primary px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90`}
           >
             <SlidersHorizontal className="h-4 w-4" aria-hidden />
             <span className="hidden md:inline">상세조건</span>
@@ -191,8 +209,8 @@ export default function ProjectsPage() {
                   onClick={() => setFieldFilter(opt.value)}
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                     fieldFilter === opt.value
-                      ? "border-grey9 bg-grey9 text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                      ? "border-primary bg-primary text-white"
+                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
                 >
                   {opt.label}
@@ -210,8 +228,8 @@ export default function ProjectsPage() {
                   onClick={() => setDdayFilter(opt.value)}
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                     ddayFilter === opt.value
-                      ? "border-grey9 bg-grey9 text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                      ? "border-primary bg-primary text-white"
+                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
                 >
                   {opt.label}
@@ -229,8 +247,8 @@ export default function ProjectsPage() {
                   onClick={() => setCountFilter(opt.value)}
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                     countFilter === opt.value
-                      ? "border-grey9 bg-grey9 text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                      ? "border-primary bg-primary text-white"
+                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
                 >
                   {opt.label}
@@ -243,7 +261,11 @@ export default function ProjectsPage() {
 
       <div className="mt-8">
         {loading ? (
-          <p className="py-20 text-center font-regular text-[16px] text-grey6">불러오는 중...</p>
+          <ProjectGrid>
+            {Array.from({ length: 9 }).map((_, i) => (
+              <ProjectCardSkeleton key={i} />
+            ))}
+          </ProjectGrid>
         ) : allProjects.length === 0 ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">
             표시할 프로젝트가 없습니다.
@@ -307,10 +329,10 @@ export default function ProjectsPage() {
         <Link
           to="/projects/create"
           aria-label="프로젝트 등록"
-          className="group fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-grey9 text-white shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:hover:w-44"
+          className="group fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:hover:w-44"
         >
           <div className="flex items-center">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-grey9">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary">
               <Plus className="h-6 w-6 shrink-0" aria-hidden />
             </div>
             <span className="hidden whitespace-nowrap font-medium text-[15px] lg:block lg:max-w-0 lg:overflow-hidden lg:opacity-0 lg:transition-all lg:duration-300 lg:group-hover:max-w-[120px] lg:group-hover:opacity-100 lg:group-hover:pr-7">

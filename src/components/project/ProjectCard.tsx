@@ -32,11 +32,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         <div className="mt-auto flex flex-col gap-2">
-          <div className="flex flex-row gap-4">
-            {project.recruitments.map((tag) => (
+          <div className="flex flex-row gap-2">
+            {project.recruitments.map((tag, i) => (
               <span
-                key={tag}
-                className="rounded-tag border border-grey5 px-[5px] py-[2px] font-regular text-[12px] text-grey7"
+                key={`${tag}-${i}`}
+                className="rounded-[16px] bg-primary-light px-[7px] py-[2px] font-regular text-[12px] text-primary"
               >
                 {tag}
               </span>
@@ -49,7 +49,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 <Users className="h-4 w-4" aria-hidden />
                 {project.applicantCount}/{project.recruitmentCount}명
               </span>
-              <span className="font-regular text-[12px] text-grey6">{dday}</span>
+              <span className="rounded-[16px] bg-primary px-2 py-[2px] font-bold text-[12px] text-white">
+                {dday}
+              </span>
             </div>
             <span className="flex h-[26px] w-[26px] items-center justify-center rounded-card border border-grey6 bg-white">
               <ChevronRight className="h-4 w-4 text-grey9" aria-hidden />

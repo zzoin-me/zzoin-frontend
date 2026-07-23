@@ -81,7 +81,7 @@ export default function ProjectDetailPage() {
               <h1 className="font-bold text-[20px] text-grey9 md:text-[24px] lg:text-[28px]">
                 {project.title}
               </h1>
-              <span className="shrink-0 rounded-tag bg-grey9 px-2 py-1 font-bold text-[12px] text-white md:hidden">
+              <span className="shrink-0 rounded-tag bg-primary px-2 py-1 font-bold text-[12px] text-white md:hidden">
                 {dday}
               </span>
             </div>
@@ -92,7 +92,7 @@ export default function ProjectDetailPage() {
               {project.recruitments.map((r) => (
                 <span
                   key={r.id}
-                  className="rounded-tag bg-grey2 px-2 py-1 font-regular text-[12px] text-grey7"
+                  className="rounded-[16px] bg-primary-light px-[7px] py-[2px] font-regular text-[12px] text-primary"
                 >
                   {r.name}
                 </span>
@@ -101,8 +101,8 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="hidden h-40 w-40 shrink-0 items-center justify-center self-center rounded-full bg-grey5 lg:flex">
-          <span className="font-bold text-[36px] text-grey1">{dday}</span>
+        <div className="hidden h-40 w-40 shrink-0 items-center justify-center self-center rounded-full border-2 border-primary bg-primary-light lg:flex">
+          <span className="font-bold text-[36px] text-primary">{dday}</span>
         </div>
       </div>
 
@@ -113,7 +113,7 @@ export default function ProjectDetailPage() {
           </div>
           <div className="h-7 w-full overflow-hidden rounded-full bg-grey2">
             <div
-              className="h-full rounded-full bg-grey9 transition-all"
+              className="h-full rounded-full bg-primary transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
