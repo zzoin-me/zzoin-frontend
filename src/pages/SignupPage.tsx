@@ -199,7 +199,7 @@ export default function SignupPage() {
 
           {isUnivEmail && (
             <p className="-mt-1 font-medium text-[13px] text-green-600">
-              ✓ 학교 이메일로 회원가입하여 2차 인증을 건너뜁니다!
+              ✓ 학교 이메일로 회원가입시 2차 학교 인증이 즉시 완료됩니다!
             </p>
           )}
 
