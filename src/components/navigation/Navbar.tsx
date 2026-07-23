@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router";
 import { useAuthStore } from "@/stores/authStore";
+import { Logo } from "@/components/common/Logo";
 
 const navItems = [
   { to: "/", label: "홈", end: true },
@@ -26,16 +27,10 @@ export function Navbar() {
   }, []);
 
   return (
-    <nav className="hidden border-b border-grey5 bg-grey1 lg:flex">
+    <nav className="relative z-50 hidden border-b border-grey5 bg-grey1 lg:flex">
       <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-[120px] py-5">
         <div className="flex items-center gap-9">
-          <Link to="/" className="flex items-center gap-3">
-            <div
-              className="h-[45.88px] w-[45.88px] rounded-card bg-grey6"
-              aria-label="Zzoin logo"
-            />
-            <span className="font-bold text-[20px] text-grey9">Zzoin</span>
-          </Link>
+          <Logo size={46} />
           <ul className="flex items-center gap-16">
             {navItems.map((item) => (
               <li key={item.to}>
@@ -44,7 +39,7 @@ export function Navbar() {
                   end={item.end}
                   className={({ isActive }) =>
                     isActive
-                      ? "font-bold text-[20px] text-grey9"
+                      ? "font-bold text-[20px] text-primary"
                       : "font-medium text-[16px] text-grey9 hover:text-grey7"
                   }
                 >

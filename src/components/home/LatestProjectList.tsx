@@ -1,6 +1,5 @@
 import { Link } from "react-router";
 import { SectionHeader } from "@/components/common/SectionHeader";
-import { calculateDday } from "@/utils/dday";
 import type { ProjectPreview } from "@/types";
 
 interface LatestProjectListProps {
@@ -14,8 +13,6 @@ export function LatestProjectList({ projects }: LatestProjectListProps) {
       <SectionHeader title="최신 프로젝트" moreLink="/projects" />
       <ul className="flex flex-col divide-y divide-grey3">
         {projects.map((p) => {
-          const isClosed = p.status !== "RECRUITING";
-          const dday = calculateDday(p.recruitmentDeadline);
           return (
             <li key={p.id}>
               <Link
@@ -32,24 +29,15 @@ export function LatestProjectList({ projects }: LatestProjectListProps) {
                   )}
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="truncate font-bold text-[18px] text-grey9">{p.title}</h3>
-                    <span
-                      className={`shrink-0 rounded-tag px-2 py-0.5 font-medium text-[12px] ${
-                        isClosed ? "bg-grey2 text-grey6" : "bg-grey9 text-white"
-                      }`}
-                    >
-                      {dday}
-                    </span>
-                  </div>
+                  <h3 className="truncate font-bold text-[18px] text-grey9">{p.title}</h3>
                   <p className="line-clamp-1 font-regular text-[14px] text-grey6">
                     {p.description}
                   </p>
                   <div className="flex gap-1.5">
-                    {p.recruitments.map((tag) => (
+                    {p.recruitments.map((tag, i) => (
                       <span
-                        key={tag}
-                        className="rounded-tag bg-grey2 px-2 py-0.5 font-regular text-[12px] text-grey7"
+                        key={`${tag}-${i}`}
+                        className="rounded-[16px] bg-primary-light px-[7px] py-[2px] font-regular text-[12px] text-primary"
                       >
                         {tag}
                       </span>
