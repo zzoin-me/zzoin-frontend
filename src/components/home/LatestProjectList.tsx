@@ -1,9 +1,10 @@
 import { Link } from "react-router";
 import { SectionHeader } from "@/components/common/SectionHeader";
-import type { Project } from "@/types";
+import { calculateDday } from "@/utils/dday";
+import type { ProjectPreview } from "@/types";
 
 interface LatestProjectListProps {
-  projects: Project[];
+  projects: ProjectPreview[];
 }
 
 export function LatestProjectList({ projects }: LatestProjectListProps) {
@@ -13,18 +14,18 @@ export function LatestProjectList({ projects }: LatestProjectListProps) {
       <SectionHeader title="최신 프로젝트" moreLink="/projects" />
       <ul className="flex flex-col divide-y divide-grey3">
         {projects.map((p) => {
-          const isClosed = p.status === "closed";
+          const isClosed = p.status !== "RECRUITING";
+          const dday = calculateDday(p.recruitmentDeadline);
           return (
             <li key={p.id}>
               <Link
                 to={`/projects/${p.id}`}
                 className="flex items-center gap-5 py-5 transition-colors hover:bg-grey1"
               >
-                {/* 썸네일 placeholder 80x80 */}
                 <div className="h-[80px] w-[80px] shrink-0 rounded-tag bg-grey4">
-                  {p.thumbnail && (
+                  {p.imageUrl && (
                     <img
-                      src={p.thumbnail}
+                      src={p.imageUrl}
                       alt={p.title}
                       className="h-full w-full rounded-tag object-cover"
                     />
@@ -38,14 +39,14 @@ export function LatestProjectList({ projects }: LatestProjectListProps) {
                         isClosed ? "bg-grey2 text-grey6" : "bg-grey9 text-white"
                       }`}
                     >
-                      {p.dday}
+                      {dday}
                     </span>
                   </div>
                   <p className="line-clamp-1 font-regular text-[14px] text-grey6">
                     {p.description}
                   </p>
                   <div className="flex gap-1.5">
-                    {p.tags.map((tag) => (
+                    {p.recruitments.map((tag) => (
                       <span
                         key={tag}
                         className="rounded-tag bg-grey2 px-2 py-0.5 font-regular text-[12px] text-grey7"

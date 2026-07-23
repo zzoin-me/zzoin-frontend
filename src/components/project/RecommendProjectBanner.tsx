@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProjectCard } from "@/components/project/ProjectCard";
-import type { Project } from "@/types";
+import type { ProjectPreview } from "@/types";
 
 const MAX_ITEMS = 10;
 const CARD_WIDTH = 280;
@@ -9,7 +9,7 @@ const GAP = 24;
 const CARD_STRIDE = CARD_WIDTH + GAP;
 
 interface RecommendProjectBannerProps {
-  projects: Project[];
+  projects: ProjectPreview[];
   nickname?: string;
 }
 

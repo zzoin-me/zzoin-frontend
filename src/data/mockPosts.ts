@@ -59,7 +59,7 @@ export const mockComments: Comment[] = [
     id: "c2",
     postId: "1",
     author: "익명 5",
-    content: "결국엔 커뮤니케이션能力和지가 가장 큰 것 같아요.",
+    content: "결국엔 커뮤니케이션이 되는지가 가장 큰 것 같아요.",
     createdAt: "30분 전",
   },
 ];

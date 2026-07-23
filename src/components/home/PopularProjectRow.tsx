@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { SectionHeader } from "@/components/common/SectionHeader";
-import type { Project } from "@/types";
+import type { ProjectPreview } from "@/types";
 
 const MAX_ITEMS = 8;
 const CARD_WIDTH = 280;
@@ -9,7 +9,7 @@ const GAP = 24;
 const CARD_STRIDE = CARD_WIDTH + GAP;
 
 interface PopularProjectRowProps {
-  projects: Project[];
+  projects: ProjectPreview[];
 }
 
 export function PopularProjectRow({ projects }: PopularProjectRowProps) {
@@ -44,7 +44,7 @@ export function PopularProjectRow({ projects }: PopularProjectRowProps) {
     });
   }, [dotCount]);
 
-  useEffect(
+  useLayoutEffect(
     () => () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     },
