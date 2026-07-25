@@ -28,7 +28,6 @@ async function fetchProfileAndSet(): Promise<void> {
   useAuthStore.setState({
     isLoggedIn: true,
     user: {
-      id: "",
       email: profile.email,
       nickname: profile.name,
       profileImage: profile.profileUrl,

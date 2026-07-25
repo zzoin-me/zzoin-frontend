@@ -1,10 +1,10 @@
-export type ProjectStatus = "RECRUITING" | "IN_PROGRESS" | "COMPLETED";
+export type ProjectStatus = "RECRUITING" | "RECRUITMENT_CLOSED" | "IN_PROGRESS" | "COMPLETED";
 export type CollaborationType = "ONLINE" | "OFFLINE" | "BOTH";
 export type GoalType = "PORTFOLIO" | "PRODUCTION" | "COMPETITION";
 export type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type RecruitmentCategory = "PLANNING" | "DESIGN" | "DEVELOPMENT" | "MARKETING" | "ETC";
 
 export interface User {
-  id: string;
   email: string;
   nickname: string;
   profileImage?: string;
@@ -26,6 +26,7 @@ export interface UnivInfo {
 export interface Recruitment {
   id: number;
   name: string;
+  category: RecruitmentCategory;
   applicantCount: number;
   recruitmentCount: number;
   qualification: string;
@@ -33,6 +34,7 @@ export interface Recruitment {
 }
 
 export interface CreateRecruitment {
+  category: RecruitmentCategory;
   name: string;
   count: number;
   qualification: string;
@@ -40,6 +42,8 @@ export interface CreateRecruitment {
 }
 
 export interface UpdateRecruitment {
+  recruitmentId?: number;
+  category?: RecruitmentCategory;
   name?: string;
   count?: number;
   qualification?: string;
@@ -52,6 +56,7 @@ export interface ProjectPreview {
   description: string;
   recruitmentDeadline: string;
   recruitments: string[];
+  categories: RecruitmentCategory[];
   status: ProjectStatus;
   applicantCount: number;
   recruitmentCount: number;
@@ -80,8 +85,8 @@ export interface CreateProjectRequest {
   description: string;
   collaborationType: CollaborationType;
   communicationTool: string;
-  meetingSchedule: string;
-  period: string;
+  meetingSchedule?: string;
+  period?: string;
   recruitmentDeadline: string;
   goalType: GoalType;
   imageUrl: string;
@@ -146,6 +151,7 @@ export interface ProjectApplicant {
   nickName: string;
   profileUrl: string;
   recruitmentName: string;
+  recruitmentCategory: RecruitmentCategory;
   stackNames: string[];
   applicationDate: string;
   letter: string;
@@ -199,4 +205,49 @@ export interface Comment {
   author: string;
   content: string;
   createdAt: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface MyApplicationPreview {
+  applicationId: number;
+  projectId: number;
+  projectTitle: string;
+  appliedRecruitmentName: string;
+  appliedRecruitmentCategory: RecruitmentCategory;
+  status: ApplicationStatus;
+  createdAt: string;
+}
+
+export interface MyProjectPreview {
+  id: number;
+  title: string;
+  status: ProjectStatus;
+  applicantCount: number;
+  createdAt: string;
+}
+
+export type ReviewType = "received" | "written";
+
+export interface Review {
+  id: number;
+  projectId: number;
+  projectTitle: string;
+  rating: number;
+  content: string;
+  createdAt: string;
+  type: ReviewType;
+}
+
+export interface ReviewSummary {
+  avgRating: number;
+  totalCount: number;
+  distribution: Record<5 | 4 | 3 | 2 | 1, number>;
 }

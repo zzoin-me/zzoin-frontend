@@ -26,9 +26,16 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
   const filtered = useMemo(() => {
     if (!value.trim()) return univs;
     const q = value.toLowerCase();
-    return univs.filter(
-      (u) => u.name.toLowerCase().includes(q) || u.domain.toLowerCase().includes(q),
-    );
+    return univs.filter((u) => {
+      const name = u.name.toLowerCase();
+      const domain = u.domain.toLowerCase();
+      return (
+        name.includes(q) ||
+        domain.includes(q) ||
+        q.endsWith("." + domain) ||
+        domain.endsWith("." + q)
+      );
+    });
   }, [univs, value]);
 
   const handleSelect = (univ: UnivInfo) => {
@@ -36,9 +43,19 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
     setOpen(false);
   };
 
+  const findMatchingUniv = (domain: string): UnivInfo | undefined => {
+    const d = domain.toLowerCase().trim();
+    if (!d) return undefined;
+    return (
+      univs.find((u) => u.domain === d) ??
+      univs.find((u) => d.endsWith("." + u.domain)) ??
+      univs.find((u) => u.domain.endsWith("." + d))
+    );
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const domain = e.target.value;
-    const matched = univs.find((u) => u.domain === domain);
+    const matched = findMatchingUniv(domain);
     onChange(domain, matched ? matched.id : null);
     if (domain) {
       setOpen(true);

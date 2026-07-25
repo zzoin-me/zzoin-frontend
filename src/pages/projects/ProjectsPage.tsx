@@ -6,23 +6,24 @@ import { ProjectGrid } from "@/components/project/ProjectGrid";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton";
 import { RecommendProjectBanner } from "@/components/project/RecommendProjectBanner";
-import { getProjects, type ProjectListParams } from "@/api/projects";
+import { getProjects, getCategoryCounts, type ProjectListParams } from "@/api/projects";
 import { getPageList } from "@/utils/pagination";
 import { useAuthStore } from "@/stores/authStore";
-import type { ProjectPreview } from "@/types";
+import {
+  RECRUITMENT_CATEGORIES,
+  getCategoryLabel,
+  getSubRolesByCategory,
+} from "@/constants/recruitment";
+import type { ProjectPreview, RecruitmentCategory, GoalType } from "@/types";
 
 const PAGE_SIZE = 9;
 
-type FilterTab = "전체" | "인기" | "신규";
+type FilterTab = "전체" | "추천" | "인기" | "신규" | "마감임박";
 
-const fieldOptions = [
-  { label: "전체", value: null },
-  { label: "기획", value: "기획" },
-  { label: "프론트엔드", value: "프론트엔드" },
-  { label: "백엔드", value: "백엔드" },
-  { label: "디자인", value: "디자인" },
-  { label: "기타", value: "기타" },
-];
+function sortFromTab(tab: FilterTab): string {
+  if (tab === "마감임박") return "DEADLINE";
+  return "LATEST";
+}
 
 const ddayOptions = [
   { label: "전체", value: null },
@@ -36,6 +37,13 @@ const countOptions = [
   { label: "1~3명", value: "1-3" },
   { label: "4~6명", value: "4-6" },
   { label: "7명+", value: "7-99" },
+];
+
+const goalOptions: { label: string; value: GoalType | null }[] = [
+  { label: "전체", value: null },
+  { label: "포트폴리오용", value: "PORTFOLIO" },
+  { label: "출시 목표", value: "PRODUCTION" },
+  { label: "공모전", value: "COMPETITION" },
 ];
 
 export default function ProjectsPage() {
@@ -58,20 +66,43 @@ export default function ProjectsPage() {
   const [isSearching, setIsSearching] = useState(!!searchParams.get("q"));
 
   const [showFilters, setShowFilters] = useState(searchParams.get("filters") === "1");
-  const [fieldFilter, setFieldFilter] = useState<string | null>(searchParams.get("field"));
+  const [categoryFilter, setCategoryFilter] = useState<RecruitmentCategory | null>(
+    (searchParams.get("category") as RecruitmentCategory | null) ?? null,
+  );
+  const [nameFilter, setNameFilter] = useState<string | null>(searchParams.get("name"));
   const [ddayFilter, setDdayFilter] = useState<number | null>(
     searchParams.get("dday") ? Number(searchParams.get("dday")) : null,
   );
   const [countFilter, setCountFilter] = useState<string | null>(searchParams.get("count"));
+  const [goalFilter, setGoalFilter] = useState<GoalType | null>(
+    (searchParams.get("goal") as GoalType | null) ?? null,
+  );
+  const [recruitingOnly, setRecruitingOnly] = useState(searchParams.get("recruitingOnly") === "1");
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
-  const tabs: FilterTab[] = ["전체", "인기", "신규"];
+  const tabs: FilterTab[] = isLoggedIn
+    ? ["전체", "추천", "인기", "신규", "마감임박"]
+    : ["전체", "인기", "신규", "마감임박"];
 
   useEffect(() => {
+    getCategoryCounts()
+      .then(setCategoryCounts)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "추천") {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const params: ProjectListParams = {
       keyword: keyword || undefined,
-      sort: "LATEST",
-      field: fieldFilter ?? undefined,
+      sort: sortFromTab(activeTab),
+      category: categoryFilter ?? undefined,
+      name: nameFilter ?? undefined,
+      goal: goalFilter ?? undefined,
+      recruitingOnly: recruitingOnly || undefined,
       maxDays: ddayFilter ?? undefined,
       page: page - 1,
       size: PAGE_SIZE,
@@ -91,7 +122,17 @@ export default function ProjectsPage() {
         setTotalElements(0);
       })
       .finally(() => setLoading(false));
-  }, [keyword, page, fieldFilter, ddayFilter, countFilter]);
+  }, [
+    activeTab,
+    keyword,
+    page,
+    categoryFilter,
+    nameFilter,
+    goalFilter,
+    recruitingOnly,
+    ddayFilter,
+    countFilter,
+  ]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -105,7 +146,16 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [keyword, activeTab, fieldFilter, ddayFilter, countFilter]);
+  }, [
+    keyword,
+    activeTab,
+    categoryFilter,
+    nameFilter,
+    goalFilter,
+    recruitingOnly,
+    ddayFilter,
+    countFilter,
+  ]);
 
   useEffect(() => {
     const next = new URLSearchParams();
@@ -113,7 +163,10 @@ export default function ProjectsPage() {
     if (keyword) next.set("q", keyword);
     if (activeTab !== "전체") next.set("tab", activeTab);
     if (showFilters) next.set("filters", "1");
-    if (fieldFilter) next.set("field", fieldFilter);
+    if (categoryFilter) next.set("category", categoryFilter);
+    if (nameFilter) next.set("name", nameFilter);
+    if (goalFilter) next.set("goal", goalFilter);
+    if (recruitingOnly) next.set("recruitingOnly", "1");
     if (ddayFilter !== null) next.set("dday", String(ddayFilter));
     if (countFilter) next.set("count", countFilter);
     setSearchParams(next, { replace: true });
@@ -122,7 +175,10 @@ export default function ProjectsPage() {
     keyword,
     activeTab,
     showFilters,
-    fieldFilter,
+    categoryFilter,
+    nameFilter,
+    goalFilter,
+    recruitingOnly,
     ddayFilter,
     countFilter,
     setSearchParams,
@@ -139,9 +195,9 @@ export default function ProjectsPage() {
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10">
       {isLoggedIn && !isSearching && (
-        <div className="mb-8">
+        <div className="mb-8 hidden lg:block">
           {recommendLoading ? (
-            <section className="rounded-card bg-grey2 p-6 md:p-8">
+            <section className="rounded-card bg-[#F6F1EB] p-6 md:p-8">
               <div className="h-7 w-1/3 animate-pulse rounded bg-grey4" />
               <div className="mt-4 flex gap-6 overflow-hidden">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -200,9 +256,12 @@ export default function ProjectsPage() {
               const next = !showFilters;
               setShowFilters(next);
               if (!next) {
-                setFieldFilter(null);
+                setCategoryFilter(null);
+                setNameFilter(null);
                 setDdayFilter(null);
                 setCountFilter(null);
+                setGoalFilter(null);
+                setRecruitingOnly(false);
               }
             }}
             className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border border-primary bg-primary px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90`}
@@ -218,25 +277,71 @@ export default function ProjectsPage() {
           <div>
             <span className="mb-2 block font-medium text-[14px] text-grey8">모집 직군</span>
             <div className="flex flex-wrap gap-2">
-              {fieldOptions.map((opt) => (
+              <button
+                onClick={() => {
+                  setCategoryFilter(null);
+                  setNameFilter(null);
+                }}
+                className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                  categoryFilter === null
+                    ? "border-primary bg-primary text-white"
+                    : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
+                }`}
+              >
+                전체
+              </button>
+              {RECRUITMENT_CATEGORIES.map((cat) => (
                 <button
-                  key={opt.label}
-                  onClick={() => setFieldFilter(opt.value)}
+                  key={cat.value}
+                  onClick={() => {
+                    setCategoryFilter(cat.value);
+                    setNameFilter(null);
+                  }}
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                    fieldFilter === opt.value
+                    categoryFilter === cat.value
                       ? "border-primary bg-primary text-white"
                       : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
                 >
-                  {opt.label}
+                  {cat.label}
+                  {categoryCounts[cat.value] != null && (
+                    <span className="ml-1 text-[12px] opacity-70">{categoryCounts[cat.value]}</span>
+                  )}
                 </button>
               ))}
             </div>
+            {categoryFilter && categoryFilter !== "ETC" && (
+              <div className="mt-3 flex flex-wrap gap-2 border-l-2 border-grey4 pl-4">
+                <button
+                  onClick={() => setNameFilter(null)}
+                  className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
+                    nameFilter === null
+                      ? "border-grey9 bg-grey9 text-white"
+                      : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                  }`}
+                >
+                  전체
+                </button>
+                {getSubRolesByCategory(categoryFilter).map((role) => (
+                  <button
+                    key={role.value}
+                    onClick={() => setNameFilter(role.value)}
+                    className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
+                      nameFilter === role.value
+                        ? "border-grey9 bg-grey9 text-white"
+                        : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                    }`}
+                  >
+                    {role.value}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
             <span className="mb-2 block font-medium text-[14px] text-grey8">
-              {fieldFilter ? `${fieldFilter} 모집인원` : "모집 인원"}
+              {categoryFilter ? `${getCategoryLabel(categoryFilter)} 모집인원` : "모집 인원"}
             </span>
             <div className="flex flex-wrap gap-2">
               {countOptions.map((opt) => (
@@ -273,11 +378,62 @@ export default function ProjectsPage() {
               ))}
             </div>
           </div>
+
+          <div>
+            <span className="mb-2 block font-medium text-[14px] text-grey8">프로젝트 목표</span>
+            <div className="flex flex-wrap gap-2">
+              {goalOptions.map((opt) => (
+                <button
+                  key={opt.label}
+                  onClick={() => setGoalFilter(opt.value)}
+                  className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                    goalFilter === opt.value
+                      ? "border-primary bg-primary text-white"
+                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <button
+              onClick={() => setRecruitingOnly((v) => !v)}
+              className={`flex items-center gap-2 rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                recruitingOnly
+                  ? "border-primary bg-primary text-white"
+                  : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
+              }`}
+            >
+              <span>{recruitingOnly ? "☑" : "☐"}</span>
+              모집 중만 보기
+            </button>
+          </div>
         </div>
       )}
 
       <div className="mt-8">
-        {loading ? (
+        {activeTab === "추천" ? (
+          recommendLoading ? (
+            <ProjectGrid>
+              {Array.from({ length: 9 }).map((_, i) => (
+                <ProjectCardSkeleton key={i} />
+              ))}
+            </ProjectGrid>
+          ) : recommendProjects.length === 0 ? (
+            <p className="py-20 text-center font-regular text-[16px] text-grey6">
+              표시할 프로젝트가 없습니다.
+            </p>
+          ) : (
+            <ProjectGrid>
+              {recommendProjects.map((p) => (
+                <ProjectCard key={p.id} project={p} />
+              ))}
+            </ProjectGrid>
+          )
+        ) : loading ? (
           <ProjectGrid>
             {Array.from({ length: 9 }).map((_, i) => (
               <ProjectCardSkeleton key={i} />
@@ -290,13 +446,13 @@ export default function ProjectsPage() {
         ) : (
           <ProjectGrid>
             {allProjects.map((p) => (
-              <ProjectCard key={p.id} project={p} />
+              <ProjectCard key={p.id} project={p} showThumbnail={false} />
             ))}
           </ProjectGrid>
         )}
       </div>
 
-      {totalPages > 1 && (
+      {activeTab !== "추천" && totalPages > 1 && (
         <div className="mt-12 flex items-center justify-center gap-2">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}

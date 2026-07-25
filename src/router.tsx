@@ -7,9 +7,11 @@ import HomePage from "@/pages/main/HomePage";
 import ProjectsPage from "@/pages/projects/ProjectsPage";
 import ProjectDetailPage from "@/pages/projects/ProjectDetailPage";
 import ProjectCreatePage from "@/pages/projects/ProjectCreatePage";
+import ProjectManagePage from "@/pages/projects/ProjectManagePage";
 import CommunityPage from "@/pages/community/CommunityPage";
 import CommunityDetailPage from "@/pages/community/CommunityDetailPage";
 import CommunityNewPage from "@/pages/community/CommunityNewPage";
+import CommunityBoardPage from "@/pages/community/CommunityBoardPage";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
 import MyPageIndexPage from "@/pages/mypage/Index";
@@ -25,26 +27,43 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/projects", element: <ProjectsPage /> },
-      { path: "/projects/create", element: <ProjectCreatePage /> },
       { path: "/projects/:id", element: <ProjectDetailPage /> },
       {
         element: <ProtectedRoute />,
         children: [
+          { path: "/projects/create", element: <ProjectCreatePage /> },
+          { path: "/projects/:id/manage", element: <ProjectManagePage /> },
+        ],
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
           { path: "/community", element: <CommunityPage /> },
+          { path: "/community/all", element: <CommunityBoardPage board="all" /> },
+          { path: "/community/popular", element: <CommunityBoardPage board="popular" /> },
+          { path: "/community/mine", element: <CommunityBoardPage board="mine" /> },
+          { path: "/community/comments", element: <CommunityBoardPage board="comments" /> },
+          { path: "/community/likes", element: <CommunityBoardPage board="likes" /> },
+          { path: "/community/saved", element: <CommunityBoardPage board="saved" /> },
           { path: "/community/new", element: <CommunityNewPage /> },
           { path: "/community/:id", element: <CommunityDetailPage /> },
         ],
       },
       {
-        path: "/mypage",
-        element: <MyPageLayout />,
+        element: <ProtectedRoute />,
         children: [
-          { index: true, element: <MyPageIndexPage /> },
-          { path: "profile", element: <MyPageProfilePage /> },
-          { path: "verify-univ", element: <VerifyUnivPage /> },
-          { path: "applications", element: <MyPageApplicationsPage /> },
-          { path: "projects", element: <MyPageProjectsPage /> },
-          { path: "reviews", element: <MyPageReviewsPage /> },
+          {
+            path: "/mypage",
+            element: <MyPageLayout />,
+            children: [
+              { index: true, element: <MyPageIndexPage /> },
+              { path: "profile", element: <MyPageProfilePage /> },
+              { path: "verify-univ", element: <VerifyUnivPage /> },
+              { path: "applications", element: <MyPageApplicationsPage /> },
+              { path: "projects", element: <MyPageProjectsPage /> },
+              { path: "reviews", element: <MyPageReviewsPage /> },
+            ],
+          },
         ],
       },
     ],

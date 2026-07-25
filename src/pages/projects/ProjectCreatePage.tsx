@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ChevronLeft, Camera, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/common/Button";
-import { Input } from "@/components/common/Input";
 import { createProject } from "@/api/projects";
 import { ApiError } from "@/api/client";
-import type { CreateProjectRequest, CollaborationType, GoalType } from "@/types";
+import { DateTimePicker } from "@/components/common/DateTimePicker";
+import { RecruitmentSelect } from "@/components/common/RecruitmentSelect";
+import type {
+  CreateProjectRequest,
+  CollaborationType,
+  GoalType,
+  RecruitmentCategory,
+} from "@/types";
 
 const collabOptions: { value: CollaborationType; label: string }[] = [
   { value: "ONLINE", label: "온라인" },
@@ -14,8 +19,8 @@ const collabOptions: { value: CollaborationType; label: string }[] = [
 ];
 
 const goalOptions: { value: GoalType; label: string }[] = [
-  { value: "PORTFOLIO", label: "포트폴리오" },
-  { value: "PRODUCTION", label: "실 서비스" },
+  { value: "PORTFOLIO", label: "포트폴리오용" },
+  { value: "PRODUCTION", label: "출시 목표" },
   { value: "COMPETITION", label: "공모전" },
 ];
 
@@ -35,11 +40,26 @@ export default function ProjectCreatePage() {
   const [imageUrl] = useState("https://via.placeholder.com/300x200");
 
   const [recruitments, setRecruitments] = useState([
-    { name: "", count: 1, qualification: "", preferred: "" },
+    {
+      category: "" as RecruitmentCategory | "",
+      name: "",
+      count: 1,
+      qualification: "",
+      preferred: "",
+    },
   ]);
 
   const addRecruitment = () => {
-    setRecruitments((prev) => [...prev, { name: "", count: 1, qualification: "", preferred: "" }]);
+    setRecruitments((prev) => [
+      ...prev,
+      {
+        category: "" as RecruitmentCategory | "",
+        name: "",
+        count: 1,
+        qualification: "",
+        preferred: "",
+      },
+    ]);
   };
 
   const removeRecruitment = (idx: number) => {
@@ -48,6 +68,10 @@ export default function ProjectCreatePage() {
 
   const updateRecruitment = (idx: number, field: string, value: string | number) => {
     setRecruitments((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
+  };
+
+  const updateRecruitmentRole = (idx: number, category: RecruitmentCategory, name: string) => {
+    setRecruitments((prev) => prev.map((r, i) => (i === idx ? { ...r, category, name } : r)));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,10 +84,10 @@ export default function ProjectCreatePage() {
     }
 
     const hasEmptyRecruitment = recruitments.some(
-      (r) => !r.name || !r.qualification || !r.preferred,
+      (r) => !r.category || !r.name || !r.qualification || !r.preferred,
     );
     if (hasEmptyRecruitment) {
-      setError("모집 역열의 필수 항목을 모두 입력해주세요.");
+      setError("모집 역할의 필수 항목을 모두 입력해주세요.");
       return;
     }
 
@@ -74,12 +98,18 @@ export default function ProjectCreatePage() {
         description,
         collaborationType,
         communicationTool,
-        meetingSchedule,
-        period,
-        recruitmentDeadline: new Date(recruitmentDeadline).toISOString(),
+        meetingSchedule: meetingSchedule || undefined,
+        period: period || undefined,
+        recruitmentDeadline,
         goalType,
         imageUrl,
-        recruitments,
+        recruitments: recruitments.map((r) => ({
+          category: r.category as RecruitmentCategory,
+          name: r.name,
+          count: r.count,
+          qualification: r.qualification,
+          preferred: r.preferred,
+        })),
       };
       await createProject(data);
       navigate("/projects", { replace: true });
@@ -105,92 +135,85 @@ export default function ProjectCreatePage() {
           <section className="flex flex-col gap-[17px]">
             <h2 className="font-bold text-[20px] text-grey9">1. 기본 정보 입력</h2>
             <div className="flex flex-col gap-[17px]">
-              <Input
-                label="프로젝트 제목"
-                placeholder="제목을 입력하세요 (2~30자)"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={30}
-              />
-              <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">
-                  프로젝트 설명
-                </label>
+              <div className="flex flex-col gap-1">
+                <span className="font-medium text-[20px] text-grey9">제목</span>
+                <input
+                  placeholder="제목을 입력하세요 (2~30자)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={30}
+                  className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-medium text-[20px] text-grey9">정보</span>
                 <textarea
-                  placeholder="프로젝트를 소개해주세요 (2~500자)"
+                  placeholder="상세 정보를 입력하세요 (2~500자)"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   maxLength={500}
                   rows={4}
-                  className="w-full rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                 />
               </div>
-              <Input
-                label="모집 마감일"
-                type="datetime-local"
-                value={recruitmentDeadline}
-                onChange={(e) => setRecruitmentDeadline(e.target.value)}
-              />
             </div>
           </section>
 
           <section className="flex flex-col gap-[17px]">
             <h2 className="font-bold text-[20px] text-grey9">2. 협업 방식</h2>
             <div className="flex flex-col gap-[17px]">
-              <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">진행 방식</label>
-                <div className="flex gap-2">
-                  {collabOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setCollaborationType(opt.value)}
-                      className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                        collaborationType === opt.value
-                          ? "border-grey9 bg-grey9 text-white"
-                          : "border-grey3 bg-white text-grey7 hover:border-grey5"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+              <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+                <div className="flex flex-1 flex-col gap-1">
+                  <span className="font-medium text-[20px] text-grey9">진행 방식</span>
+                  <div className="flex flex-wrap gap-2">
+                    {collabOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setCollaborationType(opt.value)}
+                        className={`rounded-[20px] border px-5 py-[10px] font-regular text-[16px] transition-colors ${
+                          collaborationType === opt.value
+                            ? "border-grey9 bg-grey9 text-white"
+                            : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col gap-1">
+                  <span className="font-medium text-[20px] text-grey9">커뮤니케이션 도구</span>
+                  <input
+                    placeholder="예: Discord, Slack"
+                    value={communicationTool}
+                    onChange={(e) => setCommunicationTool(e.target.value)}
+                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  />
                 </div>
               </div>
-              <Input
-                label="커뮤니케이션 도구"
-                placeholder="예: Discord, Slack"
-                value={communicationTool}
-                onChange={(e) => setCommunicationTool(e.target.value)}
-              />
-              <Input
-                label="정기 모임 일정"
-                placeholder="예: 매주 화, 목 20시"
-                value={meetingSchedule}
-                onChange={(e) => setMeetingSchedule(e.target.value)}
-              />
-              <Input
-                label="예상 기간"
-                placeholder="예: 3개월"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-              />
-              <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">목표</label>
-                <div className="flex gap-2">
-                  {goalOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setGoalType(opt.value)}
-                      className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                        goalType === opt.value
-                          ? "border-grey9 bg-grey9 text-white"
-                          : "border-grey3 bg-white text-grey7 hover:border-grey5"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+              <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+                <div className="flex flex-1 flex-col gap-1">
+                  <span className="font-medium text-[20px] text-grey9">
+                    정기 모임 <span className="font-regular text-[16px] text-grey6">(선택)</span>
+                  </span>
+                  <input
+                    placeholder="예) 매주 화, 목 20시"
+                    value={meetingSchedule}
+                    onChange={(e) => setMeetingSchedule(e.target.value)}
+                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-1">
+                  <span className="font-medium text-[20px] text-grey9">
+                    예상 기간 <span className="font-regular text-[16px] text-grey6">(선택)</span>
+                  </span>
+                  <input
+                    placeholder="예) 3개월"
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value)}
+                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  />
                 </div>
               </div>
             </div>
@@ -210,9 +233,12 @@ export default function ProjectCreatePage() {
             </div>
             <div className="flex flex-col gap-7">
               {recruitments.map((r, idx) => (
-                <div key={idx} className="flex flex-col gap-3 rounded-card border border-grey3 p-5">
+                <div
+                  key={idx}
+                  className="flex flex-col gap-[17px] rounded-[20px] border border-grey3 p-5"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-[14px] text-grey8">모집 역할 {idx + 1}</span>
+                    <span className="font-medium text-[20px] text-grey9">모집 역할 {idx + 1}</span>
                     {recruitments.length > 1 && (
                       <button
                         type="button"
@@ -223,51 +249,141 @@ export default function ProjectCreatePage() {
                       </button>
                     )}
                   </div>
-                  <Input
-                    placeholder="역할명 (예: 프론트엔드)"
-                    value={r.name}
-                    onChange={(e) => updateRecruitment(idx, "name", e.target.value)}
-                  />
-                  <div>
-                    <label className="mb-2 block font-medium text-[14px] text-grey8">
-                      모집 인원
-                    </label>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium text-[20px] text-grey9">모집 직군</span>
+                      <RecruitmentSelect
+                        category={r.category}
+                        name={r.name}
+                        onChange={(cat, n) => updateRecruitmentRole(idx, cat, n)}
+                      />
+                    </div>
+                    <div className="flex w-full flex-col gap-1 md:w-[133px]">
+                      <span className="font-medium text-[20px] text-grey9">인원 수</span>
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={r.count}
+                        onChange={(e) => updateRecruitment(idx, "count", Number(e.target.value))}
+                        placeholder="인원 수 입력"
+                        className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-[20px] text-grey9">지원자격</span>
                     <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={r.count}
-                      onChange={(e) => updateRecruitment(idx, "count", Number(e.target.value))}
-                      className="w-24 rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
+                      placeholder="지원자격을 입력하세요 (2~200자)"
+                      value={r.qualification}
+                      onChange={(e) => updateRecruitment(idx, "qualification", e.target.value)}
+                      className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                     />
                   </div>
-                  <Input
-                    placeholder="지원 자격 (2~200자)"
-                    value={r.qualification}
-                    onChange={(e) => updateRecruitment(idx, "qualification", e.target.value)}
-                  />
-                  <Input
-                    placeholder="우대 사항 (2~200자)"
-                    value={r.preferred}
-                    onChange={(e) => updateRecruitment(idx, "preferred", e.target.value)}
-                  />
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-[20px] text-grey9">우대사항</span>
+                    <input
+                      placeholder="우대사항을 입력하세요 (2~200자)"
+                      value={r.preferred}
+                      onChange={(e) => updateRecruitment(idx, "preferred", e.target.value)}
+                      className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           </section>
+
+          <section className="flex flex-col gap-4 lg:hidden">
+            <h2 className="font-bold text-[20px] text-grey9">4. 상세 설정</h2>
+            <div className="flex flex-col gap-[17px] rounded-[20px] border border-grey3 p-5">
+              <div className="flex flex-col gap-3">
+                <span className="font-medium text-[16px] text-grey6">모집 기한</span>
+                <DateTimePicker
+                  value={recruitmentDeadline}
+                  onChange={setRecruitmentDeadline}
+                  placeholder="날짜와 시간을 선택하세요"
+                />
+              </div>
+              <div className="flex flex-col gap-3">
+                <span className="font-medium text-[16px] text-grey6">프로젝트 목표</span>
+                <div className="flex flex-wrap gap-2">
+                  {goalOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setGoalType(opt.value)}
+                      className={`rounded-[20px] border px-4 py-[10px] font-medium text-[16px] transition-colors ${
+                        goalType === opt.value
+                          ? "border-grey7 bg-grey7 text-grey1"
+                          : "border-grey4 bg-white text-grey6 hover:border-grey5"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-[20px] bg-grey9 px-5 py-[14px] font-bold text-[24px] text-grey1 transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {loading ? "등록 중..." : "등록하기"}
+            </button>
+          </section>
         </div>
 
-        <aside className="flex w-full flex-col gap-9 lg:w-[300px]">
+        <aside className="hidden w-[300px] shrink-0 lg:flex lg:flex-col lg:gap-9">
           <div className="flex h-[286px] w-full flex-col items-center justify-center rounded-card bg-grey2 lg:w-[286px]">
             <Camera className="h-24 w-24 text-grey4" aria-hidden />
             <span className="mt-4 font-semibold text-[20px] text-grey5">사진 등록하기</span>
           </div>
 
+          <div className="flex flex-col gap-4 border-b border-grey4 pb-9">
+            <h2 className="font-bold text-[20px] text-grey9">상세 설정</h2>
+            <div className="flex flex-col gap-7">
+              <div className="flex flex-col gap-3">
+                <span className="font-medium text-[16px] text-grey6">모집 기한</span>
+                <DateTimePicker
+                  value={recruitmentDeadline}
+                  onChange={setRecruitmentDeadline}
+                  placeholder="날짜와 시간을 선택하세요"
+                />
+              </div>
+              <div className="flex flex-col gap-3">
+                <span className="font-medium text-[16px] text-grey6">프로젝트 목표</span>
+                <div className="flex flex-wrap gap-2">
+                  {goalOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setGoalType(opt.value)}
+                      className={`rounded-[20px] border px-4 py-[10px] font-medium text-[16px] transition-colors ${
+                        goalType === opt.value
+                          ? "border-grey7 bg-grey7 text-grey1"
+                          : "border-grey4 bg-white text-grey6 hover:border-grey5"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-[20px] bg-grey9 px-5 py-[14px] font-bold text-[24px] text-grey1 transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
             {loading ? "등록 중..." : "등록하기"}
-          </Button>
+          </button>
         </aside>
       </form>
     </div>
