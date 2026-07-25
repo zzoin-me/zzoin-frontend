@@ -24,6 +24,7 @@ export function LatestProjectList({ projects }: LatestProjectListProps) {
                     <img
                       src={p.imageUrl}
                       alt={p.title}
+                      loading="lazy"
                       className="h-full w-full rounded-tag object-cover"
                     />
                   )}

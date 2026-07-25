@@ -82,6 +82,7 @@ export default function ProjectDetailPage() {
               <img
                 src={project.imageUrl}
                 alt={project.title}
+                loading="lazy"
                 className="h-full w-full rounded-card object-cover"
               />
             )}
