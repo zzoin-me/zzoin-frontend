@@ -70,7 +70,7 @@ export function RecommendProjectBanner({ projects, nickname }: RecommendProjectB
   if (display.length === 0) return null;
 
   return (
-    <section className="rounded-card bg-grey2 p-6 md:p-8">
+    <section className="rounded-card bg-[#F6F1EB] p-6 md:p-8">
       <h2 className="font-bold text-[20px] text-grey9">
         {nickname ? `${nickname}님을 위한` : "회원님을 위한"} 추천 모집글
       </h2>

@@ -7,22 +7,11 @@ type LogoProps = {
   className?: string;
 };
 
-export function Logo({
-  to = "/",
-  size = 46,
-  showWordmark = true,
-  className = "",
-}: LogoProps) {
+export function Logo({ to = "/", size = 46, showWordmark = true, className = "" }: LogoProps) {
   const wordmarkHeight = Math.round(size * 0.6);
   return (
     <Link to={to} className={`flex items-center gap-3 ${className}`}>
-      <img
-        src="/logo.svg"
-        alt="Zzoin logo"
-        width={size}
-        height={size}
-        className="shrink-0"
-      />
+      <img src="/logo.svg" alt="Zzoin logo" width={size} height={size} className="shrink-0" />
       {showWordmark && (
         <img
           src="/logo-wordmark.svg"

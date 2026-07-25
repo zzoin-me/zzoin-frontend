@@ -1,13 +1,14 @@
 import { Link } from "react-router";
-import { ChevronRight, Users } from "lucide-react";
+import { Calendar, ChevronRight, Users } from "lucide-react";
 import type { ProjectPreview } from "@/types";
 import { calculateDday } from "@/utils/dday";
 
 interface ProjectCardProps {
   project: ProjectPreview;
+  showThumbnail?: boolean;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, showThumbnail = true }: ProjectCardProps) {
   const dday = calculateDday(project.recruitmentDeadline);
 
   return (
@@ -15,17 +16,21 @@ export function ProjectCard({ project }: ProjectCardProps) {
       to={`/projects/${project.id}`}
       className="group flex h-full flex-col overflow-hidden rounded-card border border-grey4 bg-white transition-shadow hover:shadow-sm"
     >
-      <div className="h-[113px] w-full rounded-t-card bg-grey4">
-        {project.imageUrl && (
-          <img
-            src={project.imageUrl}
-            alt={project.title}
-            className="h-full w-full rounded-t-card object-cover"
-          />
-        )}
-      </div>
+      {showThumbnail && (
+        <div className="h-[113px] w-full rounded-t-card bg-grey4">
+          {project.imageUrl && (
+            <img
+              src={project.imageUrl}
+              alt={project.title}
+              className="h-full w-full rounded-t-card object-cover"
+            />
+          )}
+        </div>
+      )}
 
-      <div className="flex flex-1 flex-col gap-[19px] px-4 pb-4 pt-1">
+      <div
+        className={`flex flex-1 flex-col gap-[19px] px-4 pb-4 ${showThumbnail ? "pt-1" : "pt-4"}`}
+      >
         <div className="flex flex-col gap-2">
           <h3 className="truncate font-bold text-[20px] text-grey9">{project.title}</h3>
           <p className="line-clamp-2 font-regular text-[16px] text-grey9">{project.description}</p>
@@ -49,7 +54,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 <Users className="h-4 w-4" aria-hidden />
                 {project.applicantCount}/{project.recruitmentCount}명
               </span>
-              <span className="rounded-[16px] bg-primary px-2 py-[2px] font-bold text-[12px] text-white">
+              <span className="flex items-center gap-1 rounded-[16px] bg-primary px-2 py-[2px] font-bold text-[12px] text-white">
+                <Calendar className="h-3 w-3" aria-hidden />
                 {dday}
               </span>
             </div>
