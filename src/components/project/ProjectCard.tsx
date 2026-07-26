@@ -22,6 +22,7 @@ export function ProjectCard({ project, showThumbnail = true }: ProjectCardProps)
             <img
               src={project.imageUrl}
               alt={project.title}
+              loading="lazy"
               className="h-full w-full rounded-t-card object-cover"
             />
           )}

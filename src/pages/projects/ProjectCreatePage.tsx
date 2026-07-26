@@ -78,16 +78,48 @@ export default function ProjectCreatePage() {
     e.preventDefault();
     setError("");
 
-    if (!title || !description || !communicationTool || !recruitmentDeadline) {
-      setError("필수 항목을 모두 입력해주세요.");
+    if (!title.trim()) {
+      setError("제목을 입력해주세요.");
+      return;
+    }
+    if (title.trim().length < 2 || title.trim().length > 30) {
+      setError("제목은 2자 이상 30자 이하여야 합니다.");
+      return;
+    }
+    if (!description.trim() || description.trim().length < 2 || description.trim().length > 500) {
+      setError("내용은 2자 이상 500자 이하여야 합니다.");
+      return;
+    }
+    if (
+      !communicationTool.trim() ||
+      communicationTool.trim().length < 2 ||
+      communicationTool.trim().length > 50
+    ) {
+      setError("커뮤니케이션 도구는 2자 이상 50자 이하여야 합니다.");
+      return;
+    }
+    if (!recruitmentDeadline) {
+      setError("모집 마감일을 선택해주세요.");
       return;
     }
 
-    const hasEmptyRecruitment = recruitments.some(
-      (r) => !r.category || !r.name || !r.qualification || !r.preferred,
+    const hasInvalidRecruitment = recruitments.some(
+      (r) =>
+        !r.category ||
+        !r.name ||
+        r.name.trim().length < 2 ||
+        r.name.trim().length > 30 ||
+        !r.qualification ||
+        r.qualification.trim().length < 2 ||
+        r.qualification.trim().length > 200 ||
+        !r.preferred ||
+        r.preferred.trim().length < 2 ||
+        r.preferred.trim().length > 200,
     );
-    if (hasEmptyRecruitment) {
-      setError("모집 역할의 필수 항목을 모두 입력해주세요.");
+    if (hasInvalidRecruitment) {
+      setError(
+        "모집 역할의 각 항목은 2자 이상 입력해야 하며, 역할명은 30자, 자격/우대사항은 200자 이하여야 합니다.",
+      );
       return;
     }
 

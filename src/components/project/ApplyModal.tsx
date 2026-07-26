@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { applyProject } from "@/api/application";
 import { ApiError } from "@/api/client";
+import { useModal } from "@/hooks/useModal";
 import type { Recruitment } from "@/types";
 
 interface ApplyModalProps {
@@ -17,6 +18,8 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const modalRef = useModal(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -63,8 +66,13 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5"
       onClick={handleClose}
+      role="presentation"
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="프로젝트 지원"
         className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-white p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >

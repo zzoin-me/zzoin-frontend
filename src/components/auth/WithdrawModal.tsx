@@ -6,6 +6,7 @@ import { Input } from "@/components/common/Input";
 import { ApiError } from "@/api/client";
 import { sendWithdrawEmail, withdraw } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
+import { useModal } from "@/hooks/useModal";
 
 interface WithdrawModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const modalRef = useModal(isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -83,8 +86,13 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5"
       onClick={success ? handleComplete : handleClose}
+      role="presentation"
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="회원 탈퇴"
         className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-white p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
