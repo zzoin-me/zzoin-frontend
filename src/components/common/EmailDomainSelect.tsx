@@ -39,6 +39,7 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
       return (
         name.includes(q) ||
         domain.includes(q) ||
+        q.includes(domain) ||
         q.endsWith("." + domain) ||
         domain.endsWith("." + q)
       );
@@ -56,7 +57,8 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
     return (
       univs.find((u) => u.domain === d) ??
       univs.find((u) => d.endsWith("." + u.domain)) ??
-      univs.find((u) => u.domain.endsWith("." + d))
+      univs.find((u) => u.domain.endsWith("." + d)) ??
+      univs.find((u) => d.includes(u.domain))
     );
   };
 
