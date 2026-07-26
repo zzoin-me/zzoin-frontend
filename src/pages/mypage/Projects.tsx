@@ -245,11 +245,7 @@ export default function MyPageProjectsPage() {
                             key={a.applicationId}
                             className="flex flex-col gap-3 rounded-[16px] border border-grey3 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
                           >
-                            <button
-                              type="button"
-                              onClick={() => setSelectedApplicant(a)}
-                              className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                            >
+                            <div className="flex min-w-0 flex-1 items-center gap-3">
                               {a.profileUrl ? (
                                 <img
                                   src={a.profileUrl}
@@ -268,34 +264,44 @@ export default function MyPageProjectsPage() {
                                   <StatusBadge status={a.status} />
                                 </div>
                                 <span className="truncate font-regular text-[13px] text-grey6">
-                                  {a.recruitmentName} · {a.schoolName || "학교 미입력"}
+                                  {a.recruitmentName} · 지원일 {formatDate(a.applicationDate)}
                                 </span>
                               </div>
-                            </button>
-                            {a.status === "PENDING" && (
-                              <div className="flex shrink-0 gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleApplicantStatus(project.id, a.applicationId, "APPROVED")
-                                  }
-                                  disabled={processingId === a.applicationId}
-                                  className="rounded-tag bg-green-600 px-4 py-2 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                >
-                                  승인
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleApplicantStatus(project.id, a.applicationId, "REJECTED")
-                                  }
-                                  disabled={processingId === a.applicationId}
-                                  className="rounded-tag border border-red-200 bg-white px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-                                >
-                                  거절
-                                </button>
-                              </div>
-                            )}
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedApplicant(a)}
+                                className="rounded-tag border border-primary bg-white px-3 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
+                                aria-label="지원자 정보"
+                              >
+                                정보
+                              </button>
+                              {a.status === "PENDING" && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleApplicantStatus(project.id, a.applicationId, "APPROVED")
+                                    }
+                                    disabled={processingId === a.applicationId}
+                                    className="rounded-tag bg-green-600 px-4 py-2 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                                  >
+                                    승인
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleApplicantStatus(project.id, a.applicationId, "REJECTED")
+                                    }
+                                    disabled={processingId === a.applicationId}
+                                    className="rounded-tag border border-red-200 bg-white px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                                  >
+                                    거절
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
