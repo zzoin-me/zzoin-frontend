@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
 import { SearchBar } from "@/components/common/SearchBar";
 import { ProjectGrid } from "@/components/project/ProjectGrid";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton";
 import { RecommendProjectBanner } from "@/components/project/RecommendProjectBanner";
-import { getProjects, getCategoryCounts, type ProjectListParams } from "@/api/projects";
+import { getProjects, type ProjectListParams } from "@/api/projects";
 import { getPageList } from "@/utils/pagination";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -14,9 +15,9 @@ import {
   getCategoryLabel,
   getSubRolesByCategory,
 } from "@/constants/recruitment";
-import type { ProjectPreview, RecruitmentCategory, GoalType } from "@/types";
+import type { RecruitmentCategory, GoalType } from "@/types";
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 12;
 
 type FilterTab = "전체" | "추천" | "인기" | "신규" | "마감임박";
 
@@ -25,38 +26,39 @@ function sortFromTab(tab: FilterTab): string {
   return "LATEST";
 }
 
-const ddayOptions = [
-  { label: "전체", value: null },
-  { label: "7일 이내", value: 7 },
-  { label: "14일 이내", value: 14 },
-  { label: "마감임박", value: 3 },
-];
-
-const countOptions = [
-  { label: "전체", value: null },
-  { label: "1~3명", value: "1-3" },
-  { label: "4~6명", value: "4-6" },
-  { label: "7명+", value: "7-99" },
-];
-
-const goalOptions: { label: string; value: GoalType | null }[] = [
-  { label: "전체", value: null },
+const goalOptions: { label: string; value: GoalType }[] = [
   { label: "포트폴리오용", value: "PORTFOLIO" },
   { label: "출시 목표", value: "PRODUCTION" },
   { label: "공모전", value: "COMPETITION" },
 ];
 
+const SLIDER_MAX = 20;
+
+interface FilterState {
+  selectedCategory: RecruitmentCategory | null;
+  names: string[];
+  minCount: number;
+  maxCount: number | null;
+  goals: GoalType[];
+  recruitingOnly: boolean;
+}
+
+const DEFAULT_FILTERS: FilterState = {
+  selectedCategory: null,
+  names: [],
+  minCount: 1,
+  maxCount: null,
+  goals: [],
+  recruitingOnly: false,
+};
+
 export default function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const user = useAuthStore((s) => s.user);
 
-  const [allProjects, setAllProjects] = useState<ProjectPreview[]>([]);
-  const [recommendProjects, setRecommendProjects] = useState<ProjectPreview[]>([]);
-  const [recommendLoading, setRecommendLoading] = useState(false);
-  const [totalElements, setTotalElements] = useState(0);
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
-  const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState<FilterTab>(
     (searchParams.get("tab") as FilterTab) || "전체",
@@ -65,128 +67,72 @@ export default function ProjectsPage() {
   const [keyword, setKeyword] = useState(searchParams.get("q") ?? "");
   const [isSearching, setIsSearching] = useState(!!searchParams.get("q"));
 
-  const [showFilters, setShowFilters] = useState(searchParams.get("filters") === "1");
-  const [categoryFilter, setCategoryFilter] = useState<RecruitmentCategory | null>(
-    (searchParams.get("category") as RecruitmentCategory | null) ?? null,
-  );
-  const [nameFilter, setNameFilter] = useState<string | null>(searchParams.get("name"));
-  const [ddayFilter, setDdayFilter] = useState<number | null>(
-    searchParams.get("dday") ? Number(searchParams.get("dday")) : null,
-  );
-  const [countFilter, setCountFilter] = useState<string | null>(searchParams.get("count"));
-  const [goalFilter, setGoalFilter] = useState<GoalType | null>(
-    (searchParams.get("goal") as GoalType | null) ?? null,
-  );
-  const [recruitingOnly, setRecruitingOnly] = useState(searchParams.get("recruitingOnly") === "1");
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
+  const [showFilters, setShowFilters] = useState(false);
+  const [draftFilters, setDraftFilters] = useState<FilterState>({ ...DEFAULT_FILTERS });
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>({ ...DEFAULT_FILTERS });
+  const [toast, setToast] = useState(false);
 
   const tabs: FilterTab[] = isLoggedIn
     ? ["전체", "추천", "인기", "신규", "마감임박"]
     : ["전체", "인기", "신규", "마감임박"];
 
-  useEffect(() => {
-    getCategoryCounts()
-      .then(setCategoryCounts)
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === "추천") {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const params: ProjectListParams = {
+  const buildListParams = (): ProjectListParams | null => {
+    if (activeTab === "추천") return null;
+    const f = appliedFilters;
+    return {
       keyword: keyword || undefined,
       sort: sortFromTab(activeTab),
-      category: categoryFilter ?? undefined,
-      name: nameFilter ?? undefined,
-      goal: goalFilter ?? undefined,
-      recruitingOnly: recruitingOnly || undefined,
-      maxDays: ddayFilter ?? undefined,
+      categories: f.selectedCategory ? [f.selectedCategory] : undefined,
+      names: f.names.length > 0 ? f.names : undefined,
+      goals: f.goals.length > 0 ? f.goals : undefined,
+      recruitingOnly: f.recruitingOnly || undefined,
+      minCount: f.minCount > 1 ? f.minCount : undefined,
+      maxCount: f.maxCount ?? undefined,
       page: page - 1,
       size: PAGE_SIZE,
     };
-    if (countFilter) {
-      const [min, max] = countFilter.split("-").map(Number);
-      params.minCount = min;
-      params.maxCount = max;
-    }
-    getProjects(params)
-      .then((data) => {
-        setAllProjects(data.content);
-        setTotalElements(data.totalElements);
-      })
-      .catch(() => {
-        setAllProjects([]);
-        setTotalElements(0);
-      })
-      .finally(() => setLoading(false));
-  }, [
-    activeTab,
-    keyword,
-    page,
-    categoryFilter,
-    nameFilter,
-    goalFilter,
-    recruitingOnly,
-    ddayFilter,
-    countFilter,
-  ]);
+  };
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      setRecommendLoading(true);
-      getProjects({ size: 10 })
-        .then((data) => setRecommendProjects(data.content))
-        .catch(() => {})
-        .finally(() => setRecommendLoading(false));
-    }
-  }, [isLoggedIn]);
+  const listParams = buildListParams();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["projects", "list", listParams],
+    queryFn: () => getProjects(listParams!),
+    enabled: listParams !== null,
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  });
+
+  const { data: recommendData } = useQuery({
+    queryKey: ["projects", "recommend-banner"],
+    queryFn: () => getProjects({ size: 10 }),
+    enabled: isLoggedIn,
+    staleTime: 60_000,
+  });
+
+  const allProjects = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
+  const recommendProjects = recommendData?.content ?? [];
+  const recommendLoading = false;
+  const loading = isLoading && !data;
 
   useEffect(() => {
     setPage(1);
-  }, [
-    keyword,
-    activeTab,
-    categoryFilter,
-    nameFilter,
-    goalFilter,
-    recruitingOnly,
-    ddayFilter,
-    countFilter,
-  ]);
+  }, [keyword, activeTab, appliedFilters]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(false), 2500);
+    return () => clearTimeout(id);
+  }, [toast]);
 
   useEffect(() => {
     const next = new URLSearchParams();
     if (page > 1) next.set("page", String(page));
     if (keyword) next.set("q", keyword);
     if (activeTab !== "전체") next.set("tab", activeTab);
-    if (showFilters) next.set("filters", "1");
-    if (categoryFilter) next.set("category", categoryFilter);
-    if (nameFilter) next.set("name", nameFilter);
-    if (goalFilter) next.set("goal", goalFilter);
-    if (recruitingOnly) next.set("recruitingOnly", "1");
-    if (ddayFilter !== null) next.set("dday", String(ddayFilter));
-    if (countFilter) next.set("count", countFilter);
     setSearchParams(next, { replace: true });
-  }, [
-    page,
-    keyword,
-    activeTab,
-    showFilters,
-    categoryFilter,
-    nameFilter,
-    goalFilter,
-    recruitingOnly,
-    ddayFilter,
-    countFilter,
-    setSearchParams,
-  ]);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [page]);
+  }, [page, keyword, activeTab, setSearchParams]);
 
   const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -253,18 +199,19 @@ export default function ProjectsPage() {
           />
           <button
             onClick={() => {
-              const next = !showFilters;
-              setShowFilters(next);
-              if (!next) {
-                setCategoryFilter(null);
-                setNameFilter(null);
-                setDdayFilter(null);
-                setCountFilter(null);
-                setGoalFilter(null);
-                setRecruitingOnly(false);
-              }
+              if (!showFilters) setDraftFilters({ ...appliedFilters });
+              setShowFilters((v) => !v);
             }}
-            className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border border-primary bg-primary px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90`}
+            className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] transition-opacity hover:opacity-90 ${
+              appliedFilters.selectedCategory !== null ||
+              appliedFilters.names.length > 0 ||
+              appliedFilters.minCount > 1 ||
+              appliedFilters.maxCount !== null ||
+              appliedFilters.goals.length > 0 ||
+              appliedFilters.recruitingOnly
+                ? "border-grey9 bg-grey9 text-white"
+                : "border-primary bg-primary text-white"
+            }`}
           >
             <SlidersHorizontal className="h-4 w-4" aria-hidden />
             <span className="hidden md:inline">상세조건</span>
@@ -273,63 +220,49 @@ export default function ProjectsPage() {
       </div>
 
       {showFilters && (
-        <div className="mt-4 flex flex-col gap-6 rounded-card border border-grey3 bg-grey1 p-6">
+        <div className="mt-4 flex flex-col gap-6 rounded-card border border-grey3 bg-grey1 p-5 md:p-6">
           <div>
-            <span className="mb-2 block font-medium text-[14px] text-grey8">모집 직군</span>
+            <span className="mb-3 block font-medium text-[14px] text-grey8">모집 직군</span>
             <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => {
-                  setCategoryFilter(null);
-                  setNameFilter(null);
-                }}
-                className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                  categoryFilter === null
-                    ? "border-primary bg-primary text-white"
-                    : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
-                }`}
-              >
-                전체
-              </button>
               {RECRUITMENT_CATEGORIES.map((cat) => (
                 <button
                   key={cat.value}
-                  onClick={() => {
-                    setCategoryFilter(cat.value);
-                    setNameFilter(null);
-                  }}
+                  type="button"
+                  onClick={() =>
+                    setDraftFilters((prev) => ({
+                      ...prev,
+                      selectedCategory: prev.selectedCategory === cat.value ? null : cat.value,
+                      names: [],
+                    }))
+                  }
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                    categoryFilter === cat.value
+                    draftFilters.selectedCategory === cat.value
                       ? "border-primary bg-primary text-white"
                       : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
                 >
                   {cat.label}
-                  {categoryCounts[cat.value] != null && (
-                    <span className="ml-1 text-[12px] opacity-70">{categoryCounts[cat.value]}</span>
-                  )}
                 </button>
               ))}
             </div>
-            {categoryFilter && categoryFilter !== "ETC" && (
+            {draftFilters.selectedCategory && (
               <div className="mt-3 flex flex-wrap gap-2 border-l-2 border-grey4 pl-4">
-                <button
-                  onClick={() => setNameFilter(null)}
-                  className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
-                    nameFilter === null
-                      ? "border-grey9 bg-grey9 text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-grey5"
-                  }`}
-                >
-                  전체
-                </button>
-                {getSubRolesByCategory(categoryFilter).map((role) => (
+                {getSubRolesByCategory(draftFilters.selectedCategory).map((role) => (
                   <button
                     key={role.value}
-                    onClick={() => setNameFilter(role.value)}
+                    type="button"
+                    onClick={() =>
+                      setDraftFilters((prev) => ({
+                        ...prev,
+                        names: prev.names.includes(role.value)
+                          ? prev.names.filter((n) => n !== role.value)
+                          : [...prev.names, role.value],
+                      }))
+                    }
                     className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
-                      nameFilter === role.value
-                        ? "border-grey9 bg-grey9 text-white"
-                        : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                      draftFilters.names.includes(role.value)
+                        ? "border-primary bg-primary text-white"
+                        : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                     }`}
                   >
                     {role.value}
@@ -340,42 +273,70 @@ export default function ProjectsPage() {
           </div>
 
           <div>
-            <span className="mb-2 block font-medium text-[14px] text-grey8">
-              {categoryFilter ? `${getCategoryLabel(categoryFilter)} 모집인원` : "모집 인원"}
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {countOptions.map((opt) => (
-                <button
-                  key={opt.label}
-                  onClick={() => setCountFilter(opt.value)}
-                  className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                    countFilter === opt.value
-                      ? "border-primary bg-primary text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-medium text-[14px] text-grey8">
+                {draftFilters.selectedCategory
+                  ? `${getCategoryLabel(draftFilters.selectedCategory)} 모집인원`
+                  : "모집 인원"}
+              </span>
+              <span className="font-medium text-[14px] text-grey9">
+                {draftFilters.minCount}명
+                {draftFilters.maxCount === null ? " 이상" : ` ~ ${draftFilters.maxCount}명`}
+              </span>
             </div>
-          </div>
-
-          <div>
-            <span className="mb-2 block font-medium text-[14px] text-grey8">마감일</span>
-            <div className="flex flex-wrap gap-2">
-              {ddayOptions.map((opt) => (
-                <button
-                  key={opt.label}
-                  onClick={() => setDdayFilter(opt.value)}
-                  className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                    ddayFilter === opt.value
-                      ? "border-primary bg-primary text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div className="relative h-6">
+              <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 rounded-full bg-grey3" />
+              <div
+                className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-grey9"
+                style={{
+                  left: `${((draftFilters.minCount - 1) / (SLIDER_MAX - 1)) * 100}%`,
+                  right: `${((SLIDER_MAX - (draftFilters.maxCount ?? SLIDER_MAX)) / (SLIDER_MAX - 1)) * 100}%`,
+                }}
+              />
+              <input
+                type="range"
+                min={1}
+                max={SLIDER_MAX}
+                value={draftFilters.minCount}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setDraftFilters((prev) => ({
+                    ...prev,
+                    minCount: v,
+                    maxCount: prev.maxCount !== null && prev.maxCount < v ? null : prev.maxCount,
+                  }));
+                }}
+                className="dual-range absolute top-1/2 h-6 w-full -translate-y-1/2 appearance-none bg-transparent"
+                style={{ zIndex: draftFilters.minCount > SLIDER_MAX - 2 ? 5 : 3 }}
+              />
+              <input
+                type="range"
+                min={1}
+                max={SLIDER_MAX}
+                value={draftFilters.maxCount ?? SLIDER_MAX}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setDraftFilters((prev) => ({
+                    ...prev,
+                    maxCount: v >= SLIDER_MAX ? null : v,
+                    minCount: prev.minCount > v ? v : prev.minCount,
+                  }));
+                }}
+                className="dual-range absolute top-1/2 h-6 w-full -translate-y-1/2 appearance-none bg-transparent"
+                style={{ zIndex: 4 }}
+              />
+            </div>
+            <div className="mt-1 flex justify-between">
+              <span className="font-regular text-[11px] text-grey5">1명</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setDraftFilters((prev) => ({ ...prev, minCount: 1, maxCount: null }))
+                }
+                className="font-regular text-[11px] text-grey5 underline hover:text-grey7"
+              >
+                제한없음
+              </button>
             </div>
           </div>
 
@@ -384,10 +345,18 @@ export default function ProjectsPage() {
             <div className="flex flex-wrap gap-2">
               {goalOptions.map((opt) => (
                 <button
-                  key={opt.label}
-                  onClick={() => setGoalFilter(opt.value)}
+                  key={opt.value}
+                  type="button"
+                  onClick={() =>
+                    setDraftFilters((prev) => ({
+                      ...prev,
+                      goals: prev.goals.includes(opt.value)
+                        ? prev.goals.filter((g) => g !== opt.value)
+                        : [...prev.goals, opt.value],
+                    }))
+                  }
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                    goalFilter === opt.value
+                    draftFilters.goals.includes(opt.value)
                       ? "border-primary bg-primary text-white"
                       : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
                   }`}
@@ -399,16 +368,40 @@ export default function ProjectsPage() {
           </div>
 
           <div>
+            <label className="flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={draftFilters.recruitingOnly}
+                onChange={(e) =>
+                  setDraftFilters((prev) => ({ ...prev, recruitingOnly: e.target.checked }))
+                }
+                className="h-4 w-4 accent-grey9"
+              />
+              <span className="font-medium text-[14px] text-grey7">모집 중만 보기</span>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-grey3 pt-4">
             <button
-              onClick={() => setRecruitingOnly((v) => !v)}
-              className={`flex items-center gap-2 rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                recruitingOnly
-                  ? "border-primary bg-primary text-white"
-                  : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
-              }`}
+              type="button"
+              onClick={() => {
+                setDraftFilters({ ...DEFAULT_FILTERS });
+                setAppliedFilters({ ...DEFAULT_FILTERS });
+                setShowFilters(false);
+              }}
+              className="rounded-tag border border-grey3 px-5 py-2.5 font-medium text-[14px] text-grey7 transition-colors hover:border-grey5 hover:text-grey9"
             >
-              <span>{recruitingOnly ? "☑" : "☐"}</span>
-              모집 중만 보기
+              초기화
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAppliedFilters({ ...draftFilters });
+                setShowFilters(false);
+              }}
+              className="rounded-tag bg-primary px-6 py-2.5 font-bold text-[14px] text-white transition-opacity hover:opacity-90"
+            >
+              적용
             </button>
           </div>
         </div>
@@ -513,6 +506,40 @@ export default function ProjectsPage() {
             </span>
           </div>
         </Link>
+      )}
+
+      {isLoggedIn && !user?.verified && (
+        <button
+          type="button"
+          onClick={() => {
+            setToast(true);
+          }}
+          aria-label="프로젝트 등록"
+          className="group fixed bottom-24 right-5 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-grey4 text-grey6 shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:h-14 lg:hover:w-44"
+        >
+          <div className="flex items-center">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-grey4">
+              <Plus className="h-6 w-6 shrink-0" aria-hidden />
+            </div>
+            <span className="hidden whitespace-nowrap font-medium text-[15px] lg:block lg:max-w-0 lg:overflow-hidden lg:opacity-0 lg:transition-all lg:duration-300 lg:group-hover:max-w-[160px] lg:group-hover:opacity-100 lg:group-hover:pr-7">
+              프로젝트 생성
+            </span>
+          </div>
+        </button>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-40 left-1/2 z-50 -translate-x-1/2 rounded-card bg-grey9 px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
+          프로젝트를 생성하려면{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/mypage/verify-univ")}
+            className="underline underline-offset-2 hover:text-grey3"
+          >
+            대학 인증
+          </button>
+          이 필요합니다.
+        </div>
       )}
     </div>
   );

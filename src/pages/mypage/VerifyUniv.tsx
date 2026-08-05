@@ -1,32 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
-import { EmailDomainSelect } from "@/components/common/EmailDomainSelect";
-import { getUnivs } from "@/api/univ";
 import { sendUnivEmail, verifyUnivEmail } from "@/api/auth";
 import { ApiError } from "@/api/client";
 import { useAuthStore } from "@/stores/authStore";
-import type { UnivInfo } from "@/api/univ";
 
 export default function VerifyUnivPage() {
   const navigate = useNavigate();
   const restoreSession = useAuthStore((s) => s.restoreSession);
-  const [univs, setUnivs] = useState<UnivInfo[]>([]);
   const [emailPrefix, setEmailPrefix] = useState("");
   const [domain, setDomain] = useState("");
-  const [univId, setUnivId] = useState<number | null>(null);
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [inquiryError, setInquiryError] = useState(false);
-
-  useEffect(() => {
-    getUnivs()
-      .then(setUnivs)
-      .catch(() => {});
-  }, []);
 
   const fullEmail = `${emailPrefix}@${domain}`;
 
@@ -35,10 +23,6 @@ export default function VerifyUnivPage() {
     setError("");
     if (!emailPrefix || !domain) {
       setError("이메일을 입력해주세요.");
-      return;
-    }
-    if (!univId) {
-      setError("지원하는 대학 이메일을 입력해주세요.");
       return;
     }
     setLoading(true);
@@ -59,13 +43,9 @@ export default function VerifyUnivPage() {
       setError("인증번호를 입력해주세요.");
       return;
     }
-    if (!univId) {
-      setError("지원하는 대학 이메일을 입력해주세요.");
-      return;
-    }
     setLoading(true);
     try {
-      await verifyUnivEmail(fullEmail, code, univId);
+      await verifyUnivEmail(fullEmail, code);
       await restoreSession();
       navigate("/mypage", { replace: true });
     } catch (err) {
@@ -94,40 +74,22 @@ export default function VerifyUnivPage() {
                 setEmailPrefix(e.target.value);
                 setCodeSent(false);
                 setError("");
-                setInquiryError(false);
               }}
-              className="w-3/5 rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+              className="w-1/2 rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
             />
             <span className="shrink-0 font-medium text-[16px] text-grey6">@</span>
-            <div className="w-2/5">
-              <EmailDomainSelect
-                univs={univs}
-                value={domain}
-                onChange={(d, id) => {
-                  setDomain(d);
-                  setUnivId(id);
-                  setCodeSent(false);
-                  setError("");
-                  setInquiryError(false);
-                }}
-                onInquiry={() => setInquiryError(true)}
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="도메인"
+              value={domain}
+              onChange={(e) => {
+                setDomain(e.target.value);
+                setCodeSent(false);
+                setError("");
+              }}
+              className="w-1/2 rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+            />
           </div>
-          {inquiryError && (
-            <div className="mt-2 flex flex-col gap-1">
-              <p className="font-regular text-[13px] text-red-500">
-                현재 지원하지 않는 대학 이메일입니다.
-              </p>
-              <p className="font-regular text-[13px] text-red-500">
-                대학교 이메일을 추가하시려면{" "}
-                <a href="mailto:zzoin.it@gmail.com" className="font-medium underline">
-                  zzoin.it@gmail.com
-                </a>
-                으로 문의해주세요.
-              </p>
-            </div>
-          )}
         </div>
 
         <div className="flex gap-2">
@@ -148,7 +110,7 @@ export default function VerifyUnivPage() {
               onClick={handleSendCode}
               variant="outline"
               className="shrink-0"
-              disabled={loading || codeSent || !univId}
+              disabled={loading || codeSent || !emailPrefix || !domain}
             >
               {codeSent ? "발송됨" : "인증번호 발송"}
             </Button>

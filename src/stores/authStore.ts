@@ -9,6 +9,7 @@ interface AuthState {
   user: User | null;
   initialized: boolean;
   loginWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   signupAndLogin: (data: {
     nickName: string;
     email: string;
@@ -45,6 +46,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   loginWithEmail: async (email, password) => {
     const res = await authApi.login(email, password);
     setTokens(res.accessToken, res.refreshToken);
+    await fetchProfileAndSet();
+  },
+
+  loginWithTokens: async (accessToken, refreshToken) => {
+    setTokens(accessToken, refreshToken);
     await fetchProfileAndSet();
   },
 

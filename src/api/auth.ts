@@ -68,11 +68,10 @@ export async function sendUnivEmail(email: string): Promise<void> {
 export async function verifyUnivEmail(
   verifyEmail: string,
   code: string,
-  univId: number,
 ): Promise<void> {
   await apiFetch<void>("/api/auth/email/verify", {
     method: "POST",
-    body: JSON.stringify({ verifyEmail, code, univId }),
+    body: JSON.stringify({ verifyEmail, code }),
   });
 }
 
@@ -86,5 +85,17 @@ export async function withdraw(code: string): Promise<void> {
   await apiFetch<void>("/api/auth/withdraw", {
     method: "DELETE",
     body: JSON.stringify({ code }),
+  });
+}
+
+export async function linkAccount(data: {
+  tempToken: string;
+  password: string;
+  provider: string;
+  providerId: string;
+}): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>("/api/auth/link-account", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }

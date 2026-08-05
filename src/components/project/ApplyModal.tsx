@@ -4,17 +4,19 @@ import { Button } from "@/components/common/Button";
 import { applyProject } from "@/api/application";
 import { ApiError } from "@/api/client";
 import { useModal } from "@/hooks/useModal";
-import type { Recruitment } from "@/types";
+import type { Recruitment, CustomQuestion } from "@/types";
 
 interface ApplyModalProps {
   isOpen: boolean;
   onClose: () => void;
   recruitments: Recruitment[];
+  questions?: CustomQuestion[];
 }
 
-export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
+export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: ApplyModalProps) {
   const [selectedRecruitment, setSelectedRecruitment] = useState<number | null>(null);
   const [letter, setLetter] = useState("");
+  const [answers, setAnswers] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -22,6 +24,22 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
   const modalRef = useModal(isOpen, onClose);
 
   if (!isOpen) return null;
+
+  const setAnswer = (questionId: number, value: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const toggleMultiAnswer = (questionId: number, option: string) => {
+    setAnswers((prev) => {
+      const current = prev[questionId] ?? "";
+      const selected = current ? current.split(",") : [];
+      if (selected.includes(option)) {
+        const next = selected.filter((s) => s !== option);
+        return { ...prev, [questionId]: next.join(",") };
+      }
+      return { ...prev, [questionId]: [...selected, option].join(",") };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,9 +60,25 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
       return;
     }
 
+    const missingRequired = questions.filter(
+      (q) => q.required && !(answers[q.id]?.trim()),
+    );
+    if (missingRequired.length > 0) {
+      setError(`필수 질문에 답변해주세요: ${missingRequired[0].label}`);
+      return;
+    }
+
     setLoading(true);
     try {
-      await applyProject({ recruitmentId: selectedRecruitment, letter });
+      const answerList = questions
+        .filter((q) => answers[q.id]?.trim())
+        .map((q) => ({ questionId: q.id, answerText: answers[q.id].trim() }));
+
+      await applyProject({
+        recruitmentId: selectedRecruitment,
+        letter,
+        answers: answerList.length > 0 ? answerList : undefined,
+      });
       setSuccess(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "지원에 실패했습니다.");
@@ -56,6 +90,7 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
   const handleClose = () => {
     setSelectedRecruitment(null);
     setLetter("");
+    setAnswers({});
     setError("");
     setSuccess(false);
     setLoading(false);
@@ -116,7 +151,9 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">지원할 역할</label>
+                <label className="mb-2 block font-medium text-[14px] text-grey8">
+                  지원할 역할 <span className="text-red-500">*</span>
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {recruitments.map((r) => (
                     <button
@@ -136,7 +173,9 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
               </div>
 
               <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">자기소개서</label>
+                <label className="mb-2 block font-medium text-[14px] text-grey8">
+                  자기소개서 <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   placeholder="본인을 소개하고 이 프로젝트에 기여할 수 있는 이유를 적어주세요. (10~500자)"
                   value={letter}
@@ -149,6 +188,68 @@ export function ApplyModal({ isOpen, onClose, recruitments }: ApplyModalProps) {
                   {letter.length}/500
                 </span>
               </div>
+
+              {questions.map((q) => (
+                <div key={q.id}>
+                  <label className="mb-2 block font-medium text-[14px] text-grey8">
+                    {q.label}
+                    {q.required && <span className="text-red-500"> *</span>}
+                  </label>
+                  {q.type === "TEXT" && (
+                    <textarea
+                      placeholder="답변을 입력해주세요."
+                      value={answers[q.id] ?? ""}
+                      onChange={(e) => setAnswer(q.id, e.target.value)}
+                      maxLength={500}
+                      rows={3}
+                      className="w-full resize-none rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                    />
+                  )}
+                  {q.type === "SINGLE_CHOICE" && (
+                    <div className="flex flex-wrap gap-2">
+                      {(q.options ?? []).map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setAnswer(q.id, opt)}
+                      className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                        answers[q.id] === opt
+                          ? "border-grey9 bg-grey9 text-white"
+                          : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {q.type === "MULTI_CHOICE" && (
+                <div className="flex flex-wrap gap-2">
+                  {(q.options ?? []).map((opt) => {
+                    const selected = (answers[q.id] ?? "").split(",").filter(Boolean).includes(opt);
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => toggleMultiAnswer(q.id, opt)}
+                        className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                          selected
+                            ? "border-grey9 bg-grey9 text-white"
+                            : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+
+              <p className="font-regular text-[12px] text-grey5">
+                <span className="text-red-500">*</span> 표시는 필수 입력 항목입니다.
+              </p>
 
               {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 

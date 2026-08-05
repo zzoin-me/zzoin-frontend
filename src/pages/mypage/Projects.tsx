@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { CountTabs, type CountTab } from "@/components/common/CountTabs";
 import { FilterDropdown, type FilterOption } from "@/components/common/FilterDropdown";
 import { Pagination } from "@/components/common/Pagination";
@@ -7,7 +8,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { ApplicantDetailModal } from "@/components/project/ApplicantDetailModal";
 import { getMyProjects } from "@/api/user";
 import { getApplicants, updateApplicantStatus } from "@/api/application";
-import type { MyProjectPreview, ProjectApplicant, ProjectStatus } from "@/types";
+import type { ProjectApplicant, ProjectStatus } from "@/types";
 
 type StatusFilter = "ALL" | "RECRUITING" | "CLOSED";
 
@@ -44,11 +45,10 @@ function withinPeriod(iso: string, period: string | null): boolean {
 }
 
 export default function MyPageProjectsPage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<StatusFilter>("ALL");
   const [period, setPeriod] = useState<string | null>(null);
-  const [allProjects, setAllProjects] = useState<MyProjectPreview[]>([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [applicantsByProject, setApplicantsByProject] = useState<
@@ -58,13 +58,30 @@ export default function MyPageProjectsPage() {
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [selectedApplicant, setSelectedApplicant] = useState<ProjectApplicant | null>(null);
 
-  useEffect(() => {
-    setLoading(true);
-    getMyProjects({ size: 100 })
-      .then((data) => setAllProjects(data.content))
-      .catch(() => setAllProjects([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const statusParam = activeTab === "ALL" ? undefined : activeTab;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["my-projects", { status: statusParam, page }],
+    queryFn: () => getMyProjects({ status: statusParam, page: page - 1, size: PAGE_SIZE }),
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  });
+
+  const { data: statsData } = useQuery({
+    queryKey: ["my-projects", "stats"],
+    queryFn: async () => {
+      const all = await getMyProjects({ size: 1 });
+      const recruiting = await getMyProjects({ status: "RECRUITING", size: 1 });
+      const closed = await getMyProjects({ status: "CLOSED", size: 1 });
+      return {
+        ALL: all.totalElements,
+        RECRUITING: recruiting.totalElements,
+        CLOSED: closed.totalElements,
+        totalApplicants: (all.content ?? []).reduce((s, p) => s + p.applicantCount, 0),
+      };
+    },
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     setPage(1);
@@ -101,6 +118,7 @@ export default function MyPageProjectsPage() {
     try {
       await updateApplicantStatus(applicationId, { status: newStatus });
       loadApplicants(projectId);
+      queryClient.invalidateQueries({ queryKey: ["my-projects", "stats"] });
     } catch {
       // 에러 무시 (사용자가 다시 시도 가능)
     } finally {
@@ -108,32 +126,18 @@ export default function MyPageProjectsPage() {
     }
   };
 
-  const counts = useMemo(() => {
-    const c = { ALL: allProjects.length, RECRUITING: 0, CLOSED: 0 };
-    allProjects.forEach((p) => {
-      if (isRecruiting(p.status)) c.RECRUITING++;
-      else c.CLOSED++;
-    });
-    return c;
-  }, [allProjects]);
+  const allProjects = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
+  const counts = {
+    ALL: statsData?.ALL ?? 0,
+    RECRUITING: statsData?.RECRUITING ?? 0,
+    CLOSED: statsData?.CLOSED ?? 0,
+  };
+  const totalApplicants = statsData?.totalApplicants ?? 0;
 
-  const totalApplicants = useMemo(
-    () => allProjects.reduce((sum, p) => sum + p.applicantCount, 0),
-    [allProjects],
-  );
-
-  const filtered = useMemo(() => {
-    return allProjects.filter((p) => {
-      if (activeTab === "RECRUITING" && !isRecruiting(p.status)) return false;
-      if (activeTab === "CLOSED" && isRecruiting(p.status)) return false;
-      if (!withinPeriod(p.createdAt, period)) return false;
-      return true;
-    });
-  }, [allProjects, activeTab, period]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pagedProjects = allProjects.filter((p) => withinPeriod(p.createdAt, period));
+  const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const pagedProjects = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const tabs: CountTab[] = [
     { label: "전체", value: "ALL", count: counts.ALL },
@@ -181,7 +185,7 @@ export default function MyPageProjectsPage() {
       </div>
 
       <div className="flex flex-col gap-4 md:gap-5">
-        {loading ? (
+        {isLoading ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">불러오는 중...</p>
         ) : pagedProjects.length === 0 ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">
@@ -314,11 +318,7 @@ export default function MyPageProjectsPage() {
         )}
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setPage}
-      />
+      <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
 
       <ApplicantDetailModal
         applicant={selectedApplicant}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
+import { socialLoginUrl } from "@/config";
 import { useAuthStore } from "@/stores/authStore";
 import { ApiError } from "@/api/client";
 
@@ -14,7 +15,19 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() => {
+    const socialError = searchParams.get("error");
+    if (socialError === "social_conflict") {
+      const existing = searchParams.get("existingProvider");
+      const label =
+        existing === "google" ? "구글" : existing === "kakao" ? "카카오" : existing ?? "다른";
+      return `이미 ${label} 계정으로 가입된 이메일입니다. ${label} 로그인을 이용해주세요.`;
+    }
+    if (socialError === "social_failed") {
+      return "소셜 로그인에 실패했습니다. 다시 시도해주세요.";
+    }
+    return "";
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +107,7 @@ export default function LoginPage() {
       <div className="flex flex-col gap-2">
         <button
           type="button"
+          onClick={() => (window.location.href = socialLoginUrl("google"))}
           className="flex w-full items-center justify-center gap-2 rounded-tag border border-grey3 bg-white px-5 py-2.5 font-medium text-[14px] text-grey9 transition-colors hover:bg-grey1"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
@@ -118,6 +132,7 @@ export default function LoginPage() {
         </button>
         <button
           type="button"
+          onClick={() => (window.location.href = socialLoginUrl("kakao"))}
           className="flex w-full items-center justify-center gap-2 rounded-tag bg-[#FEE500] px-5 py-2.5 font-medium text-[14px] text-black transition-filter hover:brightness-95"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>

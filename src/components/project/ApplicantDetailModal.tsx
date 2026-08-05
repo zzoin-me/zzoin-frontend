@@ -90,6 +90,22 @@ export function ApplicantDetailModal({ applicant, onClose }: ApplicantDetailModa
             </p>
           </div>
 
+          {applicant.answers && applicant.answers.length > 0 && (
+            <div>
+              <span className="mb-3 block font-medium text-[14px] text-grey8">추가 질문 답변</span>
+              <div className="flex flex-col gap-3">
+                {applicant.answers.map((a, i) => (
+                  <div key={i} className="rounded-tag border border-grey3 bg-grey1 px-4 py-4">
+                    <span className="mb-1 block font-medium text-[13px] text-grey7">{a.questionLabel}</span>
+                    <p className="font-regular text-[14px] leading-relaxed text-grey9 md:text-[16px]">
+                      {a.answerText}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {applicant.histories.length > 0 && (
             <div>
               <span className="mb-3 block font-medium text-[14px] text-grey8">참여 이력</span>

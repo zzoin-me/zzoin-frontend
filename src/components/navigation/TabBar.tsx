@@ -9,7 +9,7 @@ const tabs = [
 
 export function TabBar() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-grey3 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-grey3 bg-white pb-[max(env(safe-area-inset-bottom),16px)] lg:hidden">
       <ul className="mx-auto flex max-w-[768px] items-stretch justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;

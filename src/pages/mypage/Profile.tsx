@@ -1,37 +1,40 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, CheckCircle2, Pencil } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { getMyProfile, getMySchoolProfile } from "@/api/user";
 import { EditProfileModal } from "@/components/mypage/EditProfileModal";
-import type { MyProfile, SchoolProfile } from "@/types";
 
 export default function MyPageProfilePage() {
   const user = useAuthStore((s) => s.user);
   const restoreSession = useAuthStore((s) => s.restoreSession);
-  const [profile, setProfile] = useState<MyProfile | null>(null);
-  const [schoolProfile, setSchoolProfile] = useState<SchoolProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
 
-  const loadProfile = () => {
-    setLoading(true);
-    Promise.all([getMyProfile(), getMySchoolProfile().catch(() => null)])
-      .then(([p, s]) => {
-        setProfile(p);
-        setSchoolProfile(s);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  };
+  const profileQuery = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: () => getMyProfile(),
+    staleTime: 60_000,
+  });
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  const schoolProfileQuery = useQuery({
+    queryKey: ["my-school-profile"],
+    queryFn: () => getMySchoolProfile(),
+    staleTime: 60_000,
+  });
+
+  const profile = profileQuery.data ?? null;
+  const schoolProfile = schoolProfileQuery.data ?? null;
+  const loading = profileQuery.isLoading;
+  const reloadProfile = () => {
+    queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+    queryClient.invalidateQueries({ queryKey: ["my-school-profile"] });
+  };
 
   const displayName = profile?.name ?? user?.nickname ?? "닉네임";
   const displayEmail = profile?.email ?? user?.email ?? "";
-  const displayField = profile?.field;
+  const displayFields = profile?.fields;
   const displayBio = profile?.bio;
   const stackNames = profile?.stackInfoList?.map((s) => s.name).join(", ");
   const isVerified = profile?.verified ?? user?.verified ?? false;
@@ -72,14 +75,14 @@ export default function MyPageProfilePage() {
           <p className="mt-6 font-regular text-[14px] text-grey6">불러오는 중...</p>
         ) : (
           <div className="mt-5 flex flex-col gap-4 md:mt-6 md:flex-row md:gap-8 lg:gap-10">
-            <div className="flex flex-row gap-4 md:flex-col md:gap-3">
+            <div className="flex flex-col gap-4 md:flex-col md:gap-3">
               <span className="font-medium text-[14px] text-grey6 md:text-[16px]">직군</span>
               <span className="font-medium text-[14px] text-grey6 md:text-[16px]">기술 스택</span>
               <span className="font-medium text-[14px] text-grey6 md:text-[16px]">한줄 소개</span>
             </div>
-            <div className="flex flex-row gap-4 md:flex-col md:gap-3">
+            <div className="flex flex-col gap-4 md:flex-col md:gap-3">
               <span className="font-medium text-[14px] text-grey9 md:text-[16px]">
-                {displayField || "미입력"}
+                {displayFields?.join(", ") || "미입력"}
               </span>
               <span className="font-medium text-[14px] text-grey9 md:text-[16px]">
                 {stackNames || "미입력"}
@@ -139,7 +142,7 @@ export default function MyPageProfilePage() {
         profile={profile}
         schoolProfile={schoolProfile}
         onSaved={() => {
-          loadProfile();
+          reloadProfile();
           restoreSession();
         }}
       />

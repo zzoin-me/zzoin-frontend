@@ -15,7 +15,6 @@ export const RECRUITMENT_CATEGORIES: CategoryOption[] = [
   { value: "DESIGN", label: "디자인" },
   { value: "DEVELOPMENT", label: "개발" },
   { value: "MARKETING", label: "마케팅" },
-  { value: "ETC", label: "기타" },
 ];
 
 export const SUB_ROLES: SubRoleOption[] = [
@@ -23,6 +22,7 @@ export const SUB_ROLES: SubRoleOption[] = [
   { value: "PM", category: "PLANNING" },
   { value: "프로젝트 매니저", category: "PLANNING" },
   { value: "사업 기획", category: "PLANNING" },
+  { value: "기획 기타", category: "PLANNING" },
 
   { value: "UX", category: "DESIGN" },
   { value: "UI", category: "DESIGN" },
@@ -30,6 +30,7 @@ export const SUB_ROLES: SubRoleOption[] = [
   { value: "그래픽", category: "DESIGN" },
   { value: "브랜드", category: "DESIGN" },
   { value: "일러스트", category: "DESIGN" },
+  { value: "디자인 기타", category: "DESIGN" },
 
   { value: "프론트엔드", category: "DEVELOPMENT" },
   { value: "백엔드", category: "DEVELOPMENT" },
@@ -42,6 +43,7 @@ export const SUB_ROLES: SubRoleOption[] = [
   { value: "DevOps", category: "DEVELOPMENT" },
   { value: "데이터 엔지니어링", category: "DEVELOPMENT" },
   { value: "보안", category: "DEVELOPMENT" },
+  { value: "개발 기타", category: "DEVELOPMENT" },
 
   { value: "콘텐츠", category: "MARKETING" },
   { value: "성장", category: "MARKETING" },
@@ -49,6 +51,7 @@ export const SUB_ROLES: SubRoleOption[] = [
   { value: "브랜드", category: "MARKETING" },
   { value: "광고", category: "MARKETING" },
   { value: "PR", category: "MARKETING" },
+  { value: "마케팅 기타", category: "MARKETING" },
 ];
 
 export function getCategoryLabel(c: RecruitmentCategory): string {

@@ -30,24 +30,49 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
     };
   }, []);
 
+  const domainMatches = (query: string, dbDomain: string): boolean => {
+    const q = query.toLowerCase().trim();
+    const db = dbDomain.toLowerCase();
+    if (!q) return true;
+
+    if (db === q || db.startsWith(q + ".") || q.startsWith(db + ".") || db.endsWith("." + q) || q.endsWith("." + db)) {
+      return true;
+    }
+
+    const qParts = q.split(".").filter(Boolean);
+    const dbParts = db.split(".").filter(Boolean);
+    if (qParts.length === 0 || dbParts.length === 0) return false;
+
+    if (qParts.length === 1) {
+      const last = qParts[0];
+      return dbParts.some((p) => p === last || p.startsWith(last));
+    }
+
+    const lastQ = qParts[qParts.length - 1];
+    const prefixQ = qParts.slice(0, -1);
+    const startIdx = dbParts.length - prefixQ.length;
+    if (startIdx < 0) return false;
+    const prefixMatch = prefixQ.every((qp, i) => dbParts[startIdx + i] === qp);
+    if (!prefixMatch) return false;
+
+    const dbNextIdx = startIdx + prefixQ.length;
+    if (dbNextIdx < dbParts.length) {
+      return dbParts[dbNextIdx].startsWith(lastQ);
+    }
+    return true;
+  };
+
   const filtered = useMemo(() => {
     if (!value.trim()) return univs;
     const q = value.toLowerCase();
     return univs.filter((u) => {
       const name = u.name.toLowerCase();
-      const domain = u.domain.toLowerCase();
-      return (
-        name.includes(q) ||
-        domain.includes(q) ||
-        q.includes(domain) ||
-        q.endsWith("." + domain) ||
-        domain.endsWith("." + q)
-      );
+      return name.includes(q) || domainMatches(q, u.domain);
     });
   }, [univs, value]);
 
   const handleSelect = (univ: UnivInfo) => {
-    onChange(univ.domain, univ.id);
+    onChange(value, univ.id);
     setOpen(false);
   };
 
@@ -57,8 +82,7 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
     return (
       univs.find((u) => u.domain === d) ??
       univs.find((u) => d.endsWith("." + u.domain)) ??
-      univs.find((u) => u.domain.endsWith("." + d)) ??
-      univs.find((u) => d.includes(u.domain))
+      univs.find((u) => domainMatches(d, u.domain))
     );
   };
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
+import { FieldSelect } from "@/components/common/FieldSelect";
+import { StackSelector } from "@/components/common/StackSelector";
 import { ApiError } from "@/api/client";
 import { updateProfile, updateSchoolProfile, getStacks } from "@/api/user";
 import type { MyProfile, SchoolProfile, StackInfo } from "@/types";
@@ -22,7 +24,7 @@ export function EditProfileModal({
   onSaved,
 }: EditProfileModalProps) {
   const [nickName, setNickName] = useState("");
-  const [field, setField] = useState("");
+  const [fields, setFields] = useState<string[]>([]);
   const [bio, setBio] = useState("");
   const [selectedStackIds, setSelectedStackIds] = useState<number[]>([]);
   const [major, setMajor] = useState("");
@@ -34,24 +36,18 @@ export function EditProfileModal({
   useEffect(() => {
     if (!isOpen) return;
     setNickName(profile?.name ?? "");
-    setField(profile?.field ?? "");
+    setFields(profile?.fields ?? []);
     setBio(profile?.bio ?? "");
     setSelectedStackIds(profile?.stackInfoList?.map((s) => s.id) ?? []);
     setMajor(schoolProfile?.major ?? "");
     setGrade(schoolProfile?.grade?.toString() ?? "");
     setError("");
     getStacks()
-      .then(setStacks)
-      .catch(() => {});
+      .then((data) => setStacks(data))
+      .catch((err) => console.error("[EditProfileModal] stacks load failed:", err));
   }, [isOpen, profile, schoolProfile]);
 
   if (!isOpen) return null;
-
-  const toggleStack = (id: number) => {
-    setSelectedStackIds((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +62,7 @@ export function EditProfileModal({
     try {
       await updateProfile({
         nickName: nickName.trim(),
-        field: field.trim() || undefined,
+        fields: fields.length > 0 ? fields : undefined,
         bio: bio.trim() || undefined,
         stackIds: selectedStackIds,
       });
@@ -112,37 +108,13 @@ export function EditProfileModal({
             maxLength={20}
           />
 
-          <Input
-            id="edit-field"
-            label="직군"
-            placeholder="예: 프론트엔드"
-            value={field}
-            onChange={(e) => setField(e.target.value)}
-            maxLength={50}
-          />
+          <FieldSelect value={fields} onChange={setFields} />
 
-          <div className="flex flex-col gap-2">
-            <label className="font-medium text-[14px] text-grey8">기술 스택</label>
-            <div className="flex flex-wrap gap-2">
-              {stacks.map((stack) => {
-                const selected = selectedStackIds.includes(stack.id);
-                return (
-                  <button
-                    key={stack.id}
-                    type="button"
-                    onClick={() => toggleStack(stack.id)}
-                    className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                      selected
-                        ? "border-grey9 bg-grey9 text-white"
-                        : "border-grey3 bg-white text-grey7 hover:border-grey5"
-                    }`}
-                  >
-                    {stack.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <StackSelector
+            selectedIds={selectedStackIds}
+            onChange={setSelectedStackIds}
+            stacks={stacks}
+          />
 
           <div className="flex flex-col gap-2">
             <label htmlFor="edit-bio" className="font-medium text-[14px] text-grey8">

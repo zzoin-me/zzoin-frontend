@@ -55,9 +55,10 @@ export async function getMyApplications(
 }
 
 export async function getMyProjects(
-  params: { page?: number; size?: number } = {},
+  params: { status?: string; page?: number; size?: number } = {},
 ): Promise<PageResponse<MyProjectPreview>> {
   const q = new URLSearchParams();
+  if (params.status) q.set("status", params.status);
   if (params.page !== undefined) q.set("page", String(params.page));
   if (params.size !== undefined) q.set("size", String(params.size));
   const query = q.toString();
@@ -68,5 +69,8 @@ export async function getMyProjects(
 
 export async function getStacks(): Promise<StackInfo[]> {
   const data = await apiFetch<{ stackInfoList: StackInfo[] } | StackInfo[]>("/api/stacks");
-  return Array.isArray(data) ? data : data.stackInfoList;
+  if (Array.isArray(data)) return data;
+  if (data?.stackInfoList) return data.stackInfoList;
+  console.error("[getStacks] unexpected response shape:", data);
+  return [];
 }

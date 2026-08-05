@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { CountTabs, type CountTab } from "@/components/common/CountTabs";
 import { FilterDropdown, type FilterOption } from "@/components/common/FilterDropdown";
 import { Pagination } from "@/components/common/Pagination";
@@ -7,7 +8,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { getMyApplications } from "@/api/user";
 import { cancelApplication } from "@/api/application";
 import { RECRUITMENT_CATEGORIES } from "@/constants/recruitment";
-import type { ApplicationStatus, MyApplicationPreview, RecruitmentCategory } from "@/types";
+import type { ApplicationStatus, RecruitmentCategory } from "@/types";
 
 type StatusFilter = "ALL" | ApplicationStatus;
 
@@ -45,56 +46,46 @@ function withinPeriod(iso: string, period: string | null): boolean {
 }
 
 export default function MyPageApplicationsPage() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<StatusFilter>("ALL");
   const [period, setPeriod] = useState<string | null>(null);
   const [category, setCategory] = useState<RecruitmentCategory | null>(null);
-  const [applications, setApplications] = useState<MyApplicationPreview[]>([]);
-  const [totalElements, setTotalElements] = useState(0);
   const [page, setPage] = useState(1);
-  const [counts, setCounts] = useState<Record<StatusFilter, number>>({
-    ALL: 0,
-    PENDING: 0,
-    APPROVED: 0,
-    REJECTED: 0,
-  });
-  const [loading, setLoading] = useState(true);
   const [cancelingId, setCancelingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    setLoading(true);
-    const status = activeTab === "ALL" ? undefined : (activeTab as ApplicationStatus);
-    getMyApplications({ status, page: page - 1, size: PAGE_SIZE })
-      .then((data) => {
-        setApplications(data.content);
-        setTotalElements(data.totalElements);
-        if (status) {
-          setCounts((prev) => ({ ...prev, [activeTab]: data.totalElements }));
-        } else {
-          setCounts((prev) => ({ ...prev, ALL: data.totalElements }));
-        }
-      })
-      .catch(() => setApplications([]))
-      .finally(() => setLoading(false));
-  }, [activeTab, page]);
+  const status = activeTab === "ALL" ? undefined : (activeTab as ApplicationStatus);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["my-applications", { status, page }],
+    queryFn: () => getMyApplications({ status, page: page - 1, size: PAGE_SIZE }),
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  });
+
+  const { data: countsData } = useQuery({
+    queryKey: ["my-applications", "counts"],
+    queryFn: async () => {
+      const all = await getMyApplications({ size: 1 });
+      const pending = await getMyApplications({ status: "PENDING", size: 1 });
+      const approved = await getMyApplications({ status: "APPROVED", size: 1 });
+      const rejected = await getMyApplications({ status: "REJECTED", size: 1 });
+      return {
+        ALL: all.totalElements,
+        PENDING: pending.totalElements,
+        APPROVED: approved.totalElements,
+        REJECTED: rejected.totalElements,
+      } as Record<StatusFilter, number>;
+    },
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     setPage(1);
   }, [activeTab, period, category]);
 
-  useEffect(() => {
-    getMyApplications({ size: 1 })
-      .then((data) => {
-        setCounts((prev) => ({ ...prev, ALL: data.totalElements }));
-      })
-      .catch(() => {});
-    (["PENDING", "APPROVED", "REJECTED"] as ApplicationStatus[]).forEach((s) => {
-      getMyApplications({ status: s, size: 1 })
-        .then((data) => {
-          setCounts((prev) => ({ ...prev, [s]: data.totalElements }));
-        })
-        .catch(() => {});
-    });
-  }, []);
+  const applications = data?.content ?? [];
+  const totalElements = data?.totalElements ?? 0;
+  const counts = countsData ?? { ALL: 0, PENDING: 0, APPROVED: 0, REJECTED: 0 };
 
   const filtered = applications.filter(
     (a) =>
@@ -114,17 +105,7 @@ export default function MyPageApplicationsPage() {
     setCancelingId(applicationId);
     try {
       await cancelApplication({ applicationId });
-      setApplications((prev) => prev.filter((a) => a.applicationId !== applicationId));
-      setCounts((prev) => {
-        const cancelled = applications.find((a) => a.applicationId === applicationId);
-        return {
-          ...prev,
-          ALL: Math.max(0, prev.ALL - 1),
-          ...(cancelled
-            ? { [cancelled.status]: Math.max(0, prev[cancelled.status] - 1) }
-            : {}),
-        };
-      });
+      queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     } catch {
       // 에러 무시 (사용자가 다시 시도 가능)
     } finally {
@@ -156,7 +137,7 @@ export default function MyPageApplicationsPage() {
       </div>
 
       <div className="flex flex-col gap-4 md:gap-5">
-        {loading ? (
+        {isLoading ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">불러오는 중...</p>
         ) : filtered.length === 0 ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">

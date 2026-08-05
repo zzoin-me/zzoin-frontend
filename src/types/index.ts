@@ -2,7 +2,7 @@ export type ProjectStatus = "RECRUITING" | "RECRUITMENT_CLOSED" | "IN_PROGRESS" 
 export type CollaborationType = "ONLINE" | "OFFLINE" | "BOTH";
 export type GoalType = "PORTFOLIO" | "PRODUCTION" | "COMPETITION";
 export type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type RecruitmentCategory = "PLANNING" | "DESIGN" | "DEVELOPMENT" | "MARKETING" | "ETC";
+export type RecruitmentCategory = "PLANNING" | "DESIGN" | "DEVELOPMENT" | "MARKETING";
 
 export interface User {
   email: string;
@@ -77,6 +77,7 @@ export interface ProjectDetail {
   imageUrl: string;
   projectStatus: ProjectStatus;
   recruitments: Recruitment[];
+  questions?: CustomQuestion[];
   authorNickname?: string;
 }
 
@@ -91,6 +92,7 @@ export interface CreateProjectRequest {
   goalType: GoalType;
   imageUrl: string;
   recruitments: CreateRecruitment[];
+  questions?: CreateQuestion[];
 }
 
 export interface UpdateProjectRequest {
@@ -109,7 +111,7 @@ export interface UpdateProjectRequest {
 export interface MyProfile {
   name: string;
   email: string;
-  field?: string;
+  fields?: string[];
   bio?: string;
   profileUrl?: string;
   verified: boolean;
@@ -119,7 +121,7 @@ export interface MyProfile {
 
 export interface UserProfile {
   name: string;
-  field?: string;
+  fields?: string[];
   bio?: string;
   profileUrl?: string;
   verified: boolean;
@@ -135,7 +137,7 @@ export interface SchoolProfile {
 export interface UpdateProfileRequest {
   nickName?: string;
   bio?: string;
-  field?: string;
+  fields?: string[];
   profileUrl?: string;
   stackIds?: number[];
 }
@@ -161,6 +163,7 @@ export interface ProjectApplicant {
   ratingAvg: number;
   status: ApplicationStatus;
   histories: ProjectMember[];
+  answers?: AnswerResponse[];
 }
 
 export interface ProjectMember {
@@ -177,6 +180,7 @@ export interface ProjectApplicants {
 export interface ApplyProjectRequest {
   recruitmentId: number;
   letter: string;
+  answers?: QuestionAnswer[];
 }
 
 export interface DeleteApplicationRequest {
@@ -187,24 +191,116 @@ export interface UpdateApplicantStatusRequest {
   status: ApplicationStatus;
 }
 
-export interface Post {
-  id: string;
+export interface AuthorDTO {
+  userId: number;
+  nickname: string;
+  profileUrl?: string;
+}
+
+export interface PostPreview {
+  id: number;
+  title: string;
+  contentPreview: string;
+  author: AuthorDTO;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
+  likedByMe: boolean;
+  savedByMe: boolean;
+}
+
+export interface PostDetail {
+  id: number;
   title: string;
   content: string;
-  author: string;
+  author: AuthorDTO;
   createdAt: string;
-  tags: string[];
-  likes: number;
-  comments: number;
-  views: number;
+  updatedAt: string;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
+  likedByMe: boolean;
+  savedByMe: boolean;
+  isMine: boolean;
+}
+
+export interface Post {
+  id: number;
+  title: string;
+  content: string;
+  author: AuthorDTO;
+  createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  viewCount: number;
+  likedByMe: boolean;
+  savedByMe: boolean;
 }
 
 export interface Comment {
-  id: string;
-  postId: string;
-  author: string;
+  id: number;
   content: string;
+  author: AuthorDTO;
+  parentId: number | null;
+  depth: number;
   createdAt: string;
+  isMine: boolean;
+  isDeleted: boolean;
+  children?: Comment[];
+}
+
+export type CommunityBoardType = "all" | "popular" | "mine" | "comments" | "likes" | "saved";
+
+export type QuestionType = "TEXT" | "SINGLE_CHOICE" | "MULTI_CHOICE";
+
+export interface CreateQuestion {
+  type: QuestionType;
+  label: string;
+  options?: string[];
+  required: boolean;
+}
+
+export interface CustomQuestion {
+  id: number;
+  type: QuestionType;
+  label: string;
+  options?: string[];
+  required: boolean;
+}
+
+export interface QuestionAnswer {
+  questionId: number;
+  answerText: string;
+}
+
+export interface AnswerResponse {
+  questionLabel: string;
+  questionType: QuestionType;
+  answerText: string;
+}
+
+export interface PostListParams {
+  board?: CommunityBoardType;
+  sort?: "LATEST" | "POPULAR";
+  keyword?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+}
+
+export interface UpdatePostRequest {
+  title?: string;
+  content?: string;
+}
+
+export interface CreateCommentRequest {
+  content: string;
+  parentId?: number | null;
 }
 
 export interface PageResponse<T> {

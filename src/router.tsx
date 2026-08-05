@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { AppLayout } from "@/layouts/AppLayout";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { MyPageLayout } from "@/layouts/MyPageLayout";
@@ -14,6 +14,9 @@ import CommunityNewPage from "@/pages/community/CommunityNewPage";
 import CommunityBoardPage from "@/pages/community/CommunityBoardPage";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
+import OnboardingPage from "@/pages/OnboardingPage";
+import AuthCallbackPage from "@/pages/AuthCallbackPage";
+import LinkAccountPage from "@/pages/LinkAccountPage";
 import MyPageIndexPage from "@/pages/mypage/Index";
 import MyPageProfilePage from "@/pages/mypage/Profile";
 import MyPageApplicationsPage from "@/pages/mypage/Applications";
@@ -46,6 +49,7 @@ export const router = createBrowserRouter([
           { path: "/community/likes", element: <CommunityBoardPage board="likes" /> },
           { path: "/community/saved", element: <CommunityBoardPage board="saved" /> },
           { path: "/community/new", element: <CommunityNewPage /> },
+          { path: "/community/:id/edit", element: <CommunityNewPage /> },
           { path: "/community/:id", element: <CommunityDetailPage /> },
         ],
       },
@@ -73,6 +77,19 @@ export const router = createBrowserRouter([
     children: [
       { path: "/login", element: <LoginPage /> },
       { path: "/signup", element: <SignupPage /> },
+      { path: "/link-account", element: <LinkAccountPage /> },
+      {
+        element: <ProtectedRoute />,
+        children: [{ path: "/onboarding", element: <OnboardingPage /> }],
+      },
     ],
+  },
+  {
+    path: "/auth/callback",
+    element: <AuthCallbackPage />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]);

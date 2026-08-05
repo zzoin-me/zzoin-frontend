@@ -13,12 +13,12 @@ import type {
 export interface ProjectListParams {
   keyword?: string;
   sort?: string;
-  category?: RecruitmentCategory;
-  name?: string;
+  categories?: RecruitmentCategory[];
+  names?: string[];
   maxDays?: number;
   minCount?: number;
   maxCount?: number;
-  goal?: GoalType;
+  goals?: GoalType[];
   recruitingOnly?: boolean;
   page?: number;
   size?: number;
@@ -28,12 +28,12 @@ function buildQuery(params: ProjectListParams): string {
   const q = new URLSearchParams();
   if (params.keyword) q.set("keyword", params.keyword);
   q.set("sort", params.sort ?? "LATEST");
-  if (params.category) q.set("category", params.category);
-  if (params.name) q.set("name", params.name);
+  if (params.categories) params.categories.forEach((c) => q.append("categories", c));
+  if (params.names) params.names.forEach((n) => q.append("names", n));
   if (params.maxDays) q.set("maxDays", String(params.maxDays));
   if (params.minCount != null) q.set("minCount", String(params.minCount));
   if (params.maxCount != null) q.set("maxCount", String(params.maxCount));
-  if (params.goal) q.set("goal", params.goal);
+  if (params.goals) params.goals.forEach((g) => q.append("goals", g));
   if (params.recruitingOnly) q.set("recruitingOnly", "true");
   if (params.page != null) q.set("page", String(params.page));
   q.set("size", String(params.size ?? 9));
@@ -60,10 +60,6 @@ export async function createProject(data: CreateProjectRequest): Promise<void> {
     method: "POST",
     body: JSON.stringify(data),
   });
-}
-
-export async function getRecommendProjects(count = 10): Promise<ProjectPreview[]> {
-  return apiFetch<ProjectPreview[]>(`/api/projects/recommend?count=${count}`);
 }
 
 export async function updateProject(id: number, data: UpdateProjectRequest): Promise<void> {

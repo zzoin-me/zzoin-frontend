@@ -26,9 +26,6 @@ export function RecruitmentSelect({ category, name, onChange }: RecruitmentSelec
 
   const handleCategoryClick = (c: RecruitmentCategory) => {
     onChange(c, "");
-    if (c === "ETC") {
-      setDropdownOpen(false);
-    }
   };
 
   const handleSubRoleClick = (subName: string) => {
@@ -38,7 +35,7 @@ export function RecruitmentSelect({ category, name, onChange }: RecruitmentSelec
     setDropdownOpen(false);
   };
 
-  const subRoles = category && category !== "ETC" ? getSubRolesByCategory(category) : [];
+  const subRoles = category ? getSubRolesByCategory(category) : [];
 
   return (
     <div className="flex flex-col gap-3">
@@ -62,7 +59,7 @@ export function RecruitmentSelect({ category, name, onChange }: RecruitmentSelec
         </div>
       </div>
 
-      {category && category !== "ETC" && (
+      {category && (
         <div ref={dropdownRef} className="relative">
           <label className="mb-2 block font-medium text-[14px] text-grey8">세부 직군</label>
           <button
@@ -91,18 +88,6 @@ export function RecruitmentSelect({ category, name, onChange }: RecruitmentSelec
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {category === "ETC" && (
-        <div>
-          <label className="mb-2 block font-medium text-[14px] text-grey8">직군명</label>
-          <input
-            placeholder="직군명을 입력하세요 (예: 데이터 분석)"
-            value={name}
-            onChange={(e) => onChange("ETC", e.target.value)}
-            className="w-full rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
-          />
         </div>
       )}
     </div>

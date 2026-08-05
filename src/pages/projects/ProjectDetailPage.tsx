@@ -279,6 +279,7 @@ export default function ProjectDetailPage() {
           isOpen={showApplyModal}
           onClose={() => setShowApplyModal(false)}
           recruitments={project.recruitments}
+          questions={project.questions ?? []}
         />
       )}
     </div>

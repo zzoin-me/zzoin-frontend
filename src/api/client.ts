@@ -68,18 +68,31 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     ...(options.headers as Record<string, string>),
   };
 
-  const res = await fetch(`${apiBaseUrl}${path}`, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
+  let res: Response;
+  try {
+    res = await fetch(`${apiBaseUrl}${path}`, {
+      ...options,
+      headers,
+      signal: options.signal ?? controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const data: ApiResponse<T> = await res.json();
 
   if (!data.success) {
-    if (res.status === 401) {
+    const isRetry = (options.headers as Record<string, string> | undefined)?.[RETRY_HEADER];
+    if (res.status === 401 && !isRetry) {
       const refreshed = await refreshTokens();
       if (refreshed) {
-        return apiFetch<T>(path, options);
+        return apiFetch<T>(path, {
+          ...options,
+          headers: { ...(options.headers as Record<string, string>), [RETRY_HEADER]: "1" },
+        });
       }
     }
     throw new ApiError(data.code, data.message);
@@ -87,3 +100,5 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 
   return data.result;
 }
+
+const RETRY_HEADER = "x-retry";
