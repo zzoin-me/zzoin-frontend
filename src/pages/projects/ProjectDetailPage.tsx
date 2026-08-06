@@ -1,35 +1,33 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Users, Calendar, MessageCircle, Target } from "lucide-react";
 import { Button } from "@/components/common/Button";
+import { Avatar } from "@/components/common/Avatar";
 import { ApplyModal } from "@/components/project/ApplyModal";
 import { getProjectById } from "@/api/projects";
 import { useAuthStore } from "@/stores/authStore";
 import { calculateDday } from "@/utils/dday";
 import { formatKoreanDatetime } from "@/utils/datetime";
 import { getCategoryLabel } from "@/constants/recruitment";
-import type { ProjectDetail } from "@/types";
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const [project, setProject] = useState<ProjectDetail | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showApplyModal, setShowApplyModal] = useState(false);
+
+  const projectId = id ? Number(id) : NaN;
+
+  const { data: project, isLoading } = useQuery({
+    queryKey: ["project-detail", projectId],
+    queryFn: () => getProjectById(projectId),
+    enabled: !Number.isNaN(projectId),
+  });
 
   const isAuthor = !!(user && project && project.authorNickname === user.nickname);
 
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    getProjectById(Number(id))
-      .then((data) => setProject(data))
-      .catch(() => setProject(null))
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
         <p className="font-regular text-[16px] text-grey6">불러오는 중...</p>
@@ -112,7 +110,7 @@ export default function ProjectDetailPage() {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-grey4" />
+              <Avatar nickname={project.authorNickname} size="sm" />
               <span className="font-semibold text-[14px] text-grey9 md:text-[16px]">
                 {project.authorNickname ?? "알 수 없음"}
               </span>

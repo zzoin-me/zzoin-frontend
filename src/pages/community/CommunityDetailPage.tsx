@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   CornerDownRight,
 } from "lucide-react";
 import { Button } from "@/components/common/Button";
+import { Avatar } from "@/components/common/Avatar";
 import {
   getPostById,
   getComments,
@@ -193,7 +194,13 @@ export default function CommunityDetailPage() {
     },
   });
 
+  const isVerified = !!user?.verified;
+
   const handleLike = () => {
+    if (!isVerified) {
+      setError("좋아요를 누르려면 대학 인증이 필요합니다.");
+      return;
+    }
     likeMutation.mutate(undefined, {
       onError: (err) =>
         setError(err instanceof ApiError ? err.message : "좋아요 처리에 실패했습니다."),
@@ -201,6 +208,10 @@ export default function CommunityDetailPage() {
   };
 
   const handleSave = () => {
+    if (!isVerified) {
+      setError("저장하려면 대학 인증이 필요합니다.");
+      return;
+    }
     saveMutation.mutate(undefined, {
       onError: (err) =>
         setError(err instanceof ApiError ? err.message : "저장 처리에 실패했습니다."),
@@ -217,6 +228,10 @@ export default function CommunityDetailPage() {
 
   const handleCreateComment = () => {
     if (!newComment.trim()) return;
+    if (!isVerified) {
+      setError("댓글을 작성하려면 대학 인증이 필요합니다.");
+      return;
+    }
     createCommentMutation.mutate(
       { content: newComment.trim() },
       {
@@ -287,15 +302,7 @@ export default function CommunityDetailPage() {
       className={`${isReply ? "ml-6 border-l-2 border-grey3 pl-4 md:ml-10 md:pl-6" : "border-l-2 border-grey3 pl-4 md:pl-6"}`}
     >
       <div className="flex items-center gap-3">
-        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-grey4">
-          {c.author?.profileUrl && (
-            <img
-              src={c.author.profileUrl}
-              alt=""
-              className="h-full w-full object-cover"
-            />
-          )}
-        </div>
+        <Avatar nickname={c.author?.nickname} profileUrl={c.author?.profileUrl} size="sm" />
         <div className="flex items-center gap-2">
           <span className="font-semibold text-[14px] text-grey9">
             {c.author?.nickname ?? "알 수 없음"}
@@ -476,17 +483,9 @@ export default function CommunityDetailPage() {
           )}
         </ul>
 
-        {user && (
+        {user && isVerified && (
           <div className="mt-10 flex items-center gap-4">
-            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-grey4">
-              {user.profileImage && (
-                <img
-                  src={user.profileImage}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              )}
-            </div>
+            <Avatar nickname={user.nickname} profileUrl={user.profileImage} size="lg" />
             <input
               type="text"
               placeholder="댓글을 입력해주세요"
@@ -500,6 +499,17 @@ export default function CommunityDetailPage() {
             <Button onClick={handleCreateComment} disabled={!newComment.trim()}>
               등록
             </Button>
+          </div>
+        )}
+
+        {user && !isVerified && (
+          <div className="mt-10 flex items-center justify-center gap-2 rounded-card border border-grey3 bg-grey1 px-5 py-4">
+            <span className="font-regular text-[14px] text-grey6">
+              댓글을 작성하려면 대학 인증이 필요합니다.
+            </span>
+            <Link to="/mypage/verify-univ" className="font-medium text-[14px] text-primary underline underline-offset-2">
+              인증하기
+            </Link>
           </div>
         )}
       </section>

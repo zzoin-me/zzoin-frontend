@@ -48,9 +48,14 @@ export const router = createBrowserRouter([
           { path: "/community/comments", element: <CommunityBoardPage board="comments" /> },
           { path: "/community/likes", element: <CommunityBoardPage board="likes" /> },
           { path: "/community/saved", element: <CommunityBoardPage board="saved" /> },
+          { path: "/community/:id", element: <CommunityDetailPage /> },
+        ],
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
           { path: "/community/new", element: <CommunityNewPage /> },
           { path: "/community/:id/edit", element: <CommunityNewPage /> },
-          { path: "/community/:id", element: <CommunityDetailPage /> },
         ],
       },
       {

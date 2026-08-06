@@ -57,6 +57,7 @@ export default function MyPageProjectsPage() {
   const [applicantsLoadingId, setApplicantsLoadingId] = useState<number | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [selectedApplicant, setSelectedApplicant] = useState<ProjectApplicant | null>(null);
+  const [error, setError] = useState("");
 
   const statusParam = activeTab === "ALL" ? undefined : activeTab;
 
@@ -120,7 +121,7 @@ export default function MyPageProjectsPage() {
       loadApplicants(projectId);
       queryClient.invalidateQueries({ queryKey: ["my-projects", "stats"] });
     } catch {
-      // 에러 무시 (사용자가 다시 시도 가능)
+      setError("지원자 상태 변경에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setProcessingId(null);
     }
@@ -319,6 +320,8 @@ export default function MyPageProjectsPage() {
       </div>
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
+
+      {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 
       <ApplicantDetailModal
         applicant={selectedApplicant}

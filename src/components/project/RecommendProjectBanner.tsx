@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import type { ProjectPreview } from "@/types";
 
@@ -11,9 +11,10 @@ const CARD_STRIDE = CARD_WIDTH + GAP;
 interface RecommendProjectBannerProps {
   projects: ProjectPreview[];
   nickname?: string;
+  onDismiss?: () => void;
 }
 
-export function RecommendProjectBanner({ projects, nickname }: RecommendProjectBannerProps) {
+export function RecommendProjectBanner({ projects, nickname, onDismiss }: RecommendProjectBannerProps) {
   const display = projects.slice(0, MAX_ITEMS);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -70,7 +71,17 @@ export function RecommendProjectBanner({ projects, nickname }: RecommendProjectB
   if (display.length === 0) return null;
 
   return (
-    <section className="rounded-card bg-[#F6F1EB] p-6 md:p-8">
+    <section className="relative rounded-card bg-[#F6F1EB] p-6 md:p-8">
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="추천 배너 닫기"
+          className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full text-grey5 transition-colors hover:bg-grey3 hover:text-grey9"
+        >
+          <X className="h-5 w-5" aria-hidden />
+        </button>
+      )}
       <h2 className="font-bold text-[20px] text-grey9">
         {nickname ? `${nickname}님을 위한` : "회원님을 위한"} 추천 모집글
       </h2>

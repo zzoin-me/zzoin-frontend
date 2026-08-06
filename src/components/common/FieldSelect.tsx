@@ -95,7 +95,7 @@ export function FieldSelect({ value, onChange, label = "직군" }: FieldSelectPr
       )}
 
       {value.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 rounded-tag border border-grey3 bg-grey1 px-3 py-3">
           {value.map((field) => (
             <span
               key={field}

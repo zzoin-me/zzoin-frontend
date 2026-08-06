@@ -55,7 +55,7 @@ export function StackSelector({
       <label className="font-medium text-[14px] text-grey8">{label}</label>
 
       {selectedIds.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 rounded-tag border border-grey3 bg-grey1 px-3 py-3">
           {selectedIds.map((id) => {
             const stack = stacks.find((s) => s.id === id);
             if (!stack) return null;

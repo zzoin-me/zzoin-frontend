@@ -52,6 +52,32 @@ const DEFAULT_FILTERS: FilterState = {
   recruitingOnly: false,
 };
 
+function parseFiltersFromParams(params: URLSearchParams): FilterState {
+  const category = params.get("cat") as RecruitmentCategory | null;
+  const namesRaw = params.get("roles");
+  const goalsRaw = params.get("goals");
+  return {
+    selectedCategory:
+      category && RECRUITMENT_CATEGORIES.some((c) => c.value === category) ? category : null,
+    names: namesRaw ? namesRaw.split(",").filter(Boolean) : [],
+    minCount: Number(params.get("min")) || 1,
+    maxCount: params.get("max") ? Number(params.get("max")) : null,
+    goals: goalsRaw ? (goalsRaw.split(",").filter(Boolean) as GoalType[]) : [],
+    recruitingOnly: params.get("recruiting") === "1",
+  };
+}
+
+function serializeFilters(f: FilterState): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (f.selectedCategory) out.cat = f.selectedCategory;
+  if (f.names.length > 0) out.roles = f.names.join(",");
+  if (f.minCount > 1) out.min = String(f.minCount);
+  if (f.maxCount !== null) out.max = String(f.maxCount);
+  if (f.goals.length > 0) out.goals = f.goals.join(",");
+  if (f.recruitingOnly) out.recruiting = "1";
+  return out;
+}
+
 export default function ProjectsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -68,9 +94,21 @@ export default function ProjectsPage() {
   const [isSearching, setIsSearching] = useState(!!searchParams.get("q"));
 
   const [showFilters, setShowFilters] = useState(false);
-  const [draftFilters, setDraftFilters] = useState<FilterState>({ ...DEFAULT_FILTERS });
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>({ ...DEFAULT_FILTERS });
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(() =>
+    parseFiltersFromParams(searchParams),
+  );
+  const [draftFilters, setDraftFilters] = useState<FilterState>(() =>
+    parseFiltersFromParams(searchParams),
+  );
   const [toast, setToast] = useState(false);
+  const [bannerHidden, setBannerHidden] = useState(() =>
+    sessionStorage.getItem("recommend-banner-hidden") === "1",
+  );
+
+  const dismissBanner = () => {
+    sessionStorage.setItem("recommend-banner-hidden", "1");
+    setBannerHidden(true);
+  };
 
   const tabs: FilterTab[] = isLoggedIn
     ? ["전체", "추천", "인기", "신규", "마감임박"]
@@ -103,7 +141,7 @@ export default function ProjectsPage() {
     staleTime: 30_000,
   });
 
-  const { data: recommendData } = useQuery({
+  const { data: recommendData, isLoading: recommendLoading } = useQuery({
     queryKey: ["projects", "recommend-banner"],
     queryFn: () => getProjects({ size: 10 }),
     enabled: isLoggedIn,
@@ -113,7 +151,6 @@ export default function ProjectsPage() {
   const allProjects = data?.content ?? [];
   const totalElements = data?.totalElements ?? 0;
   const recommendProjects = recommendData?.content ?? [];
-  const recommendLoading = false;
   const loading = isLoading && !data;
 
   useEffect(() => {
@@ -131,8 +168,20 @@ export default function ProjectsPage() {
     if (page > 1) next.set("page", String(page));
     if (keyword) next.set("q", keyword);
     if (activeTab !== "전체") next.set("tab", activeTab);
+    const filterEntries = serializeFilters(appliedFilters);
+    for (const [k, v] of Object.entries(filterEntries)) {
+      next.set(k, v);
+    }
     setSearchParams(next, { replace: true });
-  }, [page, keyword, activeTab, setSearchParams]);
+  }, [page, keyword, activeTab, appliedFilters, setSearchParams]);
+
+  const hasActiveFilters =
+    appliedFilters.selectedCategory !== null ||
+    appliedFilters.names.length > 0 ||
+    appliedFilters.minCount > 1 ||
+    appliedFilters.maxCount !== null ||
+    appliedFilters.goals.length > 0 ||
+    appliedFilters.recruitingOnly;
 
   const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -140,7 +189,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10">
-      {isLoggedIn && !isSearching && (
+      {isLoggedIn && !isSearching && !bannerHidden && (
         <div className="mb-8 hidden lg:block">
           {recommendLoading ? (
             <section className="rounded-card bg-[#F6F1EB] p-6 md:p-8">
@@ -159,7 +208,11 @@ export default function ProjectsPage() {
               </div>
             </section>
           ) : (
-            <RecommendProjectBanner projects={recommendProjects} nickname={user?.nickname} />
+            <RecommendProjectBanner
+              projects={recommendProjects}
+              nickname={user?.nickname}
+              onDismiss={dismissBanner}
+            />
           )}
         </div>
       )}
@@ -203,12 +256,7 @@ export default function ProjectsPage() {
               setShowFilters((v) => !v);
             }}
             className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] transition-opacity hover:opacity-90 ${
-              appliedFilters.selectedCategory !== null ||
-              appliedFilters.names.length > 0 ||
-              appliedFilters.minCount > 1 ||
-              appliedFilters.maxCount !== null ||
-              appliedFilters.goals.length > 0 ||
-              appliedFilters.recruitingOnly
+              hasActiveFilters
                 ? "border-grey9 bg-grey9 text-white"
                 : "border-primary bg-primary text-white"
             }`}
@@ -522,7 +570,7 @@ export default function ProjectsPage() {
               <Plus className="h-6 w-6 shrink-0" aria-hidden />
             </div>
             <span className="hidden whitespace-nowrap font-medium text-[15px] lg:block lg:max-w-0 lg:overflow-hidden lg:opacity-0 lg:transition-all lg:duration-300 lg:group-hover:max-w-[160px] lg:group-hover:opacity-100 lg:group-hover:pr-7">
-              프로젝트 생성
+              프로젝트 등록
             </span>
           </div>
         </button>

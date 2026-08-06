@@ -4,13 +4,21 @@ import { ChevronLeft, ImageIcon } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { createPost, getPostById, updatePost } from "@/api/community";
 import { ApiError } from "@/api/client";
+import { useAuthStore } from "@/stores/authStore";
 import type { PostDetail } from "@/types";
 
 export default function CommunityNewPage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
   const { id } = useParams();
   const isEdit = Boolean(id);
   const postId = id ? Number(id) : null;
+
+  useEffect(() => {
+    if (user && !user.verified) {
+      navigate("/community", { replace: true });
+    }
+  }, [user, navigate]);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");

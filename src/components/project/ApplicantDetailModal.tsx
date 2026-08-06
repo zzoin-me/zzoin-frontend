@@ -1,5 +1,6 @@
 import { Star, X } from "lucide-react";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { Avatar } from "@/components/common/Avatar";
 import type { ProjectApplicant } from "@/types";
 
 interface ApplicantDetailModalProps {
@@ -46,15 +47,7 @@ export function ApplicantDetailModal({ applicant, onClose }: ApplicantDetailModa
 
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-4">
-            {applicant.profileUrl ? (
-              <img
-                src={applicant.profileUrl}
-                alt={applicant.nickName}
-                className="h-[64px] w-[64px] rounded-full object-cover md:h-[76px] md:w-[76px]"
-              />
-            ) : (
-              <div className="h-[64px] w-[64px] rounded-full bg-grey4 md:h-[76px] md:w-[76px]" />
-            )}
+            <Avatar nickname={applicant.nickName} profileUrl={applicant.profileUrl} size="xl" />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-[18px] text-grey9 md:text-[20px]">

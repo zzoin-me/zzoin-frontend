@@ -100,13 +100,33 @@ export function EditProfileModal({
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <Input
-            id="edit-nickname"
-            label="닉네임"
-            value={nickName}
-            onChange={(e) => setNickName(e.target.value)}
-            maxLength={20}
-          />
+          {(() => {
+            const changeableAt = profile?.nicknameChangeableAt
+              ? new Date(profile.nicknameChangeableAt)
+              : null;
+            const isLocked = changeableAt !== null && changeableAt > new Date();
+            const daysLeft = changeableAt
+              ? Math.ceil((changeableAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+              : 0;
+
+            return (
+              <div className="flex flex-col gap-1.5">
+                <Input
+                  id="edit-nickname"
+                  label="닉네임"
+                  value={nickName}
+                  onChange={(e) => setNickName(e.target.value)}
+                  maxLength={20}
+                  disabled={isLocked}
+                />
+                {isLocked && (
+                  <p className="font-regular text-[12px] text-grey5">
+                    닉네임은 {daysLeft}일 후 변경 가능합니다 ({changeableAt!.toLocaleDateString("ko-KR")})
+                  </p>
+                )}
+              </div>
+            );
+          })()}
 
           <FieldSelect value={fields} onChange={setFields} />
 

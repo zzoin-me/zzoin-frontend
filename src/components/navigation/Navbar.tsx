@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router";
 import { useAuthStore } from "@/stores/authStore";
 import { Logo } from "@/components/common/Logo";
+import { Avatar } from "@/components/common/Avatar";
 
 const navItems = [
   { to: "/", label: "홈", end: true },
@@ -12,26 +12,6 @@ const navItems = [
 export function Navbar() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setDropdownOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handler);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
 
   return (
     <nav className="relative z-50 hidden border-b border-grey5 bg-grey1 lg:flex">
@@ -59,35 +39,13 @@ export function Navbar() {
 
         <div className="flex items-center justify-end gap-10">
           {isLoggedIn ? (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setDropdownOpen((o) => !o)}
-                className="flex items-center gap-2 font-extralight text-[16px] text-grey9 hover:text-grey7"
-              >
-                <div className="h-8 w-8 rounded-full bg-grey4" aria-label="profile image" />
-                <span className="whitespace-nowrap">{user?.nickname ?? "프로필"}</span>
-              </button>
-              {dropdownOpen && (
-                <div className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-tag border border-grey3 bg-white py-2 shadow-sm">
-                  <Link
-                    to="/mypage"
-                    onClick={() => setDropdownOpen(false)}
-                    className="block px-4 py-2 font-regular text-[14px] text-grey9 hover:bg-grey1"
-                  >
-                    마이페이지
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setDropdownOpen(false);
-                    }}
-                    className="block w-full px-4 py-2 text-left font-regular text-[14px] text-grey9 hover:bg-grey1"
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              )}
-            </div>
+            <Link
+              to="/mypage"
+              className="flex items-center gap-2 font-extralight text-[16px] text-grey9 hover:text-grey7"
+            >
+              <Avatar nickname={user?.nickname} profileUrl={user?.profileImage} size="sm" />
+              <span className="whitespace-nowrap">{user?.nickname ?? "프로필"}</span>
+            </Link>
           ) : (
             <>
               <Link to="/login" className="font-extralight text-[16px] text-grey9 hover:text-grey7">

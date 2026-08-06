@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { ChevronLeft, Heart, MessageCircle, Eye, PencilLine } from "lucide-react";
@@ -6,6 +6,7 @@ import { SearchBar } from "@/components/common/SearchBar";
 import { Pagination } from "@/components/common/Pagination";
 import { getPosts } from "@/api/community";
 import { formatKoreanDatetime } from "@/utils/datetime";
+import { useAuthStore } from "@/stores/authStore";
 import type { CommunityBoardType } from "@/types";
 
 const boardMeta: Record<CommunityBoardType, { title: string; description: string }> = {
@@ -14,14 +15,32 @@ const boardMeta: Record<CommunityBoardType, { title: string; description: string
   mine: { title: "내가 쓴 글", description: "내가 작성한 게시글이에요" },
   comments: { title: "댓글 단 글", description: "내가 댓글을 단 게시글이에요" },
   likes: { title: "좋아요 누른 글", description: "내가 좋아요 누른 게시글이에요" },
-  saved: { title: "내가 저장한 글", description: "내가 저장한 게시글이에요" },
+  saved: { title: "저장한 글", description: "내가 저장한 게시글이에요" },
 };
 
 export default function CommunityBoardPage({ board }: { board: CommunityBoardType }) {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
   const [keyword, setKeyword] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [page, setPage] = useState(0);
+  const [toast, setToast] = useState(false);
+
+  const isVerified = !!user?.verified;
+
+  const handleWriteClick = () => {
+    if (isVerified) {
+      navigate("/community/new");
+    } else {
+      setToast(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(false), 2500);
+    return () => clearTimeout(id);
+  }, [toast]);
 
   const apiBoard: CommunityBoardType = board === "popular" ? "all" : board;
   const apiSort = board === "popular" ? "POPULAR" : "LATEST";
@@ -64,13 +83,16 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
           <h1 className="font-bold text-[24px] text-grey9">{meta.title}</h1>
           <p className="font-regular text-[14px] text-grey6">{meta.description}</p>
         </div>
-        <Link
-          to="/community/new"
-          className="flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border border-primary bg-primary px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90"
+        <button
+          type="button"
+          onClick={handleWriteClick}
+          className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 ${
+            isVerified ? "border-primary bg-primary" : "border-grey4 bg-grey4"
+          }`}
         >
           <PencilLine className="h-4 w-4" aria-hidden />
           <span>글쓰기</span>
-        </Link>
+        </button>
       </div>
 
       <div className="mt-6 flex items-center gap-3">
@@ -84,13 +106,16 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
             setPage(0);
           }}
         />
-        <Link
-          to="/community/new"
-          className="flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border border-primary bg-primary px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 lg:hidden"
+        <button
+          type="button"
+          onClick={handleWriteClick}
+          className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 lg:hidden ${
+            isVerified ? "border-primary bg-primary" : "border-grey4 bg-grey4"
+          }`}
           aria-label="글쓰기"
         >
           <PencilLine className="h-4 w-4" aria-hidden />
-        </Link>
+        </button>
       </div>
 
       <ul className="mt-8 flex flex-col gap-4 md:gap-6">
@@ -144,6 +169,20 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
             totalPages={totalPages}
             onPageChange={(p) => setPage(p - 1)}
           />
+        </div>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-40 left-1/2 z-50 -translate-x-1/2 rounded-card bg-grey9 px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
+          글을 작성하려면{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/mypage/verify-univ")}
+            className="underline underline-offset-2 hover:text-grey3"
+          >
+            대학 인증
+          </button>
+          이 필요합니다.
         </div>
       )}
     </div>

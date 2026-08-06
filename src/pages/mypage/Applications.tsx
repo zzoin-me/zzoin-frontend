@@ -52,6 +52,7 @@ export default function MyPageApplicationsPage() {
   const [category, setCategory] = useState<RecruitmentCategory | null>(null);
   const [page, setPage] = useState(1);
   const [cancelingId, setCancelingId] = useState<number | null>(null);
+  const [error, setError] = useState("");
 
   const status = activeTab === "ALL" ? undefined : (activeTab as ApplicationStatus);
 
@@ -107,7 +108,7 @@ export default function MyPageApplicationsPage() {
       await cancelApplication({ applicationId });
       queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     } catch {
-      // 에러 무시 (사용자가 다시 시도 가능)
+      setError("지원 취소에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setCancelingId(null);
     }
@@ -184,6 +185,10 @@ export default function MyPageApplicationsPage() {
           ))
         )}
       </div>
+
+      {error && (
+        <p className="font-regular text-[13px] text-red-500">{error}</p>
+      )}
 
       <Pagination
         currentPage={Math.min(page, totalPages)}

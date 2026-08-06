@@ -3,11 +3,14 @@ import { Bell } from "lucide-react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { TabBar } from "@/components/navigation/TabBar";
 import { Logo } from "@/components/common/Logo";
+import { ScrollToTop } from "@/components/common/ScrollToTop";
+import { Avatar } from "@/components/common/Avatar";
 import { useAuthStore } from "@/stores/authStore";
 import { useIsMobile } from "@/utils/useMediaQuery";
 
 export function AppLayout() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const user = useAuthStore((s) => s.user);
   const initialized = useAuthStore((s) => s.initialized);
   const isMobile = useIsMobile();
   const location = useLocation();
@@ -29,6 +32,7 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-white pt-[env(safe-area-inset-top)]">
+      <ScrollToTop />
       <Navbar />
 
       {isHomePage && (
@@ -42,7 +46,7 @@ export function AppLayout() {
             )}
             {isLoggedIn ? (
               <Link to="/mypage" aria-label="마이페이지" className="block">
-                <div className="h-8 w-8 rounded-full bg-grey4" />
+                <Avatar nickname={user?.nickname} profileUrl={user?.profileImage} size="sm" />
               </Link>
             ) : (
               <Link to="/login" className="font-extralight text-[14px] text-grey9 hover:text-grey7">

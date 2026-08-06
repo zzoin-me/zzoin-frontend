@@ -116,6 +116,7 @@ export interface MyProfile {
   profileUrl?: string;
   verified: boolean;
   verifiedEmail?: string;
+  nicknameChangeableAt?: string;
   stackInfoList?: StackInfo[];
 }
 

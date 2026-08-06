@@ -1,10 +1,11 @@
 import { NavLink } from "react-router";
-import { Home, FolderGit2, MessageCircle } from "lucide-react";
+import { Home, FolderGit2, MessageCircle, User } from "lucide-react";
 
 const tabs = [
   { to: "/", label: "홈", icon: Home, end: true },
   { to: "/projects", label: "프로젝트", icon: FolderGit2, end: false },
   { to: "/community", label: "커뮤니티", icon: MessageCircle, end: false },
+  { to: "/mypage", label: "마이페이지", icon: User, end: false },
 ];
 
 export function TabBar() {
@@ -25,7 +26,7 @@ export function TabBar() {
                 }
               >
                 <Icon className="h-6 w-6" aria-hidden />
-                <span className="font-medium text-[12px]">{tab.label}</span>
+                <span className="font-medium text-[11px]">{tab.label}</span>
               </NavLink>
             </li>
           );
