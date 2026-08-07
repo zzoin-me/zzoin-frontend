@@ -71,7 +71,7 @@ export function RecommendProjectBanner({ projects, nickname, onDismiss }: Recomm
   if (display.length === 0) return null;
 
   return (
-    <section className="relative rounded-card bg-[#F6F1EB] p-6 md:p-8">
+    <section className="relative rounded-card bg-bg-elevated p-6 md:p-8">
       {onDismiss && (
         <button
           type="button"
@@ -91,7 +91,7 @@ export function RecommendProjectBanner({ projects, nickname, onDismiss }: Recomm
           onClick={() => scrollByDir("left")}
           disabled={!canScrollLeft}
           aria-label="이전 추천 프로젝트"
-          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-grey3 bg-white shadow-sm hover:bg-grey1 disabled:cursor-not-allowed disabled:opacity-30 lg:flex"
+          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-grey3 bg-bg shadow-sm hover:bg-grey1 disabled:cursor-not-allowed disabled:opacity-30 lg:flex"
         >
           <ChevronLeft className="h-5 w-5 text-grey9" aria-hidden />
         </button>
@@ -111,7 +111,7 @@ export function RecommendProjectBanner({ projects, nickname, onDismiss }: Recomm
           onClick={() => scrollByDir("right")}
           disabled={!canScrollRight}
           aria-label="다음 추천 프로젝트"
-          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-grey3 bg-white shadow-sm hover:bg-grey1 disabled:cursor-not-allowed disabled:opacity-30 lg:flex"
+          className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-grey3 bg-bg shadow-sm hover:bg-grey1 disabled:cursor-not-allowed disabled:opacity-30 lg:flex"
         >
           <ChevronRight className="h-5 w-5 text-grey9" aria-hidden />
         </button>

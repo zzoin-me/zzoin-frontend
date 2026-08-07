@@ -3,6 +3,11 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import App from "./App.tsx";
+import { setupNative } from "./native-setup";
+import { useThemeStore } from "./stores/themeStore";
+
+setupNative();
+useThemeStore.getState().initTheme();
 
 const queryClient = new QueryClient({
   defaultOptions: {

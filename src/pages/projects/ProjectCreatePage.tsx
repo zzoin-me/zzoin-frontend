@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ChevronLeft, Camera, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, Plus, Trash2 } from "lucide-react";
 import { createProject } from "@/api/projects";
 import { ApiError } from "@/api/client";
 import { DateTimePicker } from "@/components/common/DateTimePicker";
@@ -306,8 +306,8 @@ export default function ProjectCreatePage() {
                         onClick={() => setCollaborationType(opt.value)}
                         className={`rounded-[20px] border px-5 py-[10px] font-regular text-[16px] transition-colors ${
                           collaborationType === opt.value
-                            ? "border-grey9 bg-grey9 text-white"
-                            : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                            ? "border-primary bg-primary text-white"
+                            : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
                         }`}
                       >
                         {opt.label}
@@ -469,8 +469,8 @@ export default function ProjectCreatePage() {
                           onClick={() => updateQuestionType(idx, false)}
                           className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
                             q.type === "TEXT"
-                              ? "border-grey9 bg-grey9 text-white"
-                              : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                              ? "border-primary bg-primary text-white"
+                              : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
                           }`}
                         >
                           장문
@@ -480,8 +480,8 @@ export default function ProjectCreatePage() {
                           onClick={() => updateQuestionType(idx, true)}
                           className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
                             q.type === "SINGLE_CHOICE" || q.type === "MULTI_CHOICE"
-                              ? "border-grey9 bg-grey9 text-white"
-                              : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                              ? "border-primary bg-primary text-white"
+                              : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
                           }`}
                         >
                           선택
@@ -594,8 +594,8 @@ export default function ProjectCreatePage() {
                       onClick={() => setGoalType(opt.value)}
                       className={`rounded-[20px] border px-4 py-[10px] font-medium text-[16px] transition-colors ${
                         goalType === opt.value
-                          ? "border-grey7 bg-grey7 text-grey1"
-                          : "border-grey4 bg-white text-grey6 hover:border-grey5"
+                          ? "border-primary bg-primary text-white"
+                          : "border-grey4 bg-bg text-grey6 hover:border-primary hover:text-primary"
                       }`}
                     >
                       {opt.label}
@@ -616,11 +616,6 @@ export default function ProjectCreatePage() {
         </div>
 
         <aside className="hidden w-[300px] shrink-0 lg:flex lg:flex-col lg:gap-9">
-          <div className="flex h-[286px] w-full flex-col items-center justify-center rounded-card bg-grey2 lg:w-[286px]">
-            <Camera className="h-24 w-24 text-grey4" aria-hidden />
-            <span className="mt-4 font-semibold text-[20px] text-grey5">사진 등록하기</span>
-          </div>
-
           <div className="flex flex-col gap-4 border-b border-grey4 pb-9">
             <h2 className="font-bold text-[20px] text-grey9">상세 설정</h2>
             <div className="flex flex-col gap-7">
@@ -642,8 +637,8 @@ export default function ProjectCreatePage() {
                       onClick={() => setGoalType(opt.value)}
                       className={`rounded-[20px] border px-4 py-[10px] font-medium text-[16px] transition-colors ${
                         goalType === opt.value
-                          ? "border-grey7 bg-grey7 text-grey1"
-                          : "border-grey4 bg-white text-grey6 hover:border-grey5"
+                          ? "border-primary bg-primary text-white"
+                          : "border-grey4 bg-bg text-grey6 hover:border-primary hover:text-primary"
                       }`}
                     >
                       {opt.label}

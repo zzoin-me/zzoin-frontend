@@ -175,7 +175,7 @@ export default function MyPageApplicationsPage() {
                     type="button"
                     onClick={() => handleCancel(app.applicationId)}
                     disabled={cancelingId === app.applicationId}
-                    className="shrink-0 self-start rounded-tag border border-red-200 bg-white px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 sm:self-auto"
+                    className="shrink-0 self-start rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 sm:self-auto"
                   >
                     {cancelingId === app.applicationId ? "취소 중..." : "지원 취소"}
                   </button>

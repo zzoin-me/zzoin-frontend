@@ -7,9 +7,10 @@ import { ProjectGrid } from "@/components/project/ProjectGrid";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton";
 import { RecommendProjectBanner } from "@/components/project/RecommendProjectBanner";
-import { getProjects, type ProjectListParams } from "@/api/projects";
+import { getProjects, getRecommendProjects, type ProjectListParams } from "@/api/projects";
 import { getPageList } from "@/utils/pagination";
 import { useAuthStore } from "@/stores/authStore";
+import { useIsMobile } from "@/utils/useMediaQuery";
 import {
   RECRUITMENT_CATEGORIES,
   getCategoryLabel,
@@ -23,6 +24,7 @@ type FilterTab = "전체" | "추천" | "인기" | "신규" | "마감임박";
 
 function sortFromTab(tab: FilterTab): string {
   if (tab === "마감임박") return "DEADLINE";
+  if (tab === "인기") return "POPULAR";
   return "LATEST";
 }
 
@@ -143,14 +145,24 @@ export default function ProjectsPage() {
 
   const { data: recommendData, isLoading: recommendLoading } = useQuery({
     queryKey: ["projects", "recommend-banner"],
-    queryFn: () => getProjects({ size: 10 }),
+    queryFn: () => getRecommendProjects(0, 10),
     enabled: isLoggedIn,
     staleTime: 60_000,
+  });
+
+  const { data: recommendTabData, isLoading: recommendTabLoading } = useQuery({
+    queryKey: ["projects", "recommend-tab", page],
+    queryFn: () => getRecommendProjects(page - 1, PAGE_SIZE),
+    enabled: isLoggedIn && activeTab === "추천",
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
   });
 
   const allProjects = data?.content ?? [];
   const totalElements = data?.totalElements ?? 0;
   const recommendProjects = recommendData?.content ?? [];
+  const recommendTabProjects = recommendTabData?.content ?? [];
+  const recommendTabTotal = recommendTabData?.totalElements ?? 0;
   const loading = isLoading && !data;
 
   useEffect(() => {
@@ -183,16 +195,18 @@ export default function ProjectsPage() {
     appliedFilters.goals.length > 0 ||
     appliedFilters.recruitingOnly;
 
-  const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+  const effectiveTotalElements = activeTab === "추천" ? recommendTabTotal : totalElements;
+  const totalPages = Math.max(1, Math.ceil(effectiveTotalElements / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const pageList = getPageList(currentPage, totalPages);
+  const isMobile = useIsMobile();
+  const pageList = getPageList(currentPage, totalPages, isMobile ? 1 : 2);
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10">
       {isLoggedIn && !isSearching && !bannerHidden && (
         <div className="mb-8 hidden lg:block">
           {recommendLoading ? (
-            <section className="rounded-card bg-[#F6F1EB] p-6 md:p-8">
+            <section className="rounded-card bg-bg-elevated p-6 md:p-8">
               <div className="h-7 w-1/3 animate-pulse rounded bg-grey4" />
               <div className="mt-4 flex gap-6 overflow-hidden">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -257,7 +271,7 @@ export default function ProjectsPage() {
             }}
             className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] transition-opacity hover:opacity-90 ${
               hasActiveFilters
-                ? "border-grey9 bg-grey9 text-white"
+                ? "border-primary bg-primary text-white"
                 : "border-primary bg-primary text-white"
             }`}
           >
@@ -286,7 +300,7 @@ export default function ProjectsPage() {
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                     draftFilters.selectedCategory === cat.value
                       ? "border-primary bg-primary text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
+                      : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
                   }`}
                 >
                   {cat.label}
@@ -310,7 +324,7 @@ export default function ProjectsPage() {
                     className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
                       draftFilters.names.includes(role.value)
                         ? "border-primary bg-primary text-white"
-                        : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
+                        : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
                     }`}
                   >
                     {role.value}
@@ -406,7 +420,7 @@ export default function ProjectsPage() {
                   className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                     draftFilters.goals.includes(opt.value)
                       ? "border-primary bg-primary text-white"
-                      : "border-grey3 bg-white text-grey7 hover:border-primary hover:text-primary"
+                      : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
                   }`}
                 >
                   {opt.label}
@@ -457,19 +471,19 @@ export default function ProjectsPage() {
 
       <div className="mt-8">
         {activeTab === "추천" ? (
-          recommendLoading ? (
+          recommendTabLoading ? (
             <ProjectGrid>
               {Array.from({ length: 9 }).map((_, i) => (
                 <ProjectCardSkeleton key={i} />
               ))}
             </ProjectGrid>
-          ) : recommendProjects.length === 0 ? (
+          ) : recommendTabProjects.length === 0 ? (
             <p className="py-20 text-center font-regular text-[16px] text-grey6">
               표시할 프로젝트가 없습니다.
             </p>
           ) : (
             <ProjectGrid>
-              {recommendProjects.map((p) => (
+              {recommendTabProjects.map((p) => (
                 <ProjectCard key={p.id} project={p} />
               ))}
             </ProjectGrid>
@@ -487,19 +501,19 @@ export default function ProjectsPage() {
         ) : (
           <ProjectGrid>
             {allProjects.map((p) => (
-              <ProjectCard key={p.id} project={p} showThumbnail={false} />
+              <ProjectCard key={p.id} project={p} />
             ))}
           </ProjectGrid>
         )}
       </div>
 
-      {activeTab !== "추천" && totalPages > 1 && (
+      {totalPages > 1 && (
         <div className="mt-12 flex items-center justify-center gap-2">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
             aria-label="이전 페이지"
-            className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-white text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-white disabled:hover:shadow-none"
+            className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-bg text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-bg disabled:hover:shadow-none"
           >
             <ChevronLeft className="h-5 w-5" aria-hidden />
           </button>
@@ -519,8 +533,8 @@ export default function ProjectsPage() {
                 aria-current={currentPage === entry ? "page" : undefined}
                 className={`h-10 w-10 rounded-tag border font-medium text-[14px] transition-all ${
                   currentPage === entry
-                    ? "cursor-default border-grey9 bg-grey9 text-white shadow-sm"
-                    : "border-grey3 bg-white text-grey7 hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm"
+                    ? "cursor-default border-primary bg-primary text-white shadow-sm"
+                    : "border-grey3 bg-bg text-grey7 hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm"
                 }`}
               >
                 {entry}
@@ -532,7 +546,7 @@ export default function ProjectsPage() {
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
             aria-label="다음 페이지"
-            className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-white text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-white disabled:hover:shadow-none"
+            className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-bg text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-bg disabled:hover:shadow-none"
           >
             <ChevronRight className="h-5 w-5" aria-hidden />
           </button>
@@ -543,7 +557,7 @@ export default function ProjectsPage() {
         <Link
           to="/projects/create"
           aria-label="프로젝트 등록"
-          className="group fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:hover:w-44"
+          className="group fixed bottom-36 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:hover:w-44"
         >
           <div className="flex items-center">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary">
@@ -563,7 +577,7 @@ export default function ProjectsPage() {
             setToast(true);
           }}
           aria-label="프로젝트 등록"
-          className="group fixed bottom-24 right-5 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-grey4 text-grey6 shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:h-14 lg:hover:w-44"
+          className="group fixed bottom-36 right-5 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-grey4 text-grey6 shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:h-14 lg:hover:w-44"
         >
           <div className="flex items-center">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-grey4">
@@ -577,7 +591,7 @@ export default function ProjectsPage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-40 left-1/2 z-50 -translate-x-1/2 rounded-card bg-grey9 px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
+        <div className="fixed bottom-40 left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-card border border-grey7 bg-[#1a202c] px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
           프로젝트를 생성하려면{" "}
           <button
             type="button"

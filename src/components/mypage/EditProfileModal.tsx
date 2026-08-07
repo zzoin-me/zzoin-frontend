@@ -85,11 +85,11 @@ export function EditProfileModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-5"
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-white p-6 md:p-8"
+        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
@@ -147,7 +147,7 @@ export function EditProfileModal({
               onChange={(e) => setBio(e.target.value)}
               maxLength={500}
               rows={3}
-              className="w-full resize-none rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+              className="w-full resize-none rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
             />
           </div>
 

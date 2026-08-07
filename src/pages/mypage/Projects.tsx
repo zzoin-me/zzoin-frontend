@@ -248,7 +248,7 @@ export default function MyPageProjectsPage() {
                         {applicants.map((a) => (
                           <div
                             key={a.applicationId}
-                            className="flex flex-col gap-3 rounded-[16px] border border-grey3 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                            className="flex flex-col gap-3 rounded-[16px] border border-grey3 bg-bg p-4 sm:flex-row sm:items-center sm:justify-between"
                           >
                             <div className="flex min-w-0 flex-1 items-center gap-3">
                               {a.profileUrl ? (
@@ -277,7 +277,7 @@ export default function MyPageProjectsPage() {
                               <button
                                 type="button"
                                 onClick={() => setSelectedApplicant(a)}
-                                className="rounded-tag border border-primary bg-white px-3 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
+                                className="rounded-tag border border-primary bg-bg px-3 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
                                 aria-label="지원자 정보"
                               >
                                 정보
@@ -300,7 +300,7 @@ export default function MyPageProjectsPage() {
                                       handleApplicantStatus(project.id, a.applicationId, "REJECTED")
                                     }
                                     disabled={processingId === a.applicationId}
-                                    className="rounded-tag border border-red-200 bg-white px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                                    className="rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                                   >
                                     거절
                                   </button>

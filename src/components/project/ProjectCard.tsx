@@ -8,30 +8,15 @@ interface ProjectCardProps {
   showThumbnail?: boolean;
 }
 
-export function ProjectCard({ project, showThumbnail = true }: ProjectCardProps) {
+export function ProjectCard({ project }: ProjectCardProps) {
   const dday = calculateDday(project.recruitmentDeadline);
 
   return (
     <Link
       to={`/projects/${project.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-card border border-grey4 bg-white transition-shadow hover:shadow-sm"
+      className="group flex h-full flex-col overflow-hidden rounded-card border border-grey4 bg-bg transition-shadow hover:shadow-sm"
     >
-      {showThumbnail && (
-        <div className="h-[113px] w-full rounded-t-card bg-grey4">
-          {project.imageUrl && (
-            <img
-              src={project.imageUrl}
-              alt={project.title}
-              loading="lazy"
-              className="h-full w-full rounded-t-card object-cover"
-            />
-          )}
-        </div>
-      )}
-
-      <div
-        className={`flex flex-1 flex-col gap-[19px] px-4 pb-4 ${showThumbnail ? "pt-1" : "pt-4"}`}
-      >
+      <div className="flex flex-1 flex-col gap-[19px] px-4 pt-4 pb-4">
         <div className="flex flex-col gap-2">
           <h3 className="truncate font-bold text-[20px] text-grey9">{project.title}</h3>
           <p className="line-clamp-2 font-regular text-[16px] text-grey9">{project.description}</p>
@@ -60,7 +45,7 @@ export function ProjectCard({ project, showThumbnail = true }: ProjectCardProps)
                 {dday}
               </span>
             </div>
-            <span className="flex h-[26px] w-[26px] items-center justify-center rounded-card border border-grey6 bg-white">
+            <span className="flex h-[26px] w-[26px] items-center justify-center rounded-card border border-grey6 bg-bg">
               <ChevronRight className="h-4 w-4 text-grey9" aria-hidden />
             </span>
           </div>

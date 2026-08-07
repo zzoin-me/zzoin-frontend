@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getPageList } from "@/utils/pagination";
+import { useIsMobile } from "@/utils/useMediaQuery";
 
 interface PaginationProps {
   currentPage: number;
@@ -10,7 +11,8 @@ interface PaginationProps {
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
   if (totalPages <= 1) return null;
 
-  const pageList = getPageList(currentPage, totalPages);
+  const isMobile = useIsMobile();
+  const pageList = getPageList(currentPage, totalPages, isMobile ? 1 : 2);
 
   return (
     <div className="mt-12 flex items-center justify-center gap-2">
@@ -18,7 +20,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
         aria-label="이전 페이지"
-        className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-white text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-white disabled:hover:shadow-none"
+        className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-bg text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-bg disabled:hover:shadow-none"
       >
         <ChevronLeft className="h-5 w-5" aria-hidden />
       </button>
@@ -38,8 +40,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             aria-current={currentPage === entry ? "page" : undefined}
             className={`h-10 w-10 rounded-tag border font-medium text-[14px] transition-all ${
               currentPage === entry
-                ? "cursor-default border-grey9 bg-grey9 text-white shadow-sm"
-                : "border-grey3 bg-white text-grey7 hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm"
+                ? "cursor-default border-primary bg-primary text-white shadow-sm"
+                : "border-grey3 bg-bg text-grey7 hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm"
             }`}
           >
             {entry}
@@ -51,7 +53,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
         aria-label="다음 페이지"
-        className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-white text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-white disabled:hover:shadow-none"
+        className="flex h-10 w-10 items-center justify-center rounded-tag border border-grey3 bg-bg text-grey9 transition-all hover:-translate-y-0.5 hover:border-grey5 hover:bg-grey1 hover:text-grey9 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:translate-y-0 disabled:hover:border-grey3 disabled:hover:bg-bg disabled:hover:shadow-none"
       >
         <ChevronRight className="h-5 w-5" aria-hidden />
       </button>

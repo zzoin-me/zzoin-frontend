@@ -80,7 +80,7 @@ export function StackSelector({
       )}
 
       <div ref={searchRef} className="relative">
-        <div className="flex items-center rounded-tag border border-grey3 bg-white px-4 py-3 focus-within:border-grey9">
+        <div className="flex items-center rounded-tag border border-grey3 bg-bg px-4 py-3 focus-within:border-grey9">
           <Search className="h-4 w-4 shrink-0 text-grey5" aria-hidden />
           <input
             type="text"
@@ -95,7 +95,7 @@ export function StackSelector({
           />
         </div>
         {showResults && (
-          <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-tag border border-grey3 bg-white shadow-lg">
+          <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-tag border border-grey3 bg-bg shadow-lg">
             {filteredStacks.length === 0 ? (
               <p className="px-4 py-3 font-regular text-[14px] text-grey6">
                 {search.trim() ? "일치하는 스택이 없습니다." : "모든 스택을 선택했습니다."}

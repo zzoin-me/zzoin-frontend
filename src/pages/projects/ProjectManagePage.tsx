@@ -273,8 +273,8 @@ export default function ProjectManagePage() {
               onClick={() => handleStatusChange(opt.value)}
               className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                 status === opt.value
-                  ? "border-grey9 bg-grey9 text-white"
-                  : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                  ? "border-primary bg-primary text-white"
+                  : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
               }`}
             >
               {opt.label}
@@ -305,7 +305,7 @@ export default function ProjectManagePage() {
                   onChange={(e) => setDescription(e.target.value)}
                   maxLength={500}
                   rows={4}
-                  className="w-full rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  className="w-full rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                 />
               </div>
               <DateTimePicker
@@ -330,8 +330,8 @@ export default function ProjectManagePage() {
                       onClick={() => setCollaborationType(opt.value)}
                       className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                         collaborationType === opt.value
-                          ? "border-grey9 bg-grey9 text-white"
-                          : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                          ? "border-primary bg-primary text-white"
+                          : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
                       }`}
                     >
                       {opt.label}
@@ -367,8 +367,8 @@ export default function ProjectManagePage() {
                       onClick={() => setGoalType(opt.value)}
                       className={`rounded-[20px] border px-4 py-[10px] font-medium text-[16px] transition-colors ${
                         goalType === opt.value
-                          ? "border-grey7 bg-grey7 text-grey1"
-                          : "border-grey4 bg-white text-grey6 hover:border-grey5"
+                          ? "border-primary bg-primary text-white"
+                          : "border-grey4 bg-bg text-grey6 hover:border-primary hover:text-primary"
                       }`}
                     >
                       {opt.label}
@@ -424,7 +424,7 @@ export default function ProjectManagePage() {
                       max={100}
                       value={r.count}
                       onChange={(e) => updateRecruitmentField(idx, "count", Number(e.target.value))}
-                      className="w-24 rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
+                      className="w-24 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
                     />
                   </div>
                   <Input
@@ -486,7 +486,7 @@ export default function ProjectManagePage() {
                       <button
                         type="button"
                         onClick={() => setSelectedApplicant(a)}
-                        className="rounded-tag border border-primary bg-white px-3 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
+                        className="rounded-tag border border-primary bg-bg px-3 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
                         aria-label="지원자 정보"
                       >
                         정보
@@ -505,7 +505,7 @@ export default function ProjectManagePage() {
                             type="button"
                             onClick={() => handleApplicantStatus(a.applicationId, "REJECTED")}
                             disabled={processingId === a.applicationId}
-                            className="rounded-tag border border-red-200 bg-white px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                            className="rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                           >
                             거절
                           </button>
@@ -543,7 +543,7 @@ export default function ProjectManagePage() {
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="flex-1 rounded-tag border border-grey3 bg-white px-6 py-4 font-medium text-[18px] text-grey7 transition-colors hover:bg-grey1"
+                  className="flex-1 rounded-tag border border-grey3 bg-bg px-6 py-4 font-medium text-[18px] text-grey7 transition-colors hover:bg-grey1"
                 >
                   취소
                 </button>
@@ -553,7 +553,7 @@ export default function ProjectManagePage() {
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
-              className="inline-flex w-full items-center justify-center rounded-tag border border-red-200 bg-white px-6 py-4 font-medium text-[18px] text-red-600 transition-colors hover:bg-red-50"
+              className="inline-flex w-full items-center justify-center rounded-tag border border-red-200 bg-bg px-6 py-4 font-medium text-[18px] text-red-600 transition-colors hover:bg-red-50"
             >
               프로젝트 삭제
             </button>

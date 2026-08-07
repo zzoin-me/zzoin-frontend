@@ -31,11 +31,11 @@ export function ApplicantDetailModal({ applicant, onClose }: ApplicantDetailModa
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-5"
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-white p-6 md:p-8"
+        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">

@@ -75,15 +75,10 @@ export default function ProjectDetailPage() {
 
       <div className="flex flex-col gap-6 border-b border-grey3 py-6 md:flex-row md:items-start md:gap-8 md:py-10 lg:items-end lg:justify-between">
         <div className="flex items-start gap-4 md:gap-8 lg:gap-[50px]">
-          <div className="h-20 w-20 shrink-0 rounded-card bg-grey5 md:h-[160px] md:w-[160px] lg:h-[200px] lg:w-[200px]">
-            {project.imageUrl && (
-              <img
-                src={project.imageUrl}
-                alt={project.title}
-                loading="lazy"
-                className="h-full w-full rounded-card object-cover"
-              />
-            )}
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary md:h-[160px] md:w-[160px] lg:h-[200px] lg:w-[200px]">
+            <span className="font-bold text-[24px] text-white md:text-[48px] lg:text-[60px]">
+              {dday}
+            </span>
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col gap-3 lg:gap-[22px]">
@@ -117,17 +112,9 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         </div>
-
-        <div className="flex shrink-0 items-center justify-center self-center rounded-full bg-grey5 h-20 w-20 md:h-28 md:w-28 lg:hidden">
-          <span className="font-bold text-[16px] text-grey9 md:text-[20px]">{dday}</span>
-        </div>
-
-        <div className="hidden shrink-0 self-center lg:flex lg:h-40 lg:w-40 lg:items-center lg:justify-center lg:rounded-full lg:bg-grey5">
-          <span className="font-bold text-[36px] text-grey1">{dday}</span>
-        </div>
       </div>
 
-      <section className="mt-10 flex flex-col gap-6 md:mt-12 lg:flex-row lg:items-end lg:justify-center lg:gap-[86px]">
+      <section className="mt-10 flex flex-col gap-6 md:mt-12">
         <div className="flex flex-1 flex-col gap-2">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-[20px] text-grey9 md:text-[24px]">지원현황</h2>
@@ -142,22 +129,6 @@ export default function ProjectDetailPage() {
             />
           </div>
         </div>
-        {isAuthor ? (
-          <Link
-            to={`/projects/${id}/manage`}
-            className="hidden h-[54px] w-[160px] shrink-0 items-center justify-center rounded-tag bg-primary px-6 font-bold text-[18px] text-white transition-opacity hover:opacity-90 lg:flex"
-          >
-            관리하기
-          </Link>
-        ) : (
-          <Button
-            size="lg"
-            className="hidden w-[160px] lg:flex"
-            onClick={() => setShowApplyModal(true)}
-          >
-            지원하기
-          </Button>
-        )}
       </section>
 
       <section className="mt-12 md:mt-16">

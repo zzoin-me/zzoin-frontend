@@ -104,7 +104,7 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
 
   return (
     <div ref={ref} className="relative w-full">
-      <div className="flex items-center rounded-tag border border-grey3 bg-white px-4 py-3 focus-within:border-grey9">
+      <div className="flex items-center rounded-tag border border-grey3 bg-bg px-4 py-3 focus-within:border-grey9">
         <input
           type="text"
           placeholder="대학교 도메인"
@@ -123,7 +123,7 @@ export function EmailDomainSelect({ univs, value, onChange, onInquiry }: EmailDo
       </div>
 
       {open && (
-        <div className="absolute top-full right-0 z-50 mt-1 max-h-64 min-w-full w-max max-w-[300px] overflow-y-auto rounded-tag border border-grey3 bg-white shadow-lg">
+        <div className="absolute top-full right-0 z-50 mt-1 max-h-64 min-w-full w-max max-w-[300px] overflow-y-auto rounded-tag border border-grey3 bg-bg shadow-lg">
           {filtered.length === 0 ? (
             <button
               type="button"

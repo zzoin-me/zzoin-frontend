@@ -60,7 +60,7 @@ export default function MyPageProfilePage() {
         <button
           type="button"
           onClick={() => setEditOpen(true)}
-          className="flex shrink-0 items-center gap-2 rounded-tag border border-grey3 bg-white px-4 py-2 font-medium text-[13px] text-grey7 transition-colors hover:border-grey5 hover:text-grey9 md:px-5 md:py-2.5 md:text-[14px]"
+          className="flex shrink-0 items-center gap-2 rounded-tag border border-grey3 bg-bg px-4 py-2 font-medium text-[13px] text-grey7 transition-colors hover:border-grey5 hover:text-grey9 md:px-5 md:py-2.5 md:text-[14px]"
         >
           <Pencil className="h-4 w-4" aria-hidden />
           <span className="hidden sm:inline">프로필 수정</span>

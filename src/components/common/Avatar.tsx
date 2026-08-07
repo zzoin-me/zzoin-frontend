@@ -27,9 +27,8 @@ export function Avatar({ nickname, profileUrl, size = "sm", className = "" }: Av
 
   return (
     <div
-      className={`${sizeClasses[size]} flex shrink-0 items-center justify-center rounded-full font-bold text-white ${className}`}
-      style={{ backgroundColor: "#FFB056" }}
-      >
+      className={`${sizeClasses[size]} flex shrink-0 items-center justify-center rounded-full bg-avatar-bg font-bold text-white ${className}`}
+    >
       {initial}
     </div>
   );

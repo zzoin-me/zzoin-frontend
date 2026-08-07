@@ -1,18 +1,20 @@
 export type PageEntry = number | "...";
 
-export function getPageList(current: number, total: number): PageEntry[] {
-  if (total <= 7) {
+export function getPageList(current: number, total: number, siblingCount = 2): PageEntry[] {
+  const minPages = siblingCount * 2 + 5;
+
+  if (total <= minPages) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  let start = Math.max(2, current - 2);
-  let end = Math.min(total - 1, current + 2);
+  let start = Math.max(2, current - siblingCount);
+  let end = Math.min(total - 1, current + siblingCount);
 
-  if (end - start < 4) {
+  if (end - start < siblingCount * 2) {
     if (current < total / 2) {
-      end = Math.min(total - 1, start + 4);
+      end = Math.min(total - 1, start + siblingCount * 2);
     } else {
-      start = Math.max(2, end - 4);
+      start = Math.max(2, end - siblingCount * 2);
     }
   }
 

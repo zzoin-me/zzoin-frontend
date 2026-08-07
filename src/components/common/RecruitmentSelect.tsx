@@ -49,8 +49,8 @@ export function RecruitmentSelect({ category, name, onChange }: RecruitmentSelec
               onClick={() => handleCategoryClick(cat.value)}
               className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                 category === cat.value
-                  ? "border-grey9 bg-grey9 text-white"
-                  : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                  ? "border-primary bg-primary text-white"
+                  : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
               }`}
             >
               {cat.label}
@@ -65,7 +65,7 @@ export function RecruitmentSelect({ category, name, onChange }: RecruitmentSelec
           <button
             type="button"
             onClick={() => setDropdownOpen((v) => !v)}
-            className="flex w-full items-center justify-between rounded-tag border border-grey3 bg-white px-4 py-3 text-left font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+            className="flex w-full items-center justify-between rounded-tag border border-grey3 bg-bg px-4 py-3 text-left font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
           >
             <span className={name ? "text-grey9" : "text-grey6"}>
               {name || "세부 직군을 선택하세요"}
@@ -73,7 +73,7 @@ export function RecruitmentSelect({ category, name, onChange }: RecruitmentSelec
             <ChevronDown className="h-4 w-4 text-grey6" aria-hidden />
           </button>
           {dropdownOpen && (
-            <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-tag border border-grey3 bg-white shadow-lg">
+            <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-tag border border-grey3 bg-bg shadow-lg">
               {subRoles.map((role) => (
                 <button
                   key={role.value}

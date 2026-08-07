@@ -4,7 +4,7 @@ import { PopularProjectRow } from "@/components/home/PopularProjectRow";
 import { LatestProjectList } from "@/components/home/LatestProjectList";
 import { SectionHeader } from "@/components/common/SectionHeader";
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton";
-import { getProjects } from "@/api/projects";
+import { getPopularProjects, getProjects } from "@/api/projects";
 
 function PopularSkeleton() {
   return (
@@ -45,15 +45,21 @@ function LatestSkeleton() {
 }
 
 export default function HomePage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["projects", "home"],
-    queryFn: () => getProjects({ size: 8 }),
+  const { data: popularData, isLoading: popularLoading } = useQuery({
+    queryKey: ["projects", "popular-home"],
+    queryFn: () => getPopularProjects(0, 8),
     staleTime: 5 * 60_000,
   });
 
-  const projects = data?.content ?? [];
-  const popular = projects.slice(0, 8);
-  const latest = projects.slice(0, 6);
+  const { data: latestData, isLoading: latestLoading } = useQuery({
+    queryKey: ["projects", "latest-home"],
+    queryFn: () => getProjects({ sort: "LATEST", size: 6 }),
+    staleTime: 5 * 60_000,
+  });
+
+  const popular = popularData?.content ?? [];
+  const latest = latestData?.content ?? [];
+  const isLoading = popularLoading || latestLoading;
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-6">

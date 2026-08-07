@@ -31,7 +31,7 @@ export default function AuthCallbackPage() {
   }, [searchParams, loginWithTokens, navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white">
+    <div className="flex min-h-screen items-center justify-center bg-bg">
       <p className="font-regular text-[16px] text-grey6">로그인 처리 중...</p>
     </div>
   );

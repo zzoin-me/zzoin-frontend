@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router";
 import { useAuthStore } from "@/stores/authStore";
 import { Logo } from "@/components/common/Logo";
 import { Avatar } from "@/components/common/Avatar";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 
 const navItems = [
   { to: "/", label: "홈", end: true },
@@ -37,7 +38,8 @@ export function Navbar() {
           </ul>
         </div>
 
-        <div className="flex items-center justify-end gap-10">
+        <div className="flex items-center justify-end gap-6">
+          <ThemeToggle variant="icon" />
           {isLoggedIn ? (
             <Link
               to="/mypage"

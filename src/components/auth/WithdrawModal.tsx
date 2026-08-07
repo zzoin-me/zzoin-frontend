@@ -84,7 +84,7 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-5"
       onClick={success ? handleComplete : handleClose}
       role="presentation"
     >
@@ -93,7 +93,7 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label="회원 탈퇴"
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-white p-6 md:p-8"
+        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (

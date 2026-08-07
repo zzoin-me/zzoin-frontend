@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zzoin</string>
+    <string name="title_activity_main">Zzoin</string>
+    <string name="package_name">com.zzoin.app</string>
+    <string name="custom_url_scheme">com.zzoin.app</string>
+</resources>

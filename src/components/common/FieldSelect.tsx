@@ -54,7 +54,7 @@ export function FieldSelect({ value, onChange, label = "직군" }: FieldSelectPr
             className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
               category === cat.value
                 ? "border-primary bg-primary text-white"
-                : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                : "border-grey3 bg-bg text-grey7 hover:border-grey5"
             }`}
           >
             {cat.label}
@@ -67,7 +67,7 @@ export function FieldSelect({ value, onChange, label = "직군" }: FieldSelectPr
           <button
             type="button"
             onClick={() => setOpen((p) => !p)}
-            className="flex w-full items-center justify-between rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
+            className="flex w-full items-center justify-between rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
           >
             <span className="text-grey6">세부 직군 선택 (여러 개 가능)</span>
             <ChevronDown
@@ -75,7 +75,7 @@ export function FieldSelect({ value, onChange, label = "직군" }: FieldSelectPr
             />
           </button>
           {open && (
-            <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-tag border border-grey3 bg-white shadow-lg">
+            <div className="absolute z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-tag border border-grey3 bg-bg shadow-lg">
               {getSubRolesByCategory(category).map((role) => (
                 <button
                   key={role.value}

@@ -18,7 +18,7 @@ export function AppLayout() {
 
   if (!initialized) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-bg">
         <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
           <p className="font-regular text-[16px] text-grey6">불러오는 중...</p>
         </div>
@@ -31,7 +31,11 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-[env(safe-area-inset-top)]">
+    <div className="min-h-screen bg-bg pt-[env(safe-area-inset-top)]">
+      <div
+        aria-hidden
+        className="fixed top-0 left-0 right-0 z-40 h-[env(safe-area-inset-top)] bg-bg"
+      />
       <ScrollToTop />
       <Navbar />
 

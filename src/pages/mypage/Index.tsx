@@ -15,6 +15,7 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { WithdrawModal } from "@/components/auth/WithdrawModal";
 import { Avatar } from "@/components/common/Avatar";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { getMyProjects, getMyApplications } from "@/api/user";
 import { getPosts } from "@/api/community";
 
@@ -128,11 +129,9 @@ export default function MyPageIndexPage() {
               <Link
                 key={action.label}
                 to={action.to}
-                className="group flex items-center gap-4 rounded-[20px] border border-grey3 bg-gradient-to-br from-grey1 to-white p-6 transition-all hover:border-grey5 hover:shadow-sm"
+                className="group flex items-center gap-4 rounded-[20px] border border-primary-light bg-primary-light p-6 transition-all hover:shadow-sm"
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] text-white transition-colors group-hover:bg-primary"
-                  style={{ backgroundColor: "#FFB056" }}
-                >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-avatar-bg text-white transition-colors group-hover:bg-primary">
                   <Icon className="h-6 w-6" aria-hidden />
                 </div>
                 <div className="flex flex-col gap-0.5">
@@ -146,7 +145,7 @@ export default function MyPageIndexPage() {
         </div>
 
         <div className="lg:hidden">
-          <nav className="flex flex-col divide-y divide-grey3 overflow-hidden rounded-card border border-grey3 bg-white">
+          <nav className="flex flex-col divide-y divide-grey3 overflow-hidden rounded-card border border-grey3 bg-bg">
             {mobileMenus.map((menu) => (
               <Link
                 key={menu.to}
@@ -164,12 +163,18 @@ export default function MyPageIndexPage() {
         </div>
 
         <div className="flex flex-col gap-3 lg:hidden">
+          <div className="rounded-card border border-grey3 bg-bg p-4">
+            <span className="mb-2 block font-bold text-[13px] tracking-wide text-grey5 uppercase">
+              테마
+            </span>
+            <ThemeToggle />
+          </div>
           <button
             onClick={() => {
               logout();
               navigate("/");
             }}
-            className="flex items-center justify-center gap-2 rounded-card border border-grey3 bg-white px-5 py-3 font-medium text-[15px] text-grey7 hover:text-grey9"
+            className="flex items-center justify-center gap-2 rounded-card border border-grey3 bg-bg px-5 py-3 font-medium text-[15px] text-grey7 hover:text-grey9"
           >
             <LogOut className="h-5 w-5" aria-hidden />
             로그아웃
@@ -177,7 +182,7 @@ export default function MyPageIndexPage() {
           <button
             type="button"
             onClick={() => setWithdrawOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-card border border-grey3 bg-white px-5 py-3 font-medium text-[15px] text-red-600 hover:text-red-700"
+            className="flex items-center justify-center gap-2 rounded-card border border-grey3 bg-bg px-5 py-3 font-medium text-[15px] text-red-600 hover:text-red-700"
           >
             <UserX className="h-5 w-5" aria-hidden />
             회원 탈퇴

@@ -108,7 +108,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => (window.location.href = socialLoginUrl("google"))}
-          className="flex w-full items-center justify-center gap-2 rounded-tag border border-grey3 bg-white px-5 py-2.5 font-medium text-[14px] text-grey9 transition-colors hover:bg-grey1"
+          className="flex w-full items-center justify-center gap-2 rounded-tag border border-grey3 bg-bg px-5 py-2.5 font-medium text-[14px] text-grey9 transition-colors hover:bg-grey1"
         >
           <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
             <path

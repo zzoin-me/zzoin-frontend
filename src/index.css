@@ -56,6 +56,10 @@
 }
 
 @theme {
+  --color-bg: #ffffff;
+  --color-bg-elevated: #f7fafc;
+  --color-bg-inverse: #1a202c;
+
   --color-grey1: #f7fafc;
   --color-grey2: #edf2f7;
   --color-grey3: #e2e8f0;
@@ -70,10 +74,34 @@
   --color-primary-light: #ffe8c6;
   --color-primary-end: #ffb600;
 
+  --color-avatar-bg: #ffb056;
+
   --font-sans: "Pretendard", ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 20px;
   --radius-tag: 5px;
+}
+
+html.dark {
+  --color-bg: #0f1419;
+  --color-bg-elevated: #1a202c;
+  --color-bg-inverse: #f7fafc;
+
+  --color-grey1: #1a202c;
+  --color-grey2: #2d3748;
+  --color-grey3: #3a4555;
+  --color-grey4: #4a5568;
+  --color-grey5: #718096;
+  --color-grey6: #a0aec0;
+  --color-grey7: #cbd5e0;
+  --color-grey8: #e2e8f0;
+  --color-grey9: #f7fafc;
+
+  --color-primary: #ff9f1c;
+  --color-primary-light: #3d2e1a;
+  --color-primary-end: #ffb600;
+
+  --color-avatar-bg: #ffb056;
 }
 
 * {
@@ -89,7 +117,7 @@ body {
 body {
   font-family: var(--font-sans);
   color: var(--color-grey9);
-  background-color: #ffffff;
+  background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -117,4 +145,71 @@ body {
   border: 2px solid var(--color-grey9);
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+html.dark .rmdp-wrapper,
+html.dark .rmdp-calendar,
+html.dark .rmdp-day,
+html.dark .rmdp-week-day {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-grey9);
+}
+
+html.dark .rmdp-day:not(.rmdp-today):not(.rmdp-selected) span {
+  color: var(--color-grey7);
+}
+
+html.dark .rmdp-day.rmdp-today span {
+  border-color: var(--color-primary);
+}
+
+html.dark .rmdp-day.rmdp-selected span {
+  background-color: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
+html.dark .rmdp-header-values,
+html.dark .rmdp-arrow {
+  color: var(--color-grey9);
+}
+
+html.dark .rmdp-shadow {
+  box-shadow: none;
+  border: 1px solid var(--color-grey3);
+}
+
+html.dark .rmdp-time-picker {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-grey9);
+}
+
+html.dark .rmdp-time-picker select {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-grey9);
+  border-color: var(--color-grey3);
+}
+
+html.dark .rmdp-time-picker select option {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-grey9);
+}
+
+html.dark .rmdp-time-picker .rmdp-btn,
+html.dark .rmdp-time-picker button {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-grey9);
+  border-color: var(--color-grey3);
+}
+
+html.dark .rmdp-mobile .rmdp-header-values,
+html.dark .rmdp-mobile .rmdp-week-day {
+  color: var(--color-grey9);
+}
+
+html.dark .rmdp-mobile .rmdp-day span {
+  color: var(--color-grey7);
+}
+
+html.dark .rmdp-mobile .rmdp-action-button {
+  color: var(--color-primary);
 }

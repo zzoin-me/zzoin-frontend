@@ -99,7 +99,7 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-5"
       onClick={handleClose}
       role="presentation"
     >
@@ -108,7 +108,7 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
         role="dialog"
         aria-modal="true"
         aria-label="프로젝트 지원"
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-white p-6 md:p-8"
+        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (
@@ -162,8 +162,8 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
                       onClick={() => setSelectedRecruitment(r.id)}
                       className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                         selectedRecruitment === r.id
-                          ? "border-grey9 bg-grey9 text-white"
-                          : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                          ? "border-primary bg-primary text-white"
+                          : "border-grey3 bg-bg text-grey7 hover:border-grey5"
                       }`}
                     >
                       {r.name} ({r.recruitmentCount}명)
@@ -182,7 +182,7 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
                   onChange={(e) => setLetter(e.target.value)}
                   maxLength={500}
                   rows={6}
-                  className="w-full resize-none rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  className="w-full resize-none rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                 />
                 <span className="mt-1 block text-right font-regular text-[12px] text-grey5">
                   {letter.length}/500
@@ -202,7 +202,7 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
                       onChange={(e) => setAnswer(q.id, e.target.value)}
                       maxLength={500}
                       rows={3}
-                      className="w-full resize-none rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                      className="w-full resize-none rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                     />
                   )}
                   {q.type === "SINGLE_CHOICE" && (
@@ -214,8 +214,8 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
                           onClick={() => setAnswer(q.id, opt)}
                       className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                         answers[q.id] === opt
-                          ? "border-grey9 bg-grey9 text-white"
-                          : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                          ? "border-primary bg-primary text-white"
+                          : "border-grey3 bg-bg text-grey7 hover:border-grey5"
                       }`}
                     >
                       {opt}
@@ -234,8 +234,8 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
                         onClick={() => toggleMultiAnswer(q.id, opt)}
                         className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                           selected
-                            ? "border-grey9 bg-grey9 text-white"
-                            : "border-grey3 bg-white text-grey7 hover:border-grey5"
+                            ? "border-primary bg-primary text-white"
+                            : "border-grey3 bg-bg text-grey7 hover:border-grey5"
                         }`}
                       >
                         {opt}

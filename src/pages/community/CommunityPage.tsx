@@ -118,7 +118,7 @@ export default function CommunityPage() {
           </button>
         </div>
 
-        <nav className="mt-6 flex flex-col divide-y divide-grey3 overflow-hidden rounded-card border border-grey3 bg-white">
+        <nav className="mt-6 flex flex-col divide-y divide-grey3 overflow-hidden rounded-card border border-grey3 bg-bg">
           {mobileTiles.map((tile) => {
             const Icon = tile.icon;
             return (
@@ -319,7 +319,7 @@ export default function CommunityPage() {
       </div>
 
       {toast && (
-        <div className="fixed bottom-40 left-1/2 z-50 -translate-x-1/2 rounded-card bg-grey9 px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
+        <div className="fixed bottom-40 left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-card border border-grey7 bg-[#1a202c] px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
           글을 작성하려면{" "}
           <button
             type="button"

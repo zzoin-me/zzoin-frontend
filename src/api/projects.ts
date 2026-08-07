@@ -81,3 +81,17 @@ export async function updateProjectStatus(id: number, status: ProjectStatus): Pr
     body: JSON.stringify({ status }),
   });
 }
+
+export async function getPopularProjects(
+  page = 0,
+  size = 8,
+): Promise<PageResponse<ProjectPreview>> {
+  return apiFetch<PageResponse<ProjectPreview>>(`/api/project-feeds/popular?page=${page}&size=${size}`);
+}
+
+export async function getRecommendProjects(
+  page = 0,
+  size = 10,
+): Promise<PageResponse<ProjectPreview>> {
+  return apiFetch<PageResponse<ProjectPreview>>(`/api/project-feeds/recommend?page=${page}&size=${size}`);
+}
