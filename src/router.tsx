@@ -22,6 +22,7 @@ import MyPageProfilePage from "@/pages/mypage/Profile";
 import MyPageApplicationsPage from "@/pages/mypage/Applications";
 import MyPageProjectsPage from "@/pages/mypage/Projects";
 import MyPageReviewsPage from "@/pages/mypage/Reviews";
+import MyPageNotificationsPage from "@/pages/mypage/Notifications";
 import VerifyUnivPage from "@/pages/mypage/VerifyUniv";
 
 export const router = createBrowserRouter([
@@ -71,6 +72,7 @@ export const router = createBrowserRouter([
               { path: "applications", element: <MyPageApplicationsPage /> },
               { path: "projects", element: <MyPageProjectsPage /> },
               { path: "reviews", element: <MyPageReviewsPage /> },
+              { path: "notifications", element: <MyPageNotificationsPage /> },
             ],
           },
         ],

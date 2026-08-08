@@ -3,6 +3,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { Logo } from "@/components/common/Logo";
 import { Avatar } from "@/components/common/Avatar";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { NotificationBadge } from "@/components/common/NotificationBadge";
 
 const navItems = [
   { to: "/", label: "홈", end: true },
@@ -38,8 +39,9 @@ export function Navbar() {
           </ul>
         </div>
 
-        <div className="flex items-center justify-end gap-6">
+        <div className="flex items-center justify-end gap-4">
           <ThemeToggle variant="icon" />
+          <NotificationBadge />
           {isLoggedIn ? (
             <Link
               to="/mypage"

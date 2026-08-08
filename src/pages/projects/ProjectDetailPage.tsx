@@ -112,6 +112,21 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         </div>
+
+        <div className="hidden shrink-0 lg:block">
+          {isAuthor ? (
+            <Link
+              to={`/projects/${id}/manage`}
+              className="flex h-[54px] w-[180px] items-center justify-center rounded-tag bg-primary px-6 font-bold text-[18px] text-white transition-opacity hover:opacity-90"
+            >
+              관리하기
+            </Link>
+          ) : (
+            <Button size="lg" className="w-[180px]" onClick={() => setShowApplyModal(true)}>
+              지원하기
+            </Button>
+          )}
+        </div>
       </div>
 
       <section className="mt-10 flex flex-col gap-6 md:mt-12">

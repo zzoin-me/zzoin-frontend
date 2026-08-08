@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { ChevronLeft, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
@@ -60,6 +60,8 @@ interface RecruitmentForm {
 export default function ProjectManagePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const scrollTarget = (location.state as { scrollTo?: string } | null)?.scrollTo;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -115,6 +117,21 @@ export default function ProjectManagePage() {
         setApplicantsLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    if (scrollTarget === "applicants" && !loading) {
+      const scrollToApplicants = () => {
+        const el = document.getElementById("applicants");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        } else {
+          setTimeout(scrollToApplicants, 200);
+        }
+      };
+      const timer = setTimeout(scrollToApplicants, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [scrollTarget, loading]);
 
   const addRecruitment = () => {
     setRecruitments((prev) => [
@@ -442,7 +459,7 @@ export default function ProjectManagePage() {
             </div>
           </section>
 
-          <section className="rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8">
+          <section id="applicants" className="scroll-mt-20 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8">
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">
                 지원자 관리 ({applicants.length}명)
@@ -486,7 +503,7 @@ export default function ProjectManagePage() {
                       <button
                         type="button"
                         onClick={() => setSelectedApplicant(a)}
-                        className="rounded-tag border border-primary bg-bg px-3 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
+                        className="rounded-tag border border-primary bg-bg px-4 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
                         aria-label="지원자 정보"
                       >
                         정보

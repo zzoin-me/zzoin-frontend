@@ -19,6 +19,7 @@ const desktopMenus = [
   {
     group: "활동",
     items: [
+      { to: "/mypage/notifications", label: "알림", end: false },
       { to: "/mypage/applications", label: "프로젝트 지원 현황", end: false },
       { to: "/mypage/projects", label: "내 프로젝트 관리", end: false },
       { to: "/mypage/reviews", label: "프로젝트 후기", end: false },

@@ -1,12 +1,17 @@
 import { Link, Navigate, Outlet, useLocation } from "react-router";
-import { Bell } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { TabBar } from "@/components/navigation/TabBar";
 import { Logo } from "@/components/common/Logo";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { Avatar } from "@/components/common/Avatar";
+import { NotificationBadge } from "@/components/common/NotificationBadge";
 import { useAuthStore } from "@/stores/authStore";
 import { useIsMobile } from "@/utils/useMediaQuery";
+import { useNotificationSSE } from "@/hooks/useNotificationSSE";
+import { useFCMPush } from "@/hooks/useFCMPush";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 
 export function AppLayout() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
@@ -15,6 +20,19 @@ export function AppLayout() {
   const isMobile = useIsMobile();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const queryClient = useQueryClient();
+
+  useNotificationSSE();
+  useFCMPush();
+
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries();
+  };
+
+  const { pullDistance, isRefreshing, containerRef } = usePullToRefresh(handleRefresh);
+  const showSpinner = pullDistance > 0 || isRefreshing;
+  const spinnerOffset = isRefreshing ? THRESHOLD : pullDistance;
+  const spinnerRotation = pullDistance * 3;
 
   if (!initialized) {
     return (
@@ -31,11 +49,25 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-bg pt-[env(safe-area-inset-top)]">
+    <div ref={containerRef} className="min-h-screen bg-bg pt-[env(safe-area-inset-top)]">
       <div
         aria-hidden
         className="fixed top-0 left-0 right-0 z-40 h-[env(safe-area-inset-top)] bg-bg"
       />
+
+      {isMobile && showSpinner && (
+        <div
+          className="pointer-events-none fixed left-0 right-0 top-[env(safe-area-inset-top)] z-50 flex items-center justify-center"
+          style={{ transform: `translateY(${spinnerOffset - 40}px)`, transition: isRefreshing || pullDistance === 0 ? "transform 0.3s ease" : "none" }}
+        >
+          <Loader2
+            className={`h-7 w-7 text-primary ${isRefreshing ? "animate-spin" : ""}`}
+            style={{ transform: isRefreshing ? undefined : `rotate(${spinnerRotation}deg)` }}
+            aria-hidden
+          />
+        </div>
+      )}
+
       <ScrollToTop />
       <Navbar />
 
@@ -43,11 +75,7 @@ export function AppLayout() {
         <header className="flex items-center justify-between border-b border-grey3 bg-grey1 px-5 py-3 lg:hidden">
           <Logo size={32} />
           <div className="flex items-center gap-3">
-            {isLoggedIn && (
-              <button type="button" aria-label="알림" className="text-grey9 hover:text-grey7">
-                <Bell className="h-6 w-6" />
-              </button>
-            )}
+            {isLoggedIn && <NotificationBadge />}
             {isLoggedIn ? (
               <Link to="/mypage" aria-label="마이페이지" className="block">
                 <Avatar nickname={user?.nickname} profileUrl={user?.profileImage} size="sm" />
@@ -69,3 +97,5 @@ export function AppLayout() {
     </div>
   );
 }
+
+const THRESHOLD = 70;

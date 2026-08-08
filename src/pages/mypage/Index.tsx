@@ -22,6 +22,7 @@ import { getPosts } from "@/api/community";
 const mobileMenus = [
   { to: "/mypage/profile", label: "프로필 정보", desc: "닉네임 · 직군 · 기술 스택 · 소개" },
   { to: "/mypage/verify-univ", label: "대학 인증", desc: "학교 · 학과 · 학년 정보 관리" },
+  { to: "/mypage/notifications", label: "알림", desc: "받은 알림 확인" },
   { to: "/mypage/applications", label: "프로젝트 지원 현황", desc: "지원한 프로젝트 현황" },
   { to: "/mypage/projects", label: "내 프로젝트 관리", desc: "생성한 프로젝트 관리" },
   { to: "/mypage/reviews", label: "프로젝트 후기", desc: "참여한 팀원 평가" },
