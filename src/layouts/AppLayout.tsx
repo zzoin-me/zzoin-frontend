@@ -8,6 +8,7 @@ import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { Avatar } from "@/components/common/Avatar";
 import { NotificationBadge } from "@/components/common/NotificationBadge";
 import { NotificationToast } from "@/components/common/NotificationToast";
+import { LoadingState } from "@/components/common/LoadingState";
 import { useAuthStore } from "@/stores/authStore";
 import { useIsMobile } from "@/utils/useMediaQuery";
 import { useNotificationSSE } from "@/hooks/useNotificationSSE";
@@ -36,13 +37,7 @@ export function AppLayout() {
   const spinnerRotation = pullDistance * 3;
 
   if (!initialized) {
-    return (
-      <div className="min-h-screen bg-bg">
-        <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
-          <p className="font-regular text-[16px] text-grey6">불러오는 중...</p>
-        </div>
-      </div>
-    );
+    return <LoadingState fullScreen />;
   }
 
   if (!isLoggedIn && isMobile) {

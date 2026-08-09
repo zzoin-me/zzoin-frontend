@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Avatar } from "@/components/common/Avatar";
+import { LoadingState } from "@/components/common/LoadingState";
 import {
   getPostById,
   getComments,
@@ -104,8 +105,7 @@ export default function CommunityDetailPage() {
   });
 
   const createCommentMutation = useMutation({
-    mutationFn: (vars: { content: string; parentId?: number }) =>
-      createComment(postId, vars),
+    mutationFn: (vars: { content: string; parentId?: number }) => createComment(postId, vars),
     onMutate: async (vars) => {
       await queryClient.cancelQueries({ queryKey: ["comments", postId] });
       const previous = queryClient.getQueryData<Comment[]>(["comments", postId]);
@@ -123,16 +123,11 @@ export default function CommunityDetailPage() {
         };
         if (vars.parentId) {
           const next = previous.map((c) =>
-            c.id === vars.parentId
-              ? { ...c, children: [...(c.children ?? []), tempComment] }
-              : c,
+            c.id === vars.parentId ? { ...c, children: [...(c.children ?? []), tempComment] } : c,
           );
           queryClient.setQueryData<Comment[]>(["comments", postId], next);
         } else {
-          queryClient.setQueryData<Comment[]>(["comments", postId], [
-            ...previous,
-            tempComment,
-          ]);
+          queryClient.setQueryData<Comment[]>(["comments", postId], [...previous, tempComment]);
         }
       }
       return { previous };
@@ -221,8 +216,7 @@ export default function CommunityDetailPage() {
   const handleDeletePost = () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     deletePostMutation.mutate(undefined, {
-      onError: (err) =>
-        setError(err instanceof ApiError ? err.message : "삭제에 실패했습니다."),
+      onError: (err) => setError(err instanceof ApiError ? err.message : "삭제에 실패했습니다."),
     });
   };
 
@@ -281,11 +275,7 @@ export default function CommunityDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
-        <p className="font-regular text-[16px] text-grey6">불러오는 중...</p>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (!post) {
@@ -393,7 +383,9 @@ export default function CommunityDetailPage() {
       )}
 
       {c.children && c.children.length > 0 && (
-        <ul className="mt-5 flex flex-col gap-5">{c.children.map((r) => renderComment(r, true))}</ul>
+        <ul className="mt-5 flex flex-col gap-5">
+          {c.children.map((r) => renderComment(r, true))}
+        </ul>
       )}
     </li>
   );
@@ -507,7 +499,10 @@ export default function CommunityDetailPage() {
             <span className="font-regular text-[14px] text-grey6">
               댓글을 작성하려면 대학 인증이 필요합니다.
             </span>
-            <Link to="/mypage/verify-univ" className="font-medium text-[14px] text-primary underline underline-offset-2">
+            <Link
+              to="/mypage/verify-univ"
+              className="font-medium text-[14px] text-primary underline underline-offset-2"
+            >
               인증하기
             </Link>
           </div>

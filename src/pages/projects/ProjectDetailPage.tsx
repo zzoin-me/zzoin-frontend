@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Users, Calendar, MessageCircle, Target } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Avatar } from "@/components/common/Avatar";
+import { LoadingState } from "@/components/common/LoadingState";
 import { ApplyModal } from "@/components/project/ApplyModal";
 import { getProjectById } from "@/api/projects";
 import { useAuthStore } from "@/stores/authStore";
@@ -28,11 +29,7 @@ export default function ProjectDetailPage() {
   const isAuthor = !!(user && project && project.authorNickname === user.nickname);
 
   if (isLoading) {
-    return (
-      <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
-        <p className="font-regular text-[16px] text-grey6">불러오는 중...</p>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (!project) {

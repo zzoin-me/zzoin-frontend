@@ -9,6 +9,7 @@ import { ApplicantDetailModal } from "@/components/project/ApplicantDetailModal"
 import { getMyProjects } from "@/api/user";
 import { getApplicants, updateApplicantStatus } from "@/api/application";
 import type { ProjectApplicant, ProjectStatus } from "@/types";
+import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 
 type StatusFilter = "ALL" | "RECRUITING" | "CLOSED";
 
@@ -48,6 +49,7 @@ export default function MyPageProjectsPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<StatusFilter>("ALL");
   const [period, setPeriod] = useState<string | null>(null);
+  const [onlyWithApplicants, setOnlyWithApplicants] = useState(false);
   const [page, setPage] = useState(1);
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -62,8 +64,14 @@ export default function MyPageProjectsPage() {
   const statusParam = activeTab === "ALL" ? undefined : activeTab;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["my-projects", { status: statusParam, page }],
-    queryFn: () => getMyProjects({ status: statusParam, page: page - 1, size: PAGE_SIZE }),
+    queryKey: ["my-projects", { status: statusParam, hasApplicants: onlyWithApplicants, page }],
+    queryFn: () =>
+      getMyProjects({
+        status: statusParam,
+        hasApplicants: onlyWithApplicants,
+        page: page - 1,
+        size: PAGE_SIZE,
+      }),
     placeholderData: keepPreviousData,
     staleTime: 30_000,
   });
@@ -85,7 +93,7 @@ export default function MyPageProjectsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [activeTab, period]);
+  }, [activeTab, period, onlyWithApplicants]);
 
   const loadApplicants = useCallback((projectId: number) => {
     setApplicantsLoadingId(projectId);
@@ -147,9 +155,7 @@ export default function MyPageProjectsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-bold text-[22px] text-grey9 md:text-[26px] lg:text-[28px]">
-        내 프로젝트 관리
-      </h1>
+      <MyPageTitle>내 프로젝트 관리</MyPageTitle>
       <p className="font-medium text-[14px] text-grey7 md:text-[16px]">
         내가 생성한 프로젝트예요. 클릭하면 지원자를 바로 확인할 수 있어요.
       </p>
@@ -182,6 +188,16 @@ export default function MyPageProjectsPage() {
           value={period}
           onChange={setPeriod}
         />
+        <label className="flex cursor-pointer items-center gap-2.5 rounded-[10px] border border-grey5 bg-bg px-2.5 py-2.5 font-medium text-[16px] text-grey7 transition-colors hover:border-grey7 hover:text-grey9">
+          <span>지원자 있음</span>
+          <input
+            type="checkbox"
+            checked={onlyWithApplicants}
+            onChange={(e) => setOnlyWithApplicants(e.target.checked)}
+            className="h-4 w-4 accent-grey9"
+            aria-label="지원자가 있는 프로젝트만 보기"
+          />
+        </label>
       </div>
 
       <div className="flex flex-col gap-4 md:gap-5">
@@ -276,7 +292,7 @@ export default function MyPageProjectsPage() {
                               <button
                                 type="button"
                                 onClick={() => setSelectedApplicant(a)}
-                                className="rounded-tag border border-primary bg-bg px-3 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
+                                className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-primary bg-bg font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
                                 aria-label="지원자 정보"
                               >
                                 정보
@@ -289,7 +305,7 @@ export default function MyPageProjectsPage() {
                                       handleApplicantStatus(project.id, a.applicationId, "APPROVED")
                                     }
                                     disabled={processingId === a.applicationId}
-                                    className="rounded-tag bg-green-600 px-4 py-2 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                                    className="inline-flex h-9 w-14 items-center justify-center rounded-tag bg-green-600 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                                   >
                                     승인
                                   </button>
@@ -299,7 +315,7 @@ export default function MyPageProjectsPage() {
                                       handleApplicantStatus(project.id, a.applicationId, "REJECTED")
                                     }
                                     disabled={processingId === a.applicationId}
-                                    className="rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                                    className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-red-200 bg-bg font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                                   >
                                     거절
                                   </button>

@@ -2,6 +2,7 @@ import { Star, X } from "lucide-react";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Avatar } from "@/components/common/Avatar";
 import type { ProjectApplicant } from "@/types";
+import { useModal } from "@/hooks/useModal";
 
 interface ApplicantDetailModalProps {
   applicant: ProjectApplicant | null;
@@ -27,15 +28,22 @@ function InfoRow({ label, value }: { label: string; value?: string | number | nu
 }
 
 export function ApplicantDetailModal({ applicant, onClose }: ApplicantDetailModalProps) {
+  const modalRef = useModal(applicant !== null, onClose);
+
   if (!applicant) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-5"
+      className="fixed inset-0 z-[60] flex items-center justify-center overscroll-none bg-black/50 px-5"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="지원자 정보"
+        className="max-h-[90dvh] w-full max-w-[500px] touch-pan-y overflow-y-auto overscroll-contain rounded-card bg-bg p-6 [-webkit-overflow-scrolling:touch] md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
@@ -89,7 +97,9 @@ export function ApplicantDetailModal({ applicant, onClose }: ApplicantDetailModa
               <div className="flex flex-col gap-3">
                 {applicant.answers.map((a, i) => (
                   <div key={i} className="rounded-tag border border-grey3 bg-grey1 px-4 py-4">
-                    <span className="mb-1 block font-medium text-[13px] text-grey7">{a.questionLabel}</span>
+                    <span className="mb-1 block font-medium text-[13px] text-grey7">
+                      {a.questionLabel}
+                    </span>
                     <p className="font-regular text-[14px] leading-relaxed text-grey9 md:text-[16px]">
                       {a.answerText}
                     </p>

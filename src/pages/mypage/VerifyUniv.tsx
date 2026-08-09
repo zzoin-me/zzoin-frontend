@@ -7,6 +7,7 @@ import { sendUnivEmail, verifyUnivEmail } from "@/api/auth";
 import { ApiError } from "@/api/client";
 import { useAuthStore } from "@/stores/authStore";
 import { useUnivEmail } from "@/hooks/useUnivEmail";
+import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 
 export default function VerifyUnivPage() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export default function VerifyUnivPage() {
   if (user?.verified) {
     return (
       <div>
-        <h1 className="font-bold text-[24px] text-grey9">대학교 인증</h1>
+        <MyPageTitle>대학교 인증</MyPageTitle>
         <section className="mt-8 flex flex-col items-center gap-4 rounded-[20px] border border-grey5 px-5 py-10 text-center md:px-8">
           <CheckCircle2 className="h-10 w-10 text-green-600" aria-hidden />
           <div className="flex flex-col gap-2">
@@ -87,7 +88,7 @@ export default function VerifyUnivPage() {
 
   return (
     <div>
-      <h1 className="font-bold text-[24px] text-grey9">대학교 인증</h1>
+      <MyPageTitle>대학교 인증</MyPageTitle>
       <p className="mt-2 font-regular text-[14px] text-grey6">
         대학교 이메일로 인증하면 모든 기능을 사용할 수 있어요.
       </p>

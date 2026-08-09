@@ -103,8 +103,8 @@ export default function ProjectsPage() {
     parseFiltersFromParams(searchParams),
   );
   const [toast, setToast] = useState(false);
-  const [bannerHidden, setBannerHidden] = useState(() =>
-    sessionStorage.getItem("recommend-banner-hidden") === "1",
+  const [bannerHidden, setBannerHidden] = useState(
+    () => sessionStorage.getItem("recommend-banner-hidden") === "1",
   );
 
   const dismissBanner = () => {
@@ -284,7 +284,20 @@ export default function ProjectsPage() {
       {showFilters && (
         <div className="mt-4 flex flex-col gap-6 rounded-card border border-grey3 bg-grey1 p-5 md:p-6">
           <div>
-            <span className="mb-3 block font-medium text-[14px] text-grey8">모집 직군</span>
+            <div className="mb-3 flex items-center justify-between gap-4">
+              <span className="font-medium text-[14px] text-grey8">모집 직군</span>
+              <label className="flex shrink-0 cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={draftFilters.recruitingOnly}
+                  onChange={(e) =>
+                    setDraftFilters((prev) => ({ ...prev, recruitingOnly: e.target.checked }))
+                  }
+                  className="h-4 w-4 accent-grey9"
+                />
+                <span className="font-medium text-[14px] text-grey7">모집 중만 보기</span>
+              </label>
+            </div>
             <div className="flex flex-wrap gap-2">
               {RECRUITMENT_CATEGORIES.map((cat) => (
                 <button
@@ -368,7 +381,7 @@ export default function ProjectsPage() {
                     maxCount: prev.maxCount !== null && prev.maxCount < v ? null : prev.maxCount,
                   }));
                 }}
-                className="dual-range absolute top-1/2 h-6 w-full -translate-y-1/2 appearance-none bg-transparent"
+                className="dual-range absolute top-1/2 h-6 w-full -translate-y-1/2 touch-none appearance-none bg-transparent"
                 style={{ zIndex: draftFilters.minCount > SLIDER_MAX - 2 ? 5 : 3 }}
               />
               <input
@@ -384,7 +397,7 @@ export default function ProjectsPage() {
                     minCount: prev.minCount > v ? v : prev.minCount,
                   }));
                 }}
-                className="dual-range absolute top-1/2 h-6 w-full -translate-y-1/2 appearance-none bg-transparent"
+                className="dual-range absolute top-1/2 h-6 w-full -translate-y-1/2 touch-none appearance-none bg-transparent"
                 style={{ zIndex: 4 }}
               />
             </div>
@@ -427,20 +440,6 @@ export default function ProjectsPage() {
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <label className="flex cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                checked={draftFilters.recruitingOnly}
-                onChange={(e) =>
-                  setDraftFilters((prev) => ({ ...prev, recruitingOnly: e.target.checked }))
-                }
-                className="h-4 w-4 accent-grey9"
-              />
-              <span className="font-medium text-[14px] text-grey7">모집 중만 보기</span>
-            </label>
           </div>
 
           <div className="flex items-center justify-between border-t border-grey3 pt-4">

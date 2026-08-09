@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { getMyProfile, getMySchoolProfile } from "@/api/user";
 import { Avatar } from "@/components/common/Avatar";
 import { EditProfileModal } from "@/components/mypage/EditProfileModal";
+import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 
 export default function MyPageProfilePage() {
   const user = useAuthStore((s) => s.user);
@@ -42,6 +43,7 @@ export default function MyPageProfilePage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <MyPageTitle>내 프로필</MyPageTitle>
       <section className="flex flex-row items-center justify-between gap-4 rounded-[20px] border border-grey5 px-5 py-6 md:px-8 md:py-8 lg:px-10 lg:py-10">
         <div className="flex min-w-0 items-center gap-4 md:gap-6 lg:gap-[43px]">
           <Avatar
@@ -134,7 +136,9 @@ export default function MyPageProfilePage() {
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <span className="font-medium text-[14px] text-grey9 md:text-[16px]">대학교 인증하기</span>
+            <span className="font-medium text-[14px] text-grey9 md:text-[16px]">
+              대학교 인증하기
+            </span>
             <ChevronRight className="h-5 w-5 text-grey5" aria-hidden />
           </div>
         </Link>

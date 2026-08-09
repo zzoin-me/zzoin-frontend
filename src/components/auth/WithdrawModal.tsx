@@ -93,7 +93,7 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label="회원 탈퇴"
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
+        className="max-h-[90dvh] w-full max-w-[500px] touch-pan-y overflow-y-auto overscroll-contain rounded-card bg-bg p-6 [-webkit-overflow-scrolling:touch] md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (

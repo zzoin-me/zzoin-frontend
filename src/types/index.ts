@@ -37,6 +37,7 @@ export interface UnivInfo {
 
 export interface Recruitment {
   id: number;
+  jobRoleId: number;
   name: string;
   category: RecruitmentCategory;
   applicantCount: number;

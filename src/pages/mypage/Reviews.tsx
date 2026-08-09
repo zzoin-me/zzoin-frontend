@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { CountTabs, type CountTab } from "@/components/common/CountTabs";
 import { FilterDropdown, type FilterOption } from "@/components/common/FilterDropdown";
 import { mockReviews, mockReviewSummary } from "@/data/mockReviews";
+import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 
 const sortOptions: FilterOption[] = [
   { label: "최신순", value: null },
@@ -94,9 +95,7 @@ export default function MyPageReviewsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-bold text-[22px] text-grey9 md:text-[26px] lg:text-[28px]">
-        프로젝트 후기
-      </h1>
+      <MyPageTitle>프로젝트 후기</MyPageTitle>
 
       {activeTab === "received" && (
         <div className="flex flex-col items-center gap-6 rounded-[20px] border border-grey5 px-5 py-6 sm:flex-row sm:items-center sm:gap-10 md:gap-12 md:px-8 md:py-5 lg:gap-16">

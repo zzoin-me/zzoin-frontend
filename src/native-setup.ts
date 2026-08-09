@@ -49,11 +49,10 @@ export async function updateNativeStatusBar(isDark: boolean) {
       await StatusBar.setBackgroundColor({ color: isDark ? "#0F1419" : "#FFFDFA" });
       await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
     } else {
-      await StatusBar.setStyle({ style: isDark ? Style.Light : Style.Dark });
+      await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
       await StatusBar.setBackgroundColor({ color: isDark ? "#0F1419" : "#FFFDFA" });
     }
   } catch {
     // no-op
   }
 }
-

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { ChevronLeft, LogOut, UserX } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router";
+import { LogOut, UserX } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { WithdrawModal } from "@/components/auth/WithdrawModal";
 
@@ -28,10 +28,8 @@ const desktopMenus = [
 ];
 
 export function MyPageLayout() {
-  const location = useLocation();
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
-  const isIndex = location.pathname === "/mypage";
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   const handleLogout = () => {
@@ -92,16 +90,6 @@ export function MyPageLayout() {
         </aside>
 
         <main className="min-w-0 flex-1 py-6 lg:py-10">
-          {!isIndex && (
-            <button
-              onClick={() => navigate("/mypage")}
-              className="mb-4 flex items-center text-grey9 lg:hidden"
-              aria-label="메뉴로 돌아가기"
-            >
-              <ChevronLeft className="h-6 w-6" />
-              <span className="ml-1 font-medium text-[14px]">메뉴</span>
-            </button>
-          )}
           <Outlet />
         </main>
       </div>

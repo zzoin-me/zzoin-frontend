@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuthStore } from "@/stores/authStore";
+import { LoadingState } from "@/components/common/LoadingState";
 
 export function ProtectedRoute() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
@@ -7,11 +8,7 @@ export function ProtectedRoute() {
   const location = useLocation();
 
   if (!initialized) {
-    return (
-      <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
-        <p className="font-regular text-[16px] text-grey6">불러오는 중...</p>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   if (!isLoggedIn) {

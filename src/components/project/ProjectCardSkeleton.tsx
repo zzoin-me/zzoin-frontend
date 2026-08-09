@@ -1,12 +1,11 @@
 export function ProjectCardSkeleton() {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-card border border-grey4 bg-bg">
-      <div className="h-[113px] w-full animate-pulse rounded-t-card bg-grey3" />
-      <div className="flex flex-1 flex-col gap-[19px] px-4 pb-4 pt-1">
+      <div className="flex flex-1 flex-col gap-[19px] px-4 py-4">
         <div className="flex flex-col gap-2">
-          <div className="h-5 w-3/4 animate-pulse rounded bg-grey3" />
-          <div className="h-4 w-full animate-pulse rounded bg-grey3" />
-          <div className="h-4 w-2/3 animate-pulse rounded bg-grey3" />
+          <div className="h-6 w-3/4 animate-pulse rounded bg-grey3" />
+          <div className="h-5 w-full animate-pulse rounded bg-grey3" />
+          <div className="h-5 w-2/3 animate-pulse rounded bg-grey3" />
         </div>
         <div className="mt-auto flex flex-col gap-2">
           <div className="flex flex-row gap-2">

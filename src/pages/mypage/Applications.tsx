@@ -9,6 +9,7 @@ import { getMyApplications } from "@/api/user";
 import { cancelApplication } from "@/api/application";
 import { RECRUITMENT_CATEGORIES } from "@/constants/recruitment";
 import type { ApplicationStatus, RecruitmentCategory } from "@/types";
+import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 
 type StatusFilter = "ALL" | ApplicationStatus;
 
@@ -116,9 +117,7 @@ export default function MyPageApplicationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-bold text-[22px] text-grey9 md:text-[26px] lg:text-[28px]">
-        프로젝트 지원 현황
-      </h1>
+      <MyPageTitle>프로젝트 지원 현황</MyPageTitle>
 
       <CountTabs tabs={tabs} active={activeTab} onChange={(v) => setActiveTab(v as StatusFilter)} />
 
@@ -150,7 +149,7 @@ export default function MyPageApplicationsPage() {
               key={app.applicationId}
               className="flex flex-col gap-2 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Link
                   to={`/projects/${app.projectId}`}
                   className="flex min-w-0 flex-1 flex-col gap-2"
@@ -175,7 +174,7 @@ export default function MyPageApplicationsPage() {
                     type="button"
                     onClick={() => handleCancel(app.applicationId)}
                     disabled={cancelingId === app.applicationId}
-                    className="shrink-0 self-start rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 sm:self-auto"
+                    className="shrink-0 self-start rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 sm:self-center"
                   >
                     {cancelingId === app.applicationId ? "취소 중..." : "지원 취소"}
                   </button>
@@ -186,9 +185,7 @@ export default function MyPageApplicationsPage() {
         )}
       </div>
 
-      {error && (
-        <p className="font-regular text-[13px] text-red-500">{error}</p>
-      )}
+      {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 
       <Pagination
         currentPage={Math.min(page, totalPages)}

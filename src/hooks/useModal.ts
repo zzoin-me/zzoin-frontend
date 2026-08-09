@@ -3,6 +3,11 @@ import { useEffect, useRef } from "react";
 export function useModal(isOpen: boolean, onClose: () => void) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -21,7 +26,7 @@ export function useModal(isOpen: boolean, onClose: () => void) {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key === "Tab" && modal) {
@@ -46,16 +51,25 @@ export function useModal(isOpen: boolean, onClose: () => void) {
     };
 
     document.addEventListener("keydown", handleKeyDown);
+    const scrollY = window.scrollY;
+    const bodyStyle = document.body.style.cssText;
+    const rootOverscrollBehavior = document.documentElement.style.overscrollBehavior;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overscrollBehavior = "none";
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
+      document.body.style.cssText = bodyStyle;
+      document.documentElement.style.overscrollBehavior = rootOverscrollBehavior;
+      window.scrollTo(0, scrollY);
       if (previouslyFocused.current) {
         previouslyFocused.current.focus();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return modalRef;
 }

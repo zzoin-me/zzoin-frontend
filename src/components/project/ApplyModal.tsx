@@ -60,9 +60,7 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
       return;
     }
 
-    const missingRequired = questions.filter(
-      (q) => q.required && !(answers[q.id]?.trim()),
-    );
+    const missingRequired = questions.filter((q) => q.required && !answers[q.id]?.trim());
     if (missingRequired.length > 0) {
       setError(`필수 질문에 답변해주세요: ${missingRequired[0].label}`);
       return;
@@ -108,7 +106,7 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
         role="dialog"
         aria-modal="true"
         aria-label="프로젝트 지원"
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
+        className="max-h-[90dvh] w-full max-w-[500px] touch-pan-y overflow-y-auto overscroll-contain rounded-card bg-bg p-6 [-webkit-overflow-scrolling:touch] md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         {success ? (
@@ -212,40 +210,43 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
                           key={opt}
                           type="button"
                           onClick={() => setAnswer(q.id, opt)}
-                      className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                        answers[q.id] === opt
-                          ? "border-primary bg-primary text-white"
-                          : "border-grey3 bg-bg text-grey7 hover:border-grey5"
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+                          className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                            answers[q.id] === opt
+                              ? "border-primary bg-primary text-white"
+                              : "border-grey3 bg-bg text-grey7 hover:border-grey5"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {q.type === "MULTI_CHOICE" && (
+                    <div className="flex flex-wrap gap-2">
+                      {(q.options ?? []).map((opt) => {
+                        const selected = (answers[q.id] ?? "")
+                          .split(",")
+                          .filter(Boolean)
+                          .includes(opt);
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => toggleMultiAnswer(q.id, opt)}
+                            className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                              selected
+                                ? "border-primary bg-primary text-white"
+                                : "border-grey3 bg-bg text-grey7 hover:border-grey5"
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
-              {q.type === "MULTI_CHOICE" && (
-                <div className="flex flex-wrap gap-2">
-                  {(q.options ?? []).map((opt) => {
-                    const selected = (answers[q.id] ?? "").split(",").filter(Boolean).includes(opt);
-                    return (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => toggleMultiAnswer(q.id, opt)}
-                        className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                          selected
-                            ? "border-primary bg-primary text-white"
-                            : "border-grey3 bg-bg text-grey7 hover:border-grey5"
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
+              ))}
 
               <p className="font-regular text-[12px] text-grey5">
                 <span className="text-red-500">*</span> 표시는 필수 입력 항목입니다.

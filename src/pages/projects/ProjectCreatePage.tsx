@@ -13,6 +13,7 @@ import type {
   RecruitmentCategory,
   CreateQuestion,
 } from "@/types";
+import { MAX_RECRUITMENTS } from "@/constants/recruitment";
 
 const collabOptions: { value: CollaborationType; label: string }[] = [
   { value: "ONLINE", label: "온라인" },
@@ -52,6 +53,7 @@ export default function ProjectCreatePage() {
   );
 
   const addRecruitment = () => {
+    if (recruitments.length >= MAX_RECRUITMENTS) return;
     setRecruitments((prev) => [
       ...prev,
       {
@@ -106,8 +108,8 @@ export default function ProjectCreatePage() {
           ? {
               ...q,
               type: isChoice ? (q.isMulti ? "MULTI_CHOICE" : "SINGLE_CHOICE") : "TEXT",
-              options: isChoice ? q.options ?? [] : undefined,
-              optionsText: isChoice ? q.optionsText ?? [] : undefined,
+              options: isChoice ? (q.options ?? []) : undefined,
+              optionsText: isChoice ? (q.optionsText ?? []) : undefined,
             }
           : q,
       ),
@@ -133,7 +135,13 @@ export default function ProjectCreatePage() {
   const addOption = (idx: number) => {
     setQuestions((prev) =>
       prev.map((q, i) =>
-        i === idx ? { ...q, options: [...(q.options ?? []), ""], optionsText: [...(q.optionsText ?? []), ""] } : q,
+        i === idx
+          ? {
+              ...q,
+              options: [...(q.options ?? []), ""],
+              optionsText: [...(q.optionsText ?? []), ""],
+            }
+          : q,
       ),
     );
   };
@@ -191,6 +199,10 @@ export default function ProjectCreatePage() {
       setError("모집 마감일을 선택해주세요.");
       return;
     }
+    if (recruitments.length > MAX_RECRUITMENTS) {
+      setError(`모집 역할은 최대 ${MAX_RECRUITMENTS}개까지 추가할 수 있습니다.`);
+      return;
+    }
 
     const hasInvalidRecruitment = recruitments.some(
       (r) =>
@@ -214,7 +226,7 @@ export default function ProjectCreatePage() {
       (q) =>
         !q.label.trim() ||
         ((q.type === "SINGLE_CHOICE" || q.type === "MULTI_CHOICE") &&
-         (q.optionsText ?? []).filter((o) => o.trim()).length < 2),
+          (q.optionsText ?? []).filter((o) => o.trim()).length < 2),
     );
     if (hasInvalidQuestion) {
       setError("질문 내용을 입력해주세요. 선택형 질문은 옵션을 2개 이상 추가해야 합니다.");
@@ -361,7 +373,12 @@ export default function ProjectCreatePage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="font-bold text-[20px] text-grey9">3. 팀 구성 및 모집 역할</h2>
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="font-bold text-[20px] text-grey9">3. 팀 구성 및 모집 역할</h2>
+              <span className="shrink-0 font-regular text-[13px] text-grey6">
+                최대 {MAX_RECRUITMENTS}개
+              </span>
+            </div>
             <div className="flex flex-col gap-7">
               {recruitments.map((r, idx) => (
                 <div
@@ -424,14 +441,16 @@ export default function ProjectCreatePage() {
                   </div>
                 </div>
               ))}
-              <button
-                type="button"
-                onClick={addRecruitment}
-                className="flex items-center justify-center gap-1 rounded-tag border border-dashed border-grey4 py-3 font-medium text-[14px] text-grey6 transition-colors hover:border-grey5 hover:text-grey7"
-              >
-                <Plus className="h-4 w-4" aria-hidden />
-                모집 역할 추가
-              </button>
+              {recruitments.length < MAX_RECRUITMENTS && (
+                <button
+                  type="button"
+                  onClick={addRecruitment}
+                  className="flex items-center justify-center gap-1 rounded-tag border border-dashed border-grey4 py-3 font-medium text-[14px] text-grey6 transition-colors hover:border-grey5 hover:text-grey7"
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  모집 역할 추가
+                </button>
+              )}
             </div>
           </section>
 
@@ -459,7 +478,10 @@ export default function ProjectCreatePage() {
             ) : (
               <div className="flex flex-col gap-4">
                 {questions.map((q, idx) => (
-                  <div key={idx} className="flex flex-col gap-3 rounded-[20px] border border-grey3 p-5">
+                  <div
+                    key={idx}
+                    className="flex flex-col gap-3 rounded-[20px] border border-grey3 p-5"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="font-medium text-[16px] text-grey9">질문 {idx + 1}</span>
                       <button

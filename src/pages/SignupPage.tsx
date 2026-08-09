@@ -188,7 +188,7 @@ export default function SignupPage() {
 
           {matchedUniv && (
             <p className="-mt-1 font-medium text-[13px] text-green-600">
-              ✓ {matchedUniv.name} 이메일입니다. 가입 후 2차 대학 인증이 자동 완료됩니다.
+              ✓ {matchedUniv.name} 이메일입니다. 2차 대학 인증이 자동 완료됩니다.
             </p>
           )}
 

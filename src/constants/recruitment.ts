@@ -1,5 +1,7 @@
 import type { RecruitmentCategory } from "@/types";
 
+export const MAX_RECRUITMENTS = 6;
+
 export interface CategoryOption {
   value: RecruitmentCategory;
   label: string;

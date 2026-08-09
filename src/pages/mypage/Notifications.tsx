@@ -17,6 +17,7 @@ import {
   type NotificationItem,
 } from "@/api/notification";
 import { formatKoreanDatetime } from "@/utils/datetime";
+import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 
 const iconMap: Record<string, typeof Bell> = {
   APPLICATION_RECEIVED: UserPlus,
@@ -66,7 +67,7 @@ export default function NotificationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-bold text-[20px] text-grey9 md:text-[24px]">알림</h1>
+        <MyPageTitle>알림</MyPageTitle>
         {hasUnread && (
           <button
             type="button"
@@ -80,15 +81,11 @@ export default function NotificationsPage() {
       </div>
 
       {isLoading ? (
-        <p className="py-20 text-center font-regular text-[16px] text-grey6">
-          불러오는 중...
-        </p>
+        <p className="py-20 text-center font-regular text-[16px] text-grey6">불러오는 중...</p>
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-20">
           <Bell className="h-12 w-12 text-grey4" aria-hidden />
-          <p className="font-regular text-[16px] text-grey6">
-            아직 알림이 없어요.
-          </p>
+          <p className="font-regular text-[16px] text-grey6">아직 알림이 없어요.</p>
         </div>
       ) : (
         <ul className="flex flex-col divide-y divide-grey3 overflow-hidden rounded-card border border-grey3 bg-bg">
@@ -113,9 +110,7 @@ export default function NotificationsPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-[15px] text-grey9">{n.title}</span>
-                      {!n.isRead && (
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
-                      )}
+                      {!n.isRead && <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />}
                     </div>
                     {n.content && (
                       <p className="mt-0.5 line-clamp-2 font-regular text-[13px] text-grey6">

@@ -55,10 +55,11 @@ export async function getMyApplications(
 }
 
 export async function getMyProjects(
-  params: { status?: string; page?: number; size?: number } = {},
+  params: { status?: string; hasApplicants?: boolean; page?: number; size?: number } = {},
 ): Promise<PageResponse<MyProjectPreview>> {
   const q = new URLSearchParams();
   if (params.status) q.set("status", params.status);
+  if (params.hasApplicants) q.set("hasApplicants", "true");
   if (params.page !== undefined) q.set("page", String(params.page));
   if (params.size !== undefined) q.set("size", String(params.size));
   const query = q.toString();

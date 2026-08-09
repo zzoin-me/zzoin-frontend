@@ -7,6 +7,7 @@ import { DateTimePicker } from "@/components/common/DateTimePicker";
 import { RecruitmentSelect } from "@/components/common/RecruitmentSelect";
 import type { RecruitmentSelectValue } from "@/components/common/RecruitmentSelect";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { LoadingState } from "@/components/common/LoadingState";
 import { ApplicantDetailModal } from "@/components/project/ApplicantDetailModal";
 import { deleteProject, getProjectById, updateProject, updateProjectStatus } from "@/api/projects";
 import { getApplicants, updateApplicantStatus } from "@/api/application";
@@ -20,6 +21,7 @@ import type {
   UpdateProjectRequest,
   UpdateRecruitment,
 } from "@/types";
+import { MAX_RECRUITMENTS } from "@/constants/recruitment";
 
 const collabOptions: { value: CollaborationType; label: string }[] = [
   { value: "ONLINE", label: "온라인" },
@@ -104,7 +106,7 @@ export default function ProjectManagePage() {
           detail.recruitments.map((r) => ({
             recruitmentId: r.id,
             category: r.category,
-            jobRoleId: null,
+            jobRoleId: r.jobRoleId,
             count: r.recruitmentCount,
             qualification: r.qualification,
             preferred: r.preferred,
@@ -135,6 +137,7 @@ export default function ProjectManagePage() {
   }, [scrollTarget, loading]);
 
   const addRecruitment = () => {
+    if (recruitments.length >= MAX_RECRUITMENTS) return;
     setRecruitments((prev) => [
       ...prev,
       {
@@ -224,6 +227,10 @@ export default function ProjectManagePage() {
       setError("모집 역할의 필수 항목을 모두 입력해주세요.");
       return;
     }
+    if (recruitments.length > MAX_RECRUITMENTS) {
+      setError(`모집 역할은 최대 ${MAX_RECRUITMENTS}개까지 추가할 수 있습니다.`);
+      return;
+    }
 
     setSaving(true);
     try {
@@ -266,11 +273,7 @@ export default function ProjectManagePage() {
   };
 
   if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
-        <p className="font-regular text-[16px] text-grey6">불러오는 중...</p>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -418,10 +421,11 @@ export default function ProjectManagePage() {
               <button
                 type="button"
                 onClick={addRecruitment}
-                className="flex items-center gap-1 rounded-tag border border-grey3 px-3 py-2 font-medium text-[14px] text-grey7 hover:border-grey5 hover:text-grey9"
+                disabled={recruitments.length >= MAX_RECRUITMENTS}
+                className="flex items-center gap-1 rounded-tag border border-grey3 px-3 py-2 font-medium text-[14px] text-grey7 hover:border-grey5 hover:text-grey9 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Plus className="h-4 w-4" aria-hidden />
-                추가
+                추가 ({recruitments.length}/{MAX_RECRUITMENTS})
               </button>
             </div>
             <div className="flex flex-col gap-5">
@@ -477,7 +481,10 @@ export default function ProjectManagePage() {
             </div>
           </section>
 
-          <section id="applicants" className="scroll-mt-20 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8">
+          <section
+            id="applicants"
+            className="scroll-mt-20 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8"
+          >
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">
                 지원자 관리 ({applicants.length}명)
@@ -521,7 +528,7 @@ export default function ProjectManagePage() {
                       <button
                         type="button"
                         onClick={() => setSelectedApplicant(a)}
-                        className="rounded-tag border border-primary bg-bg px-4 py-2 font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
+                        className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-primary bg-bg font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
                         aria-label="지원자 정보"
                       >
                         정보
@@ -532,7 +539,7 @@ export default function ProjectManagePage() {
                             type="button"
                             onClick={() => handleApplicantStatus(a.applicationId, "APPROVED")}
                             disabled={processingId === a.applicationId}
-                            className="rounded-tag bg-green-600 px-4 py-2 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                            className="inline-flex h-9 w-14 items-center justify-center rounded-tag bg-green-600 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
                           >
                             승인
                           </button>
@@ -540,7 +547,7 @@ export default function ProjectManagePage() {
                             type="button"
                             onClick={() => handleApplicantStatus(a.applicationId, "REJECTED")}
                             disabled={processingId === a.applicationId}
-                            className="rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                            className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-red-200 bg-bg font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                           >
                             거절
                           </button>

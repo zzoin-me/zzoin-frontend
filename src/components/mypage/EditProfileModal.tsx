@@ -7,6 +7,7 @@ import { StackSelector } from "@/components/common/StackSelector";
 import { ApiError } from "@/api/client";
 import { updateProfile, updateSchoolProfile, getStacks } from "@/api/user";
 import type { MyProfile, SchoolProfile, StackInfo } from "@/types";
+import { useModal } from "@/hooks/useModal";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export function EditProfileModal({
   const [stacks, setStacks] = useState<StackInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const modalRef = useModal(isOpen, onClose);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -85,11 +87,16 @@ export function EditProfileModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-5"
+      className="fixed inset-0 z-[60] flex items-center justify-center overscroll-none bg-black/50 px-5"
       onClick={onClose}
+      role="presentation"
     >
       <div
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="프로필 수정"
+        className="max-h-[90dvh] w-full max-w-[500px] touch-pan-y overflow-y-auto overscroll-contain rounded-card bg-bg p-6 [-webkit-overflow-scrolling:touch] md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
@@ -121,7 +128,8 @@ export function EditProfileModal({
                 />
                 {isLocked && (
                   <p className="font-regular text-[12px] text-grey5">
-                    닉네임은 {daysLeft}일 후 변경 가능합니다 ({changeableAt!.toLocaleDateString("ko-KR")})
+                    닉네임은 {daysLeft}일 후 변경 가능합니다 (
+                    {changeableAt!.toLocaleDateString("ko-KR")})
                   </p>
                 )}
               </div>
