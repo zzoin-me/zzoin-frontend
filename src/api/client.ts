@@ -39,7 +39,9 @@ function getAuthHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function refreshTokens(): Promise<boolean> {
+let tokenRefreshPromise: Promise<boolean> | null = null;
+
+async function performTokenRefresh(): Promise<boolean> {
   const refreshTokenValue = getRefreshToken();
   if (!refreshTokenValue) return false;
 
@@ -59,6 +61,15 @@ async function refreshTokens(): Promise<boolean> {
   }
   clearTokens();
   return false;
+}
+
+export function refreshStoredTokens(): Promise<boolean> {
+  if (!tokenRefreshPromise) {
+    tokenRefreshPromise = performTokenRefresh().finally(() => {
+      tokenRefreshPromise = null;
+    });
+  }
+  return tokenRefreshPromise;
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -87,7 +98,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   if (!data.success) {
     const isRetry = (options.headers as Record<string, string> | undefined)?.[RETRY_HEADER];
     if (res.status === 401 && !isRetry) {
-      const refreshed = await refreshTokens();
+      const refreshed = await refreshStoredTokens();
       if (refreshed) {
         return apiFetch<T>(path, {
           ...options,
