@@ -9,7 +9,7 @@ export function ProjectGrid({ children }: ProjectGridProps) {
     <div
       className="grid gap-8"
       style={{
-        gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))",
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
       }}
     >
       {children}

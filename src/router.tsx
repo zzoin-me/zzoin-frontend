@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 import { AppLayout } from "@/layouts/AppLayout";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { MyPageLayout } from "@/layouts/MyPageLayout";
@@ -14,11 +14,15 @@ import CommunityNewPage from "@/pages/community/CommunityNewPage";
 import CommunityBoardPage from "@/pages/community/CommunityBoardPage";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
+import OnboardingPage from "@/pages/OnboardingPage";
+import AuthCallbackPage from "@/pages/AuthCallbackPage";
+import LinkAccountPage from "@/pages/LinkAccountPage";
 import MyPageIndexPage from "@/pages/mypage/Index";
 import MyPageProfilePage from "@/pages/mypage/Profile";
 import MyPageApplicationsPage from "@/pages/mypage/Applications";
 import MyPageProjectsPage from "@/pages/mypage/Projects";
 import MyPageReviewsPage from "@/pages/mypage/Reviews";
+import MyPageNotificationsPage from "@/pages/mypage/Notifications";
 import VerifyUnivPage from "@/pages/mypage/VerifyUniv";
 
 export const router = createBrowserRouter([
@@ -45,8 +49,14 @@ export const router = createBrowserRouter([
           { path: "/community/comments", element: <CommunityBoardPage board="comments" /> },
           { path: "/community/likes", element: <CommunityBoardPage board="likes" /> },
           { path: "/community/saved", element: <CommunityBoardPage board="saved" /> },
-          { path: "/community/new", element: <CommunityNewPage /> },
           { path: "/community/:id", element: <CommunityDetailPage /> },
+        ],
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: "/community/new", element: <CommunityNewPage /> },
+          { path: "/community/:id/edit", element: <CommunityNewPage /> },
         ],
       },
       {
@@ -62,6 +72,7 @@ export const router = createBrowserRouter([
               { path: "applications", element: <MyPageApplicationsPage /> },
               { path: "projects", element: <MyPageProjectsPage /> },
               { path: "reviews", element: <MyPageReviewsPage /> },
+              { path: "notifications", element: <MyPageNotificationsPage /> },
             ],
           },
         ],
@@ -73,6 +84,19 @@ export const router = createBrowserRouter([
     children: [
       { path: "/login", element: <LoginPage /> },
       { path: "/signup", element: <SignupPage /> },
+      { path: "/link-account", element: <LinkAccountPage /> },
+      {
+        element: <ProtectedRoute />,
+        children: [{ path: "/onboarding", element: <OnboardingPage /> }],
+      },
     ],
+  },
+  {
+    path: "/auth/callback",
+    element: <AuthCallbackPage />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]);

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
+import { socialLoginUrl } from "@/config";
 import { useAuthStore } from "@/stores/authStore";
 import { ApiError } from "@/api/client";
 import { sendSignupEmail, verifySignupEmail } from "@/api/auth";
-import { getUnivs } from "@/api/univ";
-import type { UnivInfo } from "@/api/univ";
+import { useUnivEmail } from "@/hooks/useUnivEmail";
 
 type Step = "method" | "email" | "password" | "nickname";
 
@@ -44,7 +44,6 @@ function KakaoIcon() {
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const signupAndLogin = useAuthStore((s) => s.signupAndLogin);
 
   const [step, setStep] = useState<Step>("method");
@@ -58,18 +57,9 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [univs, setUnivs] = useState<UnivInfo[]>([]);
 
-  useEffect(() => {
-    getUnivs()
-      .then(setUnivs)
-      .catch(() => {});
-  }, []);
-
-  const emailDomain = email.includes("@") ? email.split("@")[1] : "";
-  const isUnivEmail = univs.some(
-    (u) => emailDomain === u.domain || emailDomain.endsWith("." + u.domain),
-  );
+  const { isUniv: isUnivEmail } = useUnivEmail(email);
+  const isNotUnivDomain = email.includes("@") && !isUnivEmail;
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,9 +126,7 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await signupAndLogin({ nickName: nickname, email, password, signupToken });
-      const redirect = searchParams.get("redirect");
-      const safe = redirect && redirect.startsWith("/") ? redirect : "/";
-      navigate(safe, { replace: true });
+      navigate("/onboarding", { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "회원가입에 실패했습니다.");
     } finally {
@@ -158,13 +146,15 @@ export default function SignupPage() {
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            className="flex w-full items-center justify-center gap-2 rounded-tag border border-grey3 bg-white px-5 py-2.5 font-medium text-[14px] text-grey9 transition-colors hover:bg-grey1"
+            onClick={() => (window.location.href = socialLoginUrl("google"))}
+            className="flex w-full items-center justify-center gap-2 rounded-tag border border-grey3 bg-bg px-5 py-2.5 font-medium text-[14px] text-grey9 transition-colors hover:bg-grey1"
           >
             <GoogleIcon />
             구글로 회원가입
           </button>
           <button
             type="button"
+            onClick={() => (window.location.href = socialLoginUrl("kakao"))}
             className="flex w-full items-center justify-center gap-2 rounded-tag bg-[#FEE500] px-5 py-2.5 font-medium text-[14px] text-black transition-filter hover:brightness-95"
           >
             <KakaoIcon />
@@ -200,6 +190,18 @@ export default function SignupPage() {
           {isUnivEmail && (
             <p className="-mt-1 font-medium text-[13px] text-green-600">
               ✓ 학교 이메일로 회원가입시 2차 학교 인증이 즉시 완료됩니다!
+            </p>
+          )}
+
+          {isNotUnivDomain && (
+            <p className="-mt-1 font-regular text-[13px] text-red-500">
+              지원하는 대학교 도메인이 아닙니다.{" "}
+              <a
+                href="mailto:zzoin.it@gmail.com"
+                className="underline underline-offset-2"
+              >
+                문의하기
+              </a>
             </p>
           )}
 

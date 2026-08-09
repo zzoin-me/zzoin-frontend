@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules", "src/vite-env.d.ts"] },
+  { ignores: ["dist", "node_modules", "src/vite-env.d.ts", "android", "ios"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   prettier,

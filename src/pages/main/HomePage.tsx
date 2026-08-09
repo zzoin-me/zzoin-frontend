@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { HeroBanner } from "@/components/home/HeroBanner";
 import { PopularProjectRow } from "@/components/home/PopularProjectRow";
 import { LatestProjectList } from "@/components/home/LatestProjectList";
 import { SectionHeader } from "@/components/common/SectionHeader";
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton";
-import { getProjects } from "@/api/projects";
-import type { ProjectPreview } from "@/types";
+import { getPopularProjects, getProjects } from "@/api/projects";
 
 function PopularSkeleton() {
   return (
@@ -46,33 +45,28 @@ function LatestSkeleton() {
 }
 
 export default function HomePage() {
-  const [projects, setProjects] = useState<ProjectPreview[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: popularData, isLoading: popularLoading } = useQuery({
+    queryKey: ["projects", "popular-home"],
+    queryFn: () => getPopularProjects(0, 8),
+    staleTime: 5 * 60_000,
+  });
 
-  useEffect(() => {
-    let active = true;
-    getProjects({ size: 8 })
-      .then((data) => {
-        if (active) setProjects(data.content);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data: latestData, isLoading: latestLoading } = useQuery({
+    queryKey: ["projects", "latest-home"],
+    queryFn: () => getProjects({ sort: "LATEST", size: 6 }),
+    staleTime: 5 * 60_000,
+  });
 
-  const popular = projects.slice(0, 8);
-  const latest = projects.slice(0, 5);
+  const popular = popularData?.content ?? [];
+  const latest = latestData?.content ?? [];
+  const isLoading = popularLoading || latestLoading;
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-6">
       <HeroBanner />
 
       <div className="mt-8 flex flex-col gap-10 lg:mt-8">
-        {loading ? (
+        {isLoading ? (
           <>
             <PopularSkeleton />
             <LatestSkeleton />

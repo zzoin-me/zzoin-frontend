@@ -71,7 +71,7 @@ export function DateTimePicker({
           <button
             type="button"
             onClick={openCalendar}
-            className="w-full rounded-tag border border-grey3 bg-white px-4 py-3 text-left font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+            className="w-full rounded-tag border border-grey3 bg-bg px-4 py-3 text-left font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
           >
             {value ? toDisplayString(value) : <span className="text-grey6">{placeholder}</span>}
           </button>

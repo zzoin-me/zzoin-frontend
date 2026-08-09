@@ -5,7 +5,7 @@ export function HeroBanner() {
   return (
     <section
       className="flex flex-col items-center justify-center gap-5 rounded-card px-6 py-10 text-center md:px-12 md:py-12 lg:py-[60px]"
-      style={{ background: "linear-gradient(to right, #FF8B00, #FFB600)" }}
+      style={{ background: "linear-gradient(to right, var(--color-primary), var(--color-primary-end))" }}
     >
       <h1 className="font-bold text-[24px] leading-tight text-white md:text-[36px]">
         학교의 경계를 넘어,

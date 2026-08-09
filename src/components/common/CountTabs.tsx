@@ -12,7 +12,7 @@ interface CountTabsProps {
 
 export function CountTabs({ tabs, active, onChange }: CountTabsProps) {
   return (
-    <div className="flex items-center gap-6 overflow-x-auto border-b border-grey3 md:gap-10 lg:gap-[80px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex items-center gap-3 overflow-x-auto border-b border-grey3 md:gap-8 lg:gap-[80px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {tabs.map((tab) => {
         const isActive = tab.value === active;
         return (

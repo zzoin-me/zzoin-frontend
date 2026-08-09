@@ -28,3 +28,7 @@ dist-ssr
 *.md
 .vercel
 *.sh
+*.sql
+
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist

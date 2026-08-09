@@ -76,7 +76,7 @@ export function PopularProjectRow({ projects }: PopularProjectRowProps) {
         ))}
       </div>
 
-      <div className="hidden items-center justify-center gap-2 lg:flex">
+      <div className="flex items-center justify-center gap-2">
         {Array.from({ length: dotCount }).map((_, i) => (
           <button
             key={i}

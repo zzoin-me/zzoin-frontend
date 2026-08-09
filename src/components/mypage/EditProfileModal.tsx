@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
+import { FieldSelect } from "@/components/common/FieldSelect";
+import { StackSelector } from "@/components/common/StackSelector";
 import { ApiError } from "@/api/client";
 import { updateProfile, updateSchoolProfile, getStacks } from "@/api/user";
 import type { MyProfile, SchoolProfile, StackInfo } from "@/types";
@@ -22,7 +24,7 @@ export function EditProfileModal({
   onSaved,
 }: EditProfileModalProps) {
   const [nickName, setNickName] = useState("");
-  const [field, setField] = useState("");
+  const [fields, setFields] = useState<string[]>([]);
   const [bio, setBio] = useState("");
   const [selectedStackIds, setSelectedStackIds] = useState<number[]>([]);
   const [major, setMajor] = useState("");
@@ -34,24 +36,18 @@ export function EditProfileModal({
   useEffect(() => {
     if (!isOpen) return;
     setNickName(profile?.name ?? "");
-    setField(profile?.field ?? "");
+    setFields(profile?.fields ?? []);
     setBio(profile?.bio ?? "");
     setSelectedStackIds(profile?.stackInfoList?.map((s) => s.id) ?? []);
     setMajor(schoolProfile?.major ?? "");
     setGrade(schoolProfile?.grade?.toString() ?? "");
     setError("");
     getStacks()
-      .then(setStacks)
-      .catch(() => {});
+      .then((data) => setStacks(data))
+      .catch((err) => console.error("[EditProfileModal] stacks load failed:", err));
   }, [isOpen, profile, schoolProfile]);
 
   if (!isOpen) return null;
-
-  const toggleStack = (id: number) => {
-    setSelectedStackIds((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +62,7 @@ export function EditProfileModal({
     try {
       await updateProfile({
         nickName: nickName.trim(),
-        field: field.trim() || undefined,
+        fields: fields.length > 0 ? fields : undefined,
         bio: bio.trim() || undefined,
         stackIds: selectedStackIds,
       });
@@ -89,11 +85,11 @@ export function EditProfileModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-5"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-5"
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-white p-6 md:p-8"
+        className="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-card bg-bg p-6 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
@@ -104,45 +100,41 @@ export function EditProfileModal({
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <Input
-            id="edit-nickname"
-            label="닉네임"
-            value={nickName}
-            onChange={(e) => setNickName(e.target.value)}
-            maxLength={20}
-          />
+          {(() => {
+            const changeableAt = profile?.nicknameChangeableAt
+              ? new Date(profile.nicknameChangeableAt)
+              : null;
+            const isLocked = changeableAt !== null && changeableAt > new Date();
+            const daysLeft = changeableAt
+              ? Math.ceil((changeableAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+              : 0;
 
-          <Input
-            id="edit-field"
-            label="직군"
-            placeholder="예: 프론트엔드"
-            value={field}
-            onChange={(e) => setField(e.target.value)}
-            maxLength={50}
-          />
+            return (
+              <div className="flex flex-col gap-1.5">
+                <Input
+                  id="edit-nickname"
+                  label="닉네임"
+                  value={nickName}
+                  onChange={(e) => setNickName(e.target.value)}
+                  maxLength={20}
+                  disabled={isLocked}
+                />
+                {isLocked && (
+                  <p className="font-regular text-[12px] text-grey5">
+                    닉네임은 {daysLeft}일 후 변경 가능합니다 ({changeableAt!.toLocaleDateString("ko-KR")})
+                  </p>
+                )}
+              </div>
+            );
+          })()}
 
-          <div className="flex flex-col gap-2">
-            <label className="font-medium text-[14px] text-grey8">기술 스택</label>
-            <div className="flex flex-wrap gap-2">
-              {stacks.map((stack) => {
-                const selected = selectedStackIds.includes(stack.id);
-                return (
-                  <button
-                    key={stack.id}
-                    type="button"
-                    onClick={() => toggleStack(stack.id)}
-                    className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                      selected
-                        ? "border-grey9 bg-grey9 text-white"
-                        : "border-grey3 bg-white text-grey7 hover:border-grey5"
-                    }`}
-                  >
-                    {stack.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <FieldSelect value={fields} onChange={setFields} />
+
+          <StackSelector
+            selectedIds={selectedStackIds}
+            onChange={setSelectedStackIds}
+            stacks={stacks}
+          />
 
           <div className="flex flex-col gap-2">
             <label htmlFor="edit-bio" className="font-medium text-[14px] text-grey8">
@@ -155,7 +147,7 @@ export function EditProfileModal({
               onChange={(e) => setBio(e.target.value)}
               maxLength={500}
               rows={3}
-              className="w-full resize-none rounded-tag border border-grey3 bg-white px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+              className="w-full resize-none rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
             />
           </div>
 

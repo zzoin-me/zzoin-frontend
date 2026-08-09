@@ -6,19 +6,18 @@ import type {
   UpdateProjectRequest,
   ProjectStatus,
   PageResponse,
-  RecruitmentCategory,
   GoalType,
 } from "@/types";
 
 export interface ProjectListParams {
   keyword?: string;
   sort?: string;
-  category?: RecruitmentCategory;
+  category?: string;
   name?: string;
   maxDays?: number;
   minCount?: number;
   maxCount?: number;
-  goal?: GoalType;
+  goals?: GoalType[];
   recruitingOnly?: boolean;
   page?: number;
   size?: number;
@@ -33,7 +32,7 @@ function buildQuery(params: ProjectListParams): string {
   if (params.maxDays) q.set("maxDays", String(params.maxDays));
   if (params.minCount != null) q.set("minCount", String(params.minCount));
   if (params.maxCount != null) q.set("maxCount", String(params.maxCount));
-  if (params.goal) q.set("goal", params.goal);
+  if (params.goals) params.goals.forEach((g) => q.append("goals", g));
   if (params.recruitingOnly) q.set("recruitingOnly", "true");
   if (params.page != null) q.set("page", String(params.page));
   q.set("size", String(params.size ?? 9));
@@ -62,10 +61,6 @@ export async function createProject(data: CreateProjectRequest): Promise<void> {
   });
 }
 
-export async function getRecommendProjects(count = 10): Promise<ProjectPreview[]> {
-  return apiFetch<ProjectPreview[]>(`/api/projects/recommend?count=${count}`);
-}
-
 export async function updateProject(id: number, data: UpdateProjectRequest): Promise<void> {
   await apiFetch<void>(`/api/projects/${id}`, {
     method: "PATCH",
@@ -84,4 +79,18 @@ export async function updateProjectStatus(id: number, status: ProjectStatus): Pr
     method: "PATCH",
     body: JSON.stringify({ status }),
   });
+}
+
+export async function getPopularProjects(
+  page = 0,
+  size = 8,
+): Promise<PageResponse<ProjectPreview>> {
+  return apiFetch<PageResponse<ProjectPreview>>(`/api/project-feeds/popular?page=${page}&size=${size}`);
+}
+
+export async function getRecommendProjects(
+  page = 0,
+  size = 10,
+): Promise<PageResponse<ProjectPreview>> {
+  return apiFetch<PageResponse<ProjectPreview>>(`/api/project-feeds/recommend?page=${page}&size=${size}`);
 }

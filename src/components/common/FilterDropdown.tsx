@@ -44,7 +44,7 @@ export function FilterDropdown({ label, options, value, onChange }: FilterDropdo
         />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-10 mt-1 min-w-full whitespace-nowrap rounded-[10px] border border-grey3 bg-white py-1 shadow-sm">
+        <div className="absolute left-0 top-full z-10 mt-1 min-w-full whitespace-nowrap rounded-[10px] border border-grey3 bg-bg py-1 shadow-sm">
           {options.map((opt) => (
             <button
               key={opt.label}
