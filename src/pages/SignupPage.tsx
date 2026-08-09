@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/common/Button";
@@ -7,8 +7,7 @@ import { socialLoginUrl } from "@/config";
 import { useAuthStore } from "@/stores/authStore";
 import { ApiError } from "@/api/client";
 import { sendSignupEmail, verifySignupEmail } from "@/api/auth";
-import { getUnivs } from "@/api/univ";
-import type { UnivInfo } from "@/api/univ";
+import { useUnivEmail } from "@/hooks/useUnivEmail";
 
 type Step = "method" | "email" | "password" | "nickname";
 
@@ -58,18 +57,9 @@ export default function SignupPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [univs, setUnivs] = useState<UnivInfo[]>([]);
 
-  useEffect(() => {
-    getUnivs()
-      .then(setUnivs)
-      .catch(() => {});
-  }, []);
-
-  const emailDomain = email.includes("@") ? email.split("@")[1] : "";
-  const isUnivEmail = univs.some(
-    (u) => emailDomain === u.domain || emailDomain.endsWith("." + u.domain),
-  );
+  const { isUniv: isUnivEmail } = useUnivEmail(email);
+  const isNotUnivDomain = email.includes("@") && !isUnivEmail;
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,6 +190,18 @@ export default function SignupPage() {
           {isUnivEmail && (
             <p className="-mt-1 font-medium text-[13px] text-green-600">
               ✓ 학교 이메일로 회원가입시 2차 학교 인증이 즉시 완료됩니다!
+            </p>
+          )}
+
+          {isNotUnivDomain && (
+            <p className="-mt-1 font-regular text-[13px] text-red-500">
+              지원하는 대학교 도메인이 아닙니다.{" "}
+              <a
+                href="mailto:zzoin.it@gmail.com"
+                className="underline underline-offset-2"
+              >
+                문의하기
+              </a>
             </p>
           )}
 

@@ -4,6 +4,18 @@ export type GoalType = "PORTFOLIO" | "PRODUCTION" | "COMPETITION";
 export type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type RecruitmentCategory = "PLANNING" | "DESIGN" | "DEVELOPMENT" | "MARKETING";
 
+export interface JobCategory {
+  id: number;
+  categoryCode: string;
+  name: string;
+}
+
+export interface JobRole {
+  id: number;
+  name: string;
+  jobCategoryId: number;
+}
+
 export interface User {
   email: string;
   nickname: string;
@@ -34,18 +46,16 @@ export interface Recruitment {
 }
 
 export interface CreateRecruitment {
-  category: RecruitmentCategory;
-  name: string;
-  count: number;
+  jobRoleId: number;
+  recruitmentCount: number;
   qualification: string;
   preferred: string;
 }
 
 export interface UpdateRecruitment {
   recruitmentId?: number;
-  category?: RecruitmentCategory;
-  name?: string;
-  count?: number;
+  jobRoleId: number;
+  recruitmentCount?: number;
   qualification?: string;
   preferred?: string;
 }

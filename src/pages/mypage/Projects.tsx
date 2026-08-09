@@ -71,14 +71,13 @@ export default function MyPageProjectsPage() {
   const { data: statsData } = useQuery({
     queryKey: ["my-projects", "stats"],
     queryFn: async () => {
-      const all = await getMyProjects({ size: 1 });
-      const recruiting = await getMyProjects({ status: "RECRUITING", size: 1 });
-      const closed = await getMyProjects({ status: "CLOSED", size: 1 });
+      const all = await getMyProjects({ size: 200 });
+      const projects = all.content ?? [];
       return {
         ALL: all.totalElements,
-        RECRUITING: recruiting.totalElements,
-        CLOSED: closed.totalElements,
-        totalApplicants: (all.content ?? []).reduce((s, p) => s + p.applicantCount, 0),
+        RECRUITING: projects.filter((p) => p.status === "RECRUITING").length,
+        CLOSED: projects.filter((p) => p.status !== "RECRUITING").length,
+        totalApplicants: projects.reduce((s, p) => s + p.applicantCount, 0),
       };
     },
     staleTime: 60_000,

@@ -45,6 +45,27 @@ export function FieldSelect({ value, onChange, label = "직군" }: FieldSelectPr
     <div className="flex flex-col gap-2">
       <label className="font-medium text-[14px] text-grey8">{label}</label>
 
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-2 rounded-tag border border-grey3 bg-grey1 px-3 py-3">
+          {value.map((field) => (
+            <span
+              key={field}
+              className="flex items-center gap-1 rounded-tag border border-primary bg-primary px-3 py-1.5 font-medium text-[13px] text-white"
+            >
+              {field}
+              <button
+                type="button"
+                onClick={() => handleRemoveField(field)}
+                className="hover:opacity-70"
+                aria-label={`${field} 제거`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2">
         {RECRUITMENT_CATEGORIES.map((cat) => (
           <button
@@ -91,27 +112,6 @@ export function FieldSelect({ value, onChange, label = "직군" }: FieldSelectPr
               ))}
             </div>
           )}
-        </div>
-      )}
-
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-2 rounded-tag border border-grey3 bg-grey1 px-3 py-3">
-          {value.map((field) => (
-            <span
-              key={field}
-              className="flex items-center gap-1 rounded-tag border border-primary bg-primary px-3 py-1.5 font-medium text-[13px] text-white"
-            >
-              {field}
-              <button
-                type="button"
-                onClick={() => handleRemoveField(field)}
-                className="hover:opacity-70"
-                aria-label={`${field} 제거`}
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </span>
-          ))}
         </div>
       )}
     </div>

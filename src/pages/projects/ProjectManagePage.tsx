@@ -5,6 +5,7 @@ import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { DateTimePicker } from "@/components/common/DateTimePicker";
 import { RecruitmentSelect } from "@/components/common/RecruitmentSelect";
+import type { RecruitmentSelectValue } from "@/components/common/RecruitmentSelect";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { ApplicantDetailModal } from "@/components/project/ApplicantDetailModal";
 import { deleteProject, getProjectById, updateProject, updateProjectStatus } from "@/api/projects";
@@ -51,7 +52,7 @@ function formatDate(iso: string): string {
 interface RecruitmentForm {
   recruitmentId?: number;
   category: RecruitmentCategory | "";
-  name: string;
+  jobRoleId: number | null;
   count: number;
   qualification: string;
   preferred: string;
@@ -103,7 +104,7 @@ export default function ProjectManagePage() {
           detail.recruitments.map((r) => ({
             recruitmentId: r.id,
             category: r.category,
-            name: r.name,
+            jobRoleId: null,
             count: r.recruitmentCount,
             qualification: r.qualification,
             preferred: r.preferred,
@@ -136,7 +137,13 @@ export default function ProjectManagePage() {
   const addRecruitment = () => {
     setRecruitments((prev) => [
       ...prev,
-      { category: "", name: "", count: 1, qualification: "", preferred: "" },
+      {
+        category: "",
+        jobRoleId: null,
+        count: 1,
+        qualification: "",
+        preferred: "",
+      },
     ]);
   };
 
@@ -152,8 +159,18 @@ export default function ProjectManagePage() {
     setRecruitments((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
   };
 
-  const updateRecruitmentRole = (idx: number, category: RecruitmentCategory, name: string) => {
-    setRecruitments((prev) => prev.map((r, i) => (i === idx ? { ...r, category, name } : r)));
+  const updateRecruitmentRole = (idx: number, roleValue: RecruitmentSelectValue) => {
+    setRecruitments((prev) =>
+      prev.map((r, i) =>
+        i === idx
+          ? {
+              ...r,
+              category: roleValue.category,
+              jobRoleId: roleValue.jobRoleId,
+            }
+          : r,
+      ),
+    );
   };
 
   const handleStatusChange = async (newStatus: ProjectStatus) => {
@@ -201,7 +218,7 @@ export default function ProjectManagePage() {
     }
 
     const hasEmptyRecruitment = recruitments.some(
-      (r) => !r.category || !r.name || !r.qualification || !r.preferred,
+      (r) => !r.category || r.jobRoleId == null || !r.qualification || !r.preferred,
     );
     if (hasEmptyRecruitment) {
       setError("모집 역할의 필수 항목을 모두 입력해주세요.");
@@ -222,9 +239,8 @@ export default function ProjectManagePage() {
         imageUrl,
         recruitments: recruitments.map<UpdateRecruitment>((r) => ({
           recruitmentId: r.recruitmentId,
-          category: r.category as RecruitmentCategory,
-          name: r.name,
-          count: r.count,
+          jobRoleId: r.jobRoleId!,
+          recruitmentCount: r.count,
           qualification: r.qualification,
           preferred: r.preferred,
         })),
@@ -427,9 +443,11 @@ export default function ProjectManagePage() {
                     )}
                   </div>
                   <RecruitmentSelect
-                    category={r.category}
-                    name={r.name}
-                    onChange={(cat, n) => updateRecruitmentRole(idx, cat, n)}
+                    value={{
+                      category: r.category,
+                      jobRoleId: r.jobRoleId,
+                    }}
+                    onChange={(v) => updateRecruitmentRole(idx, v)}
                   />
                   <div>
                     <label className="mb-2 block font-medium text-[14px] text-grey8">

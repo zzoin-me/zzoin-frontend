@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { FieldSelect } from "@/components/common/FieldSelect";
 import { StackSelector } from "@/components/common/StackSelector";
@@ -109,12 +109,9 @@ export default function OnboardingPage() {
       </div>
 
       {step !== "done" && (
-        <div className="mb-5 flex items-center justify-center gap-1.5 rounded-tag bg-primary-light px-4 py-2.5">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <p className="font-medium text-[13px] text-grey8">
-            언제든 내 프로필에서 수정할 수 있어요!
-          </p>
-        </div>
+        <p className="mb-4 text-center font-regular text-[13px] text-grey6">
+          언제든 내 프로필에서 수정할 수 있어요!
+        </p>
       )}
 
       {error && (
@@ -129,7 +126,7 @@ export default function OnboardingPage() {
               type="button"
               variant="ghost"
               size="lg"
-              className="flex-1"
+              className="flex-1 border border-[#F97316] text-[#F97316] hover:bg-[#F97316]/5"
               onClick={() => skipTo("stacks")}
               disabled={loading}
             >
@@ -161,7 +158,7 @@ export default function OnboardingPage() {
               type="button"
               variant="ghost"
               size="lg"
-              className="flex-1"
+              className="flex-1 border border-[#F97316] text-[#F97316] hover:bg-[#F97316]/5"
               onClick={() => skipTo("bio")}
               disabled={loading}
             >
@@ -202,7 +199,7 @@ export default function OnboardingPage() {
               type="button"
               variant="ghost"
               size="lg"
-              className="flex-1"
+              className="flex-1 border border-[#F97316] text-[#F97316] hover:bg-[#F97316]/5"
               onClick={() => skipTo("done")}
               disabled={loading}
             >

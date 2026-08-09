@@ -6,15 +6,14 @@ import type {
   UpdateProjectRequest,
   ProjectStatus,
   PageResponse,
-  RecruitmentCategory,
   GoalType,
 } from "@/types";
 
 export interface ProjectListParams {
   keyword?: string;
   sort?: string;
-  categories?: RecruitmentCategory[];
-  names?: string[];
+  category?: string;
+  name?: string;
   maxDays?: number;
   minCount?: number;
   maxCount?: number;
@@ -28,8 +27,8 @@ function buildQuery(params: ProjectListParams): string {
   const q = new URLSearchParams();
   if (params.keyword) q.set("keyword", params.keyword);
   q.set("sort", params.sort ?? "LATEST");
-  if (params.categories) params.categories.forEach((c) => q.append("categories", c));
-  if (params.names) params.names.forEach((n) => q.append("names", n));
+  if (params.category) q.set("category", params.category);
+  if (params.name) q.set("name", params.name);
   if (params.maxDays) q.set("maxDays", String(params.maxDays));
   if (params.minCount != null) q.set("minCount", String(params.minCount));
   if (params.maxCount != null) q.set("maxCount", String(params.maxCount));

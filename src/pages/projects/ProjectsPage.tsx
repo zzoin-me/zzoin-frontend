@@ -122,8 +122,8 @@ export default function ProjectsPage() {
     return {
       keyword: keyword || undefined,
       sort: sortFromTab(activeTab),
-      categories: f.selectedCategory ? [f.selectedCategory] : undefined,
-      names: f.names.length > 0 ? f.names : undefined,
+      category: f.selectedCategory ?? undefined,
+      name: f.names.length > 0 ? f.names[0] : undefined,
       goals: f.goals.length > 0 ? f.goals : undefined,
       recruitingOnly: f.recruitingOnly || undefined,
       minCount: f.minCount > 1 ? f.minCount : undefined,

@@ -5,6 +5,7 @@ import { Input } from "@/components/common/Input";
 import { sendUnivEmail, verifyUnivEmail } from "@/api/auth";
 import { ApiError } from "@/api/client";
 import { useAuthStore } from "@/stores/authStore";
+import { useUnivEmail } from "@/hooks/useUnivEmail";
 
 export default function VerifyUnivPage() {
   const navigate = useNavigate();
@@ -16,13 +17,18 @@ export default function VerifyUnivPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const fullEmail = `${emailPrefix}@${domain}`;
+  const fullEmail = emailPrefix && domain ? `${emailPrefix}@${domain}` : "";
+  const { isUniv: isUnivEmail } = useUnivEmail(fullEmail);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!emailPrefix || !domain) {
       setError("이메일을 입력해주세요.");
+      return;
+    }
+    if (!isUnivEmail) {
+      setError("지원하는 대학교 도메인이 아닙니다. 문의하기");
       return;
     }
     setLoading(true);
@@ -117,7 +123,16 @@ export default function VerifyUnivPage() {
           </div>
         </div>
 
-        {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
+        {error && error.startsWith("지원하는 대학교 도메인이 아닙니다") ? (
+          <p className="font-regular text-[13px] text-red-500">
+            지원하는 대학교 도메인이 아닙니다.{" "}
+            <a href="mailto:zzoin.it@gmail.com" className="underline underline-offset-2">
+              문의하기
+            </a>
+          </p>
+        ) : (
+          error && <p className="font-regular text-[13px] text-red-500">{error}</p>
+        )}
 
         <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading || !codeSent}>
           {loading ? "인증번호 발송 중" : "인증 완료하기"}

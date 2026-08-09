@@ -5,6 +5,7 @@ import { createProject } from "@/api/projects";
 import { ApiError } from "@/api/client";
 import { DateTimePicker } from "@/components/common/DateTimePicker";
 import { RecruitmentSelect } from "@/components/common/RecruitmentSelect";
+import type { RecruitmentSelectValue } from "@/components/common/RecruitmentSelect";
 import type {
   CreateProjectRequest,
   CollaborationType,
@@ -40,22 +41,22 @@ export default function ProjectCreatePage() {
   const [goalType, setGoalType] = useState<GoalType>("PORTFOLIO");
   const [imageUrl] = useState("https://via.placeholder.com/300x200");
 
-  const [recruitments, setRecruitments] = useState([
-    {
+  const [recruitments, setRecruitments] = useState(
+    Array.from({ length: 1 }, () => ({
       category: "" as RecruitmentCategory | "",
-      name: "",
+      jobRoleId: null as number | null,
       count: 1,
       qualification: "",
       preferred: "",
-    },
-  ]);
+    })),
+  );
 
   const addRecruitment = () => {
     setRecruitments((prev) => [
       ...prev,
       {
         category: "" as RecruitmentCategory | "",
-        name: "",
+        jobRoleId: null as number | null,
         count: 1,
         qualification: "",
         preferred: "",
@@ -71,8 +72,18 @@ export default function ProjectCreatePage() {
     setRecruitments((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
   };
 
-  const updateRecruitmentRole = (idx: number, category: RecruitmentCategory, name: string) => {
-    setRecruitments((prev) => prev.map((r, i) => (i === idx ? { ...r, category, name } : r)));
+  const updateRecruitmentRole = (idx: number, roleValue: RecruitmentSelectValue) => {
+    setRecruitments((prev) =>
+      prev.map((r, i) =>
+        i === idx
+          ? {
+              ...r,
+              category: roleValue.category,
+              jobRoleId: roleValue.jobRoleId,
+            }
+          : r,
+      ),
+    );
   };
 
   const [questions, setQuestions] = useState<
@@ -184,9 +195,7 @@ export default function ProjectCreatePage() {
     const hasInvalidRecruitment = recruitments.some(
       (r) =>
         !r.category ||
-        !r.name ||
-        r.name.trim().length < 2 ||
-        r.name.trim().length > 30 ||
+        r.jobRoleId == null ||
         !r.qualification ||
         r.qualification.trim().length < 2 ||
         r.qualification.trim().length > 200 ||
@@ -225,9 +234,8 @@ export default function ProjectCreatePage() {
         goalType,
         imageUrl,
         recruitments: recruitments.map((r) => ({
-          category: r.category as RecruitmentCategory,
-          name: r.name,
-          count: r.count,
+          jobRoleId: r.jobRoleId!,
+          recruitmentCount: r.count,
           qualification: r.qualification,
           preferred: r.preferred,
         })),
@@ -376,9 +384,11 @@ export default function ProjectCreatePage() {
                     <div className="flex flex-col gap-1">
                       <span className="font-medium text-[20px] text-grey9">모집 직군</span>
                       <RecruitmentSelect
-                        category={r.category}
-                        name={r.name}
-                        onChange={(cat, n) => updateRecruitmentRole(idx, cat, n)}
+                        value={{
+                          category: r.category,
+                          jobRoleId: r.jobRoleId,
+                        }}
+                        onChange={(v) => updateRecruitmentRole(idx, v)}
                       />
                     </div>
                     <div className="flex w-full flex-col gap-1 md:w-[133px]">
