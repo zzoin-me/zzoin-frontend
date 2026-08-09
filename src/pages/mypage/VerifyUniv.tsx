@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { sendUnivEmail, verifyUnivEmail } from "@/api/auth";
@@ -10,6 +11,7 @@ import { useUnivEmail } from "@/hooks/useUnivEmail";
 export default function VerifyUnivPage() {
   const navigate = useNavigate();
   const restoreSession = useAuthStore((s) => s.restoreSession);
+  const user = useAuthStore((s) => s.user);
   const [emailPrefix, setEmailPrefix] = useState("");
   const [domain, setDomain] = useState("");
   const [code, setCode] = useState("");
@@ -60,6 +62,28 @@ export default function VerifyUnivPage() {
       setLoading(false);
     }
   };
+
+  if (user?.verified) {
+    return (
+      <div>
+        <h1 className="font-bold text-[24px] text-grey9">대학교 인증</h1>
+        <section className="mt-8 flex flex-col items-center gap-4 rounded-[20px] border border-grey5 px-5 py-10 text-center md:px-8">
+          <CheckCircle2 className="h-10 w-10 text-green-600" aria-hidden />
+          <div className="flex flex-col gap-2">
+            <h2 className="font-bold text-[18px] text-grey9">이미 대학 인증이 완료되었습니다.</h2>
+            <p className="font-regular text-[14px] text-grey6">
+              {user.verifiedEmail
+                ? `${user.verifiedEmail} 이메일로 인증되었습니다.`
+                : "인증된 계정으로 모든 기능을 사용할 수 있습니다."}
+            </p>
+          </div>
+          <Button type="button" variant="outline" onClick={() => navigate("/mypage")}>
+            마이페이지로 돌아가기
+          </Button>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -7,6 +7,7 @@ import { Logo } from "@/components/common/Logo";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { Avatar } from "@/components/common/Avatar";
 import { NotificationBadge } from "@/components/common/NotificationBadge";
+import { NotificationToast } from "@/components/common/NotificationToast";
 import { useAuthStore } from "@/stores/authStore";
 import { useIsMobile } from "@/utils/useMediaQuery";
 import { useNotificationSSE } from "@/hooks/useNotificationSSE";
@@ -22,7 +23,7 @@ export function AppLayout() {
   const isHomePage = location.pathname === "/";
   const queryClient = useQueryClient();
 
-  useNotificationSSE();
+  const realtimeNotification = useNotificationSSE();
   useFCMPush();
 
   const handleRefresh = async () => {
@@ -58,7 +59,10 @@ export function AppLayout() {
       {isMobile && showSpinner && (
         <div
           className="pointer-events-none fixed left-0 right-0 top-[env(safe-area-inset-top)] z-50 flex items-center justify-center"
-          style={{ transform: `translateY(${spinnerOffset - 40}px)`, transition: isRefreshing || pullDistance === 0 ? "transform 0.3s ease" : "none" }}
+          style={{
+            transform: `translateY(${spinnerOffset - 40}px)`,
+            transition: isRefreshing || pullDistance === 0 ? "transform 0.3s ease" : "none",
+          }}
         >
           <Loader2
             className={`h-7 w-7 text-primary ${isRefreshing ? "animate-spin" : ""}`}
@@ -69,6 +73,7 @@ export function AppLayout() {
       )}
 
       <ScrollToTop />
+      <NotificationToast notification={realtimeNotification} />
       <Navbar />
 
       {isHomePage && (

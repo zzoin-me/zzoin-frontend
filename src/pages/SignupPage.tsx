@@ -58,8 +58,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { isUniv: isUnivEmail } = useUnivEmail(email);
-  const isNotUnivDomain = email.includes("@") && !isUnivEmail;
+  const { matchedUniv } = useUnivEmail(email);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,21 +186,9 @@ export default function SignupPage() {
             }}
           />
 
-          {isUnivEmail && (
+          {matchedUniv && (
             <p className="-mt-1 font-medium text-[13px] text-green-600">
-              ✓ 학교 이메일로 회원가입시 2차 학교 인증이 즉시 완료됩니다!
-            </p>
-          )}
-
-          {isNotUnivDomain && (
-            <p className="-mt-1 font-regular text-[13px] text-red-500">
-              지원하는 대학교 도메인이 아닙니다.{" "}
-              <a
-                href="mailto:zzoin.it@gmail.com"
-                className="underline underline-offset-2"
-              >
-                문의하기
-              </a>
+              ✓ {matchedUniv.name} 이메일입니다. 가입 후 2차 대학 인증이 자동 완료됩니다.
             </p>
           )}
 

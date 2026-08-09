@@ -1,11 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getAccessToken, refreshStoredTokens } from "@/api/client";
+import type { NotificationItem } from "@/api/notification";
 import { apiBaseUrl } from "@/config";
 import { useAuthStore } from "@/stores/authStore";
 
 const TOKEN_REFRESH_MARGIN_MS = 30_000;
 const RECONNECT_DELAY_MS = 5_000;
+
+export type RealtimeNotification = Omit<NotificationItem, "isRead">;
 
 function normalizeToken(token: string): string {
   return token.startsWith("Bearer ") ? token.substring(7) : token;
@@ -31,9 +34,13 @@ function getTokenExpiration(token: string): number {
 export function useNotificationSSE() {
   const queryClient = useQueryClient();
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const [latestNotification, setLatestNotification] = useState<RealtimeNotification | null>(null);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn) {
+      setLatestNotification(null);
+      return;
+    }
 
     let eventSource: EventSource | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -86,7 +93,12 @@ export function useNotificationSSE() {
         `${apiBaseUrl}/api/notifications/stream?token=${encodeURIComponent(token)}`,
       );
 
-      eventSource.addEventListener("notification", () => {
+      eventSource.addEventListener("notification", (event) => {
+        try {
+          setLatestNotification(JSON.parse(event.data) as RealtimeNotification);
+        } catch {
+          setLatestNotification(null);
+        }
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
         queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
       });
@@ -103,10 +115,13 @@ export function useNotificationSSE() {
         reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
       };
 
-      refreshTimer = setTimeout(() => {
-        disconnect();
-        void refreshAndConnect();
-      }, expiresAt - Date.now() - TOKEN_REFRESH_MARGIN_MS);
+      refreshTimer = setTimeout(
+        () => {
+          disconnect();
+          void refreshAndConnect();
+        },
+        expiresAt - Date.now() - TOKEN_REFRESH_MARGIN_MS,
+      );
     };
 
     connect();
@@ -117,4 +132,6 @@ export function useNotificationSSE() {
       if (reconnectTimer) clearTimeout(reconnectTimer);
     };
   }, [isLoggedIn, queryClient]);
+
+  return latestNotification;
 }
