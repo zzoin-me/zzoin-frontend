@@ -62,13 +62,6 @@ export default function MyPageChatsPage() {
               to={`/projects/${room.projectId}/chat`}
               className="flex items-center gap-4 bg-bg p-4 transition-colors hover:bg-grey1 md:p-5"
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-grey3">
-                {room.projectImageUrl ? (
-                  <img src={room.projectImageUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <MessageCircle className="h-5 w-5 text-grey6" aria-hidden />
-                )}
-              </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="truncate font-bold text-[15px] text-grey9 md:text-[17px]">
