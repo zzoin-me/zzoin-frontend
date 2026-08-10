@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://zzoin-api.kyuyoung.dev/api/$1"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
