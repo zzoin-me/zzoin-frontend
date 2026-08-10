@@ -17,6 +17,7 @@ interface AuthState {
     signupToken: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
+  clearSession: () => void;
   restoreSession: () => Promise<void>;
 }
 
@@ -71,6 +72,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     clearTokens();
     set({ isLoggedIn: false, user: null });
+  },
+
+  clearSession: () => {
+    clearTokens();
+    set({ isLoggedIn: false, user: null, initialized: true });
   },
 
   restoreSession: async () => {

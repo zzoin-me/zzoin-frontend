@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
-  Heart,
-  MessageCircle,
-  Eye,
   PencilLine,
   FileText,
   Flame,
@@ -17,8 +14,8 @@ import {
 } from "lucide-react";
 import { SearchBar } from "@/components/common/SearchBar";
 import { Pagination } from "@/components/common/Pagination";
+import { CommunityPostList } from "@/components/community/CommunityPostList";
 import { getPosts } from "@/api/community";
-import { formatKoreanDatetime } from "@/utils/datetime";
 import { useAuthStore } from "@/stores/authStore";
 import type { CommunityBoardType } from "@/types";
 
@@ -68,7 +65,7 @@ export default function CommunityPage() {
     }
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["posts", { board: activeBoard, sort: activeSort, keyword: searchKeyword, page }],
     queryFn: () =>
       getPosts({
@@ -97,8 +94,8 @@ export default function CommunityPage() {
   }, [toast]);
 
   return (
-    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10">
-      <div className="lg:hidden">
+    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10 native:px-8 native:py-6">
+      <div className="lg:hidden native:block">
         <div className="flex items-center gap-3">
           <SearchBar
             className="flex-1"
@@ -137,68 +134,30 @@ export default function CommunityPage() {
           })}
         </nav>
 
-        {searchKeyword && (
-          <div className="mt-6">
-            <p className="mb-3 font-medium text-[14px] text-grey8">
-              "{searchKeyword}" 검색 결과
-            </p>
-            <ul className="flex flex-col gap-4">
-              {isLoading ? (
-                <li className="py-10 text-center font-regular text-[14px] text-grey6">
-                  불러오는 중...
-                </li>
-              ) : posts.length === 0 ? (
-                <li className="py-10 text-center font-regular text-[14px] text-grey6">
-                  게시글이 없어요.
-                </li>
-              ) : (
-                posts.map((p) => (
-                  <li key={p.id}>
-                    <Link
-                      to={`/community/${p.id}`}
-                      className="block rounded-[16px] border border-grey3 p-5 transition-shadow hover:shadow-sm"
-                    >
-                      <h2 className="font-bold text-[16px] text-grey9">{p.title}</h2>
-                      <p className="mt-1.5 line-clamp-2 font-medium text-[13px] text-grey7">
-                        {p.contentPreview}
-                      </p>
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-grey3 pt-3">
-                        <div className="flex items-center gap-2 font-regular text-[12px] text-grey6">
-                          <span className="font-medium text-grey9">{p.author.nickname}</span>
-                          <span aria-hidden>·</span>
-                          <span>{formatKoreanDatetime(p.createdAt)}</span>
-                        </div>
-                        <div className="flex items-center gap-3 font-regular text-[12px] text-grey6">
-                          <span className="flex items-center gap-1">
-                            <Heart className="h-3.5 w-3.5" aria-hidden /> {p.likeCount}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MessageCircle className="h-3.5 w-3.5" aria-hidden /> {p.commentCount}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3.5 w-3.5" aria-hidden /> {p.viewCount}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))
-              )}
-            </ul>
-            {totalPages > 1 && (
-              <div className="mt-6">
-                <Pagination
-                  currentPage={page + 1}
-                  totalPages={totalPages}
-                  onPageChange={(p) => setPage(p - 1)}
-                />
-              </div>
-            )}
-          </div>
-        )}
+        <div className="mt-7">
+          <p className="mb-4 font-bold text-[18px] text-grey9">
+            {searchKeyword ? `“${searchKeyword}” 검색 결과` : "최신 게시글"}
+          </p>
+          <CommunityPostList
+            posts={posts}
+            isLoading={isLoading}
+            isFetching={isFetching}
+            isError={isError}
+            onRetry={() => void refetch()}
+          />
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={page + 1}
+                totalPages={totalPages}
+                onPageChange={(nextPage) => setPage(nextPage - 1)}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="hidden lg:flex lg:gap-8">
+      <div className="hidden lg:flex lg:gap-8 native:hidden">
         <aside className="w-[200px] shrink-0">
           <nav className="flex flex-col gap-0.5">
             {sidebarMenus.map((menu, idx) => {
@@ -262,49 +221,15 @@ export default function CommunityPage() {
             </div>
           </div>
 
-          <ul className="mt-6 flex flex-col gap-5">
-            {isLoading ? (
-              <li className="py-20 text-center font-regular text-[16px] text-grey6">
-                불러오는 중...
-              </li>
-            ) : posts.length === 0 ? (
-              <li className="py-20 text-center font-regular text-[16px] text-grey6">
-                게시글이 없어요.
-              </li>
-            ) : (
-              posts.map((p) => (
-                <li key={p.id}>
-                  <Link
-                    to={`/community/${p.id}`}
-                    className="block rounded-card border border-grey5 p-6 transition-shadow hover:shadow-sm"
-                  >
-                    <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">{p.title}</h2>
-                    <p className="mt-2 line-clamp-2 font-medium text-[14px] text-grey7 md:text-[16px]">
-                      {p.contentPreview}
-                    </p>
-                    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-grey3 pt-4">
-                      <div className="flex items-center gap-2 font-regular text-[12px] text-grey6">
-                        <span className="font-medium text-grey9">{p.author.nickname}</span>
-                        <span aria-hidden>·</span>
-                        <span>{formatKoreanDatetime(p.createdAt)}</span>
-                      </div>
-                      <div className="flex items-center gap-3 font-regular text-[12px] text-grey6">
-                        <span className="flex items-center gap-1">
-                          <Heart className="h-3.5 w-3.5" aria-hidden /> {p.likeCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="h-3.5 w-3.5" aria-hidden /> {p.commentCount}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3.5 w-3.5" aria-hidden /> {p.viewCount}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </li>
-              ))
-            )}
-          </ul>
+          <div className="mt-6">
+            <CommunityPostList
+              posts={posts}
+              isLoading={isLoading}
+              isFetching={isFetching}
+              isError={isError}
+              onRetry={() => void refetch()}
+            />
+          </div>
 
           {totalPages > 1 && (
             <div className="mt-10">

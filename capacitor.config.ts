@@ -1,17 +1,19 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
+
+const localHttp = process.env.CAPACITOR_LOCAL_HTTP === "true";
 
 const config: CapacitorConfig = {
-  appId: 'com.zzoin.app',
-  appName: 'Zzoin',
-  webDir: 'dist',
-  // android http testing
+  appId: "com.zzoin.app",
+  appName: "Zzoin",
+  webDir: "dist",
   server: {
-      cleartext: true
+    androidScheme: localHttp ? "http" : "https",
+    cleartext: localHttp,
   },
   plugins: {
-      CapacitorHttp: {
-        enabled: true,
-      },
+    CapacitorHttp: {
+      enabled: true,
+    },
   },
 };
 

@@ -9,6 +9,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "cap:sync:local": "CAPACITOR_LOCAL_HTTP=true cap sync",
+    "cap:sync:prod": "cap sync",
     "preview": "vite preview"
   },
   "dependencies": {

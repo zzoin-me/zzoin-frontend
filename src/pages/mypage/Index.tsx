@@ -11,6 +11,7 @@ import {
   Edit3,
   Plus,
   PenSquare,
+  MessageCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { WithdrawModal } from "@/components/auth/WithdrawModal";
@@ -23,6 +24,7 @@ const mobileMenus = [
   { to: "/mypage/profile", label: "프로필 정보", desc: "닉네임 · 직군 · 기술 스택 · 소개" },
   { to: "/mypage/verify-univ", label: "대학 인증", desc: "학교 · 학과 · 학년 정보 관리" },
   { to: "/mypage/notifications", label: "알림", desc: "받은 알림 확인" },
+  { to: "/mypage/chats", label: "프로젝트 대화", desc: "팀원들과 나눈 대화" },
   { to: "/mypage/applications", label: "프로젝트 지원 현황", desc: "지원한 프로젝트 현황" },
   { to: "/mypage/projects", label: "내 프로젝트 관리", desc: "생성한 프로젝트 관리" },
   { to: "/mypage/reviews", label: "프로젝트 후기", desc: "참여한 팀원 평가" },
@@ -63,8 +65,24 @@ export default function MyPageIndexPage() {
   ];
 
   const quickActions = [
-    { label: "프로젝트 등록", desc: "새로운 프로젝트를 모집해보세요", icon: Plus, to: "/projects/create" },
-    { label: "커뮤니티 글쓰기", desc: "궁금한 점이나 정보를 공유하세요", icon: PenSquare, to: "/community/new" },
+    {
+      label: "프로젝트 등록",
+      desc: "새로운 프로젝트를 모집해보세요",
+      icon: Plus,
+      to: "/projects/create",
+    },
+    {
+      label: "커뮤니티 글쓰기",
+      desc: "궁금한 점이나 정보를 공유하세요",
+      icon: PenSquare,
+      to: "/community/new",
+    },
+    {
+      label: "프로젝트 대화",
+      desc: "참여 중인 팀원들과 대화하세요",
+      icon: MessageCircle,
+      to: "/mypage/chats",
+    },
   ];
 
   return (
@@ -123,7 +141,7 @@ export default function MyPageIndexPage() {
           })}
         </div>
 
-        <div className="hidden gap-4 lg:grid lg:grid-cols-2">
+        <div className="hidden gap-4 lg:grid lg:grid-cols-2 xl:grid-cols-3">
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
@@ -139,7 +157,10 @@ export default function MyPageIndexPage() {
                   <span className="font-bold text-[16px] text-grey9">{action.label}</span>
                   <span className="font-regular text-[13px] text-grey6">{action.desc}</span>
                 </div>
-                <ChevronRight className="ml-auto h-5 w-5 text-grey4 transition-transform group-hover:translate-x-1" aria-hidden />
+                <ChevronRight
+                  className="ml-auto h-5 w-5 text-grey4 transition-transform group-hover:translate-x-1"
+                  aria-hidden
+                />
               </Link>
             );
           })}

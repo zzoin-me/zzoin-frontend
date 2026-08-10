@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant native (&:where(.native-app, .native-app *));
+
 @font-face {
   font-family: "Pretendard";
   src: url("/fonts/Pretendard-Thin.woff2") format("woff2");

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import { Home, FolderGit2, MessageCircle, User } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Keyboard } from "@capacitor/keyboard";
@@ -12,6 +12,7 @@ const tabs = [
 ];
 
 export function TabBar() {
+  const location = useLocation();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
@@ -39,10 +40,10 @@ export function TabBar() {
     };
   }, []);
 
-  if (keyboardVisible) return null;
+  if (keyboardVisible || /^\/projects\/\d+\/chat$/.test(location.pathname)) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-grey3 bg-bg pb-[max(env(safe-area-inset-bottom),16px)] lg:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-grey3 bg-bg pb-[max(env(safe-area-inset-bottom),16px)] lg:hidden native:block">
       <ul className="mx-auto flex max-w-[768px] items-stretch justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
+import { ClipboardPenLine, MessageCircle } from "lucide-react";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { CountTabs, type CountTab } from "@/components/common/CountTabs";
 import { FilterDropdown, type FilterOption } from "@/components/common/FilterDropdown";
@@ -8,7 +9,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { ApplicantDetailModal } from "@/components/project/ApplicantDetailModal";
 import { getMyProjects } from "@/api/user";
 import { getApplicants, updateApplicantStatus } from "@/api/application";
-import type { ProjectApplicant, ProjectStatus } from "@/types";
+import type { ProjectApplicant } from "@/types";
 import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 
 type StatusFilter = "ALL" | "RECRUITING" | "CLOSED";
@@ -21,10 +22,6 @@ const periodOptions: FilterOption[] = [
   { label: "지난 3개월", value: "3m" },
   { label: "지난 6개월", value: "6m" },
 ];
-
-function isRecruiting(status: ProjectStatus): boolean {
-  return status === "RECRUITING";
-}
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -223,7 +220,9 @@ export default function MyPageProjectsPage() {
                     type="button"
                     onClick={() => handleToggleExpand(project.id)}
                     className={`flex min-w-0 flex-1 flex-col gap-2 text-left ${
-                      !isRecruiting(project.status) ? "opacity-40" : ""
+                      project.status === "RECRUITMENT_CLOSED" || project.status === "COMPLETED"
+                        ? "opacity-40"
+                        : ""
                     }`}
                   >
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
@@ -241,12 +240,32 @@ export default function MyPageProjectsPage() {
                       </span>
                     </div>
                   </button>
-                  <Link
-                    to={`/projects/${project.id}/manage`}
-                    className="shrink-0 self-center rounded-[20px] border border-grey5 px-4 py-2 font-medium text-[14px] text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:px-4 md:py-4 md:text-[20px]"
-                  >
-                    관리
-                  </Link>
+                  <div className="flex shrink-0 items-center gap-2 self-center">
+                    {(project.status === "IN_PROGRESS" || project.status === "COMPLETED") && (
+                      <Link
+                        to={`/projects/${project.id}/chat`}
+                        className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-grey5 text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:h-14 md:w-14"
+                        aria-label="프로젝트 대화방"
+                      >
+                        <MessageCircle className="h-5 w-5" aria-hidden />
+                      </Link>
+                    )}
+                    {project.status === "COMPLETED" && (
+                      <Link
+                        to={`/mypage/reviews/${project.id}`}
+                        className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-grey5 text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:h-14 md:w-14"
+                        aria-label="팀원 후기 작성"
+                      >
+                        <ClipboardPenLine className="h-5 w-5" aria-hidden />
+                      </Link>
+                    )}
+                    <Link
+                      to={`/projects/${project.id}/manage`}
+                      className="rounded-[20px] border border-grey5 px-4 py-2 font-medium text-[14px] text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:px-4 md:py-4 md:text-[20px]"
+                    >
+                      관리
+                    </Link>
+                  </div>
                 </div>
 
                 {isExpanded && (

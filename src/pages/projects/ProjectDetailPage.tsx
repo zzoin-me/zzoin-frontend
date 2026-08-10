@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Users, Calendar, MessageCircle, Target } from "lucide-react";
+import {
+  ChevronLeft,
+  Users,
+  Calendar,
+  MessageCircle,
+  Target,
+  ClipboardPenLine,
+} from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Avatar } from "@/components/common/Avatar";
 import { LoadingState } from "@/components/common/LoadingState";
 import { ApplyModal } from "@/components/project/ApplyModal";
 import { getProjectById } from "@/api/projects";
+import { getChatRooms } from "@/api/chat";
+import { getReviewTargets } from "@/api/reviews";
 import { useAuthStore } from "@/stores/authStore";
 import { calculateDday } from "@/utils/dday";
 import { formatKoreanDatetime } from "@/utils/datetime";
@@ -26,7 +35,21 @@ export default function ProjectDetailPage() {
     enabled: !Number.isNaN(projectId),
   });
 
+  const { data: chatRooms = [] } = useQuery({
+    queryKey: ["project-chats"],
+    queryFn: getChatRooms,
+    enabled: !!user?.verified,
+    staleTime: 30_000,
+  });
+
   const isAuthor = !!(user && project && project.authorNickname === user.nickname);
+
+  const reviewTargetsQuery = useQuery({
+    queryKey: ["reviews", "targets", projectId],
+    queryFn: () => getReviewTargets(projectId),
+    enabled: !!user?.verified && project?.projectStatus === "COMPLETED",
+    retry: false,
+  });
 
   if (isLoading) {
     return <LoadingState />;
@@ -60,8 +83,60 @@ export default function ProjectDetailPage() {
     COMPETITION: "공모전",
   };
 
+  const chatStatus =
+    project.projectStatus === "IN_PROGRESS" || project.projectStatus === "COMPLETED";
+  const hasChatAccess =
+    chatStatus && (isAuthor || chatRooms.some((room) => room.projectId === project.id));
+  const renderPrimaryAction = (className: string) => {
+    if (hasChatAccess) {
+      return (
+        <div className={`flex flex-col gap-2 ${className}`}>
+          <Link
+            to={`/projects/${id}/chat`}
+            className="flex h-[54px] w-full items-center justify-center rounded-tag bg-primary px-6 font-bold text-[18px] text-white transition-opacity hover:opacity-90"
+          >
+            프로젝트 대화
+          </Link>
+          {project.projectStatus === "COMPLETED" && reviewTargetsQuery.isSuccess && (
+            <Link
+              to={`/mypage/reviews/${id}`}
+              className="flex h-[54px] w-full items-center justify-center gap-2 rounded-tag border border-primary bg-bg px-6 font-bold text-[16px] text-primary transition-colors hover:bg-primary-light"
+            >
+              <ClipboardPenLine className="h-5 w-5" aria-hidden />
+              프로젝트 후기
+            </Link>
+          )}
+        </div>
+      );
+    }
+    if (isAuthor) {
+      return (
+        <Link
+          to={`/projects/${id}/manage`}
+          className={`flex h-[54px] items-center justify-center rounded-tag bg-primary px-6 font-bold text-[18px] text-white transition-opacity hover:opacity-90 ${className}`}
+        >
+          관리하기
+        </Link>
+      );
+    }
+    if (project.projectStatus === "RECRUITING") {
+      return (
+        <Button size="lg" className={className} onClick={() => setShowApplyModal(true)}>
+          지원하기
+        </Button>
+      );
+    }
+    return (
+      <div
+        className={`flex h-[54px] items-center justify-center rounded-tag border border-grey4 bg-grey1 px-6 font-medium text-[15px] text-grey6 ${className}`}
+      >
+        모집이 마감되었습니다
+      </div>
+    );
+  };
+
   return (
-    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px]">
+    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] native:px-8">
       <button
         onClick={() => navigate(-1)}
         className="mb-4 flex items-center text-grey9"
@@ -70,10 +145,10 @@ export default function ProjectDetailPage() {
         <ChevronLeft className="h-9 w-9" />
       </button>
 
-      <div className="flex flex-col gap-6 border-b border-grey3 py-6 md:flex-row md:items-start md:gap-8 md:py-10 lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-6 border-b border-grey3 py-6 md:flex-row md:items-start md:gap-8 md:py-10 lg:items-end lg:justify-between native:flex-col native:items-stretch">
         <div className="flex items-start gap-4 md:gap-8 lg:gap-[50px]">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary md:h-[160px] md:w-[160px] lg:h-[200px] lg:w-[200px]">
-            <span className="font-bold text-[24px] text-white md:text-[48px] lg:text-[60px]">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary md:h-[160px] md:w-[160px] lg:h-[200px] lg:w-[200px] native:h-[160px] native:w-[160px]">
+            <span className="font-bold text-[24px] text-white md:text-[48px] lg:text-[60px] native:text-[48px]">
               {dday}
             </span>
           </div>
@@ -110,19 +185,8 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
-        <div className="hidden shrink-0 lg:block">
-          {isAuthor ? (
-            <Link
-              to={`/projects/${id}/manage`}
-              className="flex h-[54px] w-[180px] items-center justify-center rounded-tag bg-primary px-6 font-bold text-[18px] text-white transition-opacity hover:opacity-90"
-            >
-              관리하기
-            </Link>
-          ) : (
-            <Button size="lg" className="w-[180px]" onClick={() => setShowApplyModal(true)}>
-              지원하기
-            </Button>
-          )}
+        <div className="hidden shrink-0 lg:block native:hidden">
+          {renderPrimaryAction("w-[180px]")}
         </div>
       </div>
 
@@ -147,7 +211,7 @@ export default function ProjectDetailPage() {
         <h2 className="font-bold text-[20px] text-grey9 md:text-[24px]">
           지금 모집 중인 직군이에요
         </h2>
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10 native:grid-cols-2">
           {project.recruitments.map((r) => (
             <div key={r.id} className="rounded-card border border-grey5 p-5 md:p-6">
               <div className="flex items-baseline gap-2">
@@ -240,20 +304,7 @@ export default function ProjectDetailPage() {
         </div>
       </section>
 
-      <div className="mt-12 lg:hidden">
-        {isAuthor ? (
-          <Link
-            to={`/projects/${id}/manage`}
-            className="flex h-[54px] w-full items-center justify-center rounded-tag bg-primary px-6 font-bold text-[18px] text-white transition-opacity hover:opacity-90"
-          >
-            관리하기
-          </Link>
-        ) : (
-          <Button size="lg" className="w-full" onClick={() => setShowApplyModal(true)}>
-            지원하기
-          </Button>
-        )}
-      </div>
+      <div className="mt-12 lg:hidden native:block">{renderPrimaryAction("w-full")}</div>
 
       {project && (
         <ApplyModal

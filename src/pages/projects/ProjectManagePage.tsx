@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router";
-import { ChevronLeft, Plus, Trash2 } from "lucide-react";
+import { Link, useNavigate, useParams, useLocation } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft, ClipboardPenLine, MessageCircle, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { DateTimePicker } from "@/components/common/DateTimePicker";
@@ -35,12 +36,11 @@ const goalOptions: { value: GoalType; label: string }[] = [
   { value: "COMPETITION", label: "공모전" },
 ];
 
-const statusOptions: { value: ProjectStatus; label: string }[] = [
-  { value: "RECRUITING", label: "모집중" },
-  { value: "RECRUITMENT_CLOSED", label: "모집마감" },
-  { value: "IN_PROGRESS", label: "진행중" },
-  { value: "COMPLETED", label: "완료" },
-];
+const statusActions: Partial<Record<ProjectStatus, { value: ProjectStatus; label: string }>> = {
+  RECRUITING: { value: "RECRUITMENT_CLOSED", label: "모집 마감하기" },
+  RECRUITMENT_CLOSED: { value: "IN_PROGRESS", label: "프로젝트 시작하기" },
+  IN_PROGRESS: { value: "COMPLETED", label: "프로젝트 완료하기" },
+};
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -63,6 +63,7 @@ interface RecruitmentForm {
 export default function ProjectManagePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const location = useLocation();
   const scrollTarget = (location.state as { scrollTo?: string } | null)?.scrollTo;
   const [loading, setLoading] = useState(true);
@@ -181,6 +182,9 @@ export default function ProjectManagePage() {
     try {
       await updateProjectStatus(Number(id), newStatus);
       setStatus(newStatus);
+      void queryClient.invalidateQueries({ queryKey: ["project-detail", Number(id)] });
+      void queryClient.invalidateQueries({ queryKey: ["my-projects"] });
+      void queryClient.invalidateQueries({ queryKey: ["project-chats"] });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "상태 변경에 실패했습니다.");
     }
@@ -214,6 +218,11 @@ export default function ProjectManagePage() {
     e.preventDefault();
     if (!id) return;
     setError("");
+
+    if (status !== "RECRUITING") {
+      setError("모집이 마감되어 프로젝트 설정을 수정할 수 없습니다.");
+      return;
+    }
 
     if (!title || !description || !communicationTool || !recruitmentDeadline) {
       setError("필수 항목을 모두 입력해주세요.");
@@ -276,8 +285,12 @@ export default function ProjectManagePage() {
     return <LoadingState />;
   }
 
+  const statusAction = statusActions[status];
+  const chatAvailable = status === "IN_PROGRESS" || status === "COMPLETED";
+  const canEdit = status === "RECRUITING";
+
   return (
-    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px]">
+    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] native:px-8">
       <button
         onClick={() => navigate(-1)}
         className="mb-4 flex items-center text-grey9"
@@ -299,187 +312,217 @@ export default function ProjectManagePage() {
       <section className="mb-10 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8">
         <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">상태 변경</h2>
         <p className="mt-1 font-regular text-[13px] text-grey6 md:text-[14px]">
-          프로젝트 진행 단계를 변경할 수 있어요.
+          현재 단계에서 다음 단계로만 변경할 수 있어요.
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {statusOptions.map((opt) => (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          {statusAction ? (
             <button
-              key={opt.value}
               type="button"
-              onClick={() => handleStatusChange(opt.value)}
-              className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                status === opt.value
-                  ? "border-primary bg-primary text-white"
-                  : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
-              }`}
+              onClick={() => handleStatusChange(statusAction.value)}
+              className="rounded-tag bg-primary px-4 py-2 font-medium text-[14px] text-white transition-opacity hover:opacity-90"
             >
-              {opt.label}
+              {statusAction.label}
             </button>
-          ))}
+          ) : (
+            <span className="font-medium text-[14px] text-grey6">완료된 프로젝트입니다.</span>
+          )}
+          {chatAvailable && (
+            <Link
+              to={`/projects/${id}/chat`}
+              className="inline-flex items-center gap-2 rounded-tag border border-grey5 px-4 py-2 font-medium text-[14px] text-grey8 hover:border-grey7"
+            >
+              <MessageCircle className="h-4 w-4" aria-hidden />
+              대화방 열기
+            </Link>
+          )}
+          {status === "COMPLETED" && (
+            <Link
+              to={`/mypage/reviews/${id}`}
+              className="inline-flex items-center gap-2 rounded-tag border border-grey5 px-4 py-2 font-medium text-[14px] text-grey8 hover:border-grey7"
+            >
+              <ClipboardPenLine className="h-4 w-4" aria-hidden />
+              팀원 후기 작성
+            </Link>
+          )}
         </div>
       </section>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-10 lg:flex-row lg:items-start">
+      {!canEdit && (
+        <div className="mb-6 rounded-[14px] border border-grey4 bg-grey1 px-4 py-3 font-medium text-[14px] text-grey7">
+          모집이 마감되어 프로젝트 상세 설정을 수정할 수 없습니다.
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-10 lg:flex-row lg:items-start native:flex-col"
+      >
         <div className="flex flex-1 flex-col gap-10">
-          <section className="flex flex-col gap-[17px]">
-            <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">1. 기본 정보</h2>
-            <div className="flex flex-col gap-[17px]">
-              <Input
-                label="프로젝트 제목"
-                placeholder="제목을 입력하세요 (2~30자)"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={30}
-              />
-              <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">
-                  프로젝트 설명
-                </label>
-                <textarea
-                  placeholder="프로젝트를 소개해주세요 (2~500자)"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  maxLength={500}
-                  rows={4}
-                  className="w-full rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+          <fieldset disabled={!canEdit} className="flex min-w-0 flex-col gap-10 border-0 p-0">
+            <section className="flex flex-col gap-[17px]">
+              <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">1. 기본 정보</h2>
+              <div className="flex flex-col gap-[17px]">
+                <Input
+                  label="프로젝트 제목"
+                  placeholder="제목을 입력하세요 (2~30자)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={30}
+                />
+                <div>
+                  <label className="mb-2 block font-medium text-[14px] text-grey8">
+                    프로젝트 설명
+                  </label>
+                  <textarea
+                    placeholder="프로젝트를 소개해주세요 (2~500자)"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    maxLength={500}
+                    rows={4}
+                    className="w-full rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  />
+                </div>
+                <DateTimePicker
+                  label="모집 마감일"
+                  value={recruitmentDeadline}
+                  onChange={setRecruitmentDeadline}
+                  placeholder="날짜와 시간을 선택하세요"
                 />
               </div>
-              <DateTimePicker
-                label="모집 마감일"
-                value={recruitmentDeadline}
-                onChange={setRecruitmentDeadline}
-                placeholder="날짜와 시간을 선택하세요"
-              />
-            </div>
-          </section>
+            </section>
 
-          <section className="flex flex-col gap-[17px]">
-            <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">2. 협업 방식</h2>
-            <div className="flex flex-col gap-[17px]">
-              <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">진행 방식</label>
-                <div className="flex flex-wrap gap-2">
-                  {collabOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setCollaborationType(opt.value)}
-                      className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
-                        collaborationType === opt.value
-                          ? "border-primary bg-primary text-white"
-                          : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Input
-                label="커뮤니케이션 도구"
-                placeholder="예: Discord, Slack"
-                value={communicationTool}
-                onChange={(e) => setCommunicationTool(e.target.value)}
-              />
-              <Input
-                label="정기 모임 일정"
-                placeholder="예: 매주 화, 목 20시"
-                value={meetingSchedule}
-                onChange={(e) => setMeetingSchedule(e.target.value)}
-              />
-              <Input
-                label="예상 기간"
-                placeholder="예: 3개월"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value)}
-              />
-              <div>
-                <label className="mb-2 block font-medium text-[14px] text-grey8">목표</label>
-                <div className="flex flex-wrap gap-2">
-                  {goalOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setGoalType(opt.value)}
-                      className={`rounded-[20px] border px-4 py-[10px] font-medium text-[16px] transition-colors ${
-                        goalType === opt.value
-                          ? "border-primary bg-primary text-white"
-                          : "border-grey4 bg-bg text-grey6 hover:border-primary hover:text-primary"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">3. 모집 역할</h2>
-              <button
-                type="button"
-                onClick={addRecruitment}
-                disabled={recruitments.length >= MAX_RECRUITMENTS}
-                className="flex items-center gap-1 rounded-tag border border-grey3 px-3 py-2 font-medium text-[14px] text-grey7 hover:border-grey5 hover:text-grey9 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Plus className="h-4 w-4" aria-hidden />
-                추가 ({recruitments.length}/{MAX_RECRUITMENTS})
-              </button>
-            </div>
-            <div className="flex flex-col gap-5">
-              {recruitments.map((r, idx) => (
-                <div
-                  key={r.recruitmentId ?? `new-${idx}`}
-                  className="flex flex-col gap-3 rounded-[16px] border border-grey3 p-4 md:rounded-card md:p-5"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-[14px] text-grey8">모집 역할 {idx + 1}</span>
-                    {recruitments.length > 1 && (
+            <section className="flex flex-col gap-[17px]">
+              <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">2. 협업 방식</h2>
+              <div className="flex flex-col gap-[17px]">
+                <div>
+                  <label className="mb-2 block font-medium text-[14px] text-grey8">진행 방식</label>
+                  <div className="flex flex-wrap gap-2">
+                    {collabOptions.map((opt) => (
                       <button
+                        key={opt.value}
                         type="button"
-                        onClick={() => removeRecruitment(idx)}
-                        className="text-grey5 hover:text-red-500"
+                        onClick={() => setCollaborationType(opt.value)}
+                        className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                          collaborationType === opt.value
+                            ? "border-primary bg-primary text-white"
+                            : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
+                        }`}
                       >
-                        <Trash2 className="h-4 w-4" aria-hidden />
+                        {opt.label}
                       </button>
-                    )}
+                    ))}
                   </div>
-                  <RecruitmentSelect
-                    value={{
-                      category: r.category,
-                      jobRoleId: r.jobRoleId,
-                    }}
-                    onChange={(v) => updateRecruitmentRole(idx, v)}
-                  />
-                  <div>
-                    <label className="mb-2 block font-medium text-[14px] text-grey8">
-                      모집 인원
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={r.count}
-                      onChange={(e) => updateRecruitmentField(idx, "count", Number(e.target.value))}
-                      className="w-24 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
+                </div>
+                <Input
+                  label="커뮤니케이션 도구"
+                  placeholder="예: Discord, Slack"
+                  value={communicationTool}
+                  onChange={(e) => setCommunicationTool(e.target.value)}
+                />
+                <Input
+                  label="정기 모임 일정"
+                  placeholder="예: 매주 화, 목 20시"
+                  value={meetingSchedule}
+                  onChange={(e) => setMeetingSchedule(e.target.value)}
+                />
+                <Input
+                  label="예상 기간"
+                  placeholder="예: 3개월"
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                />
+                <div>
+                  <label className="mb-2 block font-medium text-[14px] text-grey8">목표</label>
+                  <div className="flex flex-wrap gap-2">
+                    {goalOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setGoalType(opt.value)}
+                        className={`rounded-[20px] border px-4 py-[10px] font-medium text-[16px] transition-colors ${
+                          goalType === opt.value
+                            ? "border-primary bg-primary text-white"
+                            : "border-grey4 bg-bg text-grey6 hover:border-primary hover:text-primary"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">3. 모집 역할</h2>
+                <button
+                  type="button"
+                  onClick={addRecruitment}
+                  disabled={recruitments.length >= MAX_RECRUITMENTS}
+                  className="flex items-center gap-1 rounded-tag border border-grey3 px-3 py-2 font-medium text-[14px] text-grey7 hover:border-grey5 hover:text-grey9 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  추가 ({recruitments.length}/{MAX_RECRUITMENTS})
+                </button>
+              </div>
+              <div className="flex flex-col gap-5">
+                {recruitments.map((r, idx) => (
+                  <div
+                    key={r.recruitmentId ?? `new-${idx}`}
+                    className="flex flex-col gap-3 rounded-[16px] border border-grey3 p-4 md:rounded-card md:p-5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-[14px] text-grey8">
+                        모집 역할 {idx + 1}
+                      </span>
+                      {recruitments.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeRecruitment(idx)}
+                          className="text-grey5 hover:text-red-500"
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden />
+                        </button>
+                      )}
+                    </div>
+                    <RecruitmentSelect
+                      value={{
+                        category: r.category,
+                        jobRoleId: r.jobRoleId,
+                      }}
+                      onChange={(v) => updateRecruitmentRole(idx, v)}
+                    />
+                    <div>
+                      <label className="mb-2 block font-medium text-[14px] text-grey8">
+                        모집 인원
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={100}
+                        value={r.count}
+                        onChange={(e) =>
+                          updateRecruitmentField(idx, "count", Number(e.target.value))
+                        }
+                        className="w-24 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
+                      />
+                    </div>
+                    <Input
+                      placeholder="지원 자격 (2~200자)"
+                      value={r.qualification}
+                      onChange={(e) => updateRecruitmentField(idx, "qualification", e.target.value)}
+                    />
+                    <Input
+                      placeholder="우대 사항 (2~200자)"
+                      value={r.preferred}
+                      onChange={(e) => updateRecruitmentField(idx, "preferred", e.target.value)}
                     />
                   </div>
-                  <Input
-                    placeholder="지원 자격 (2~200자)"
-                    value={r.qualification}
-                    onChange={(e) => updateRecruitmentField(idx, "qualification", e.target.value)}
-                  />
-                  <Input
-                    placeholder="우대 사항 (2~200자)"
-                    value={r.preferred}
-                    onChange={(e) => updateRecruitmentField(idx, "preferred", e.target.value)}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          </fieldset>
 
           <section
             id="applicants"
@@ -561,12 +604,22 @@ export default function ProjectManagePage() {
           </section>
         </div>
 
-        <aside className="flex w-full flex-col gap-5 lg:w-[300px]">
+        <aside className="flex w-full flex-col gap-5 lg:w-[300px] native:w-full">
           {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 
-          <Button type="submit" size="lg" className="w-full" disabled={saving}>
-            {saving ? "저장 중" : "저장하기"}
+          <Button type="submit" size="lg" className="w-full" disabled={saving || !canEdit}>
+            {saving ? "저장 중" : canEdit ? "저장하기" : "모집 마감 후 수정 불가"}
           </Button>
+
+          {chatAvailable && (
+            <Link
+              to={`/projects/${id}/chat`}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-tag border border-grey5 bg-bg px-6 py-4 font-medium text-[18px] text-grey8 transition-colors hover:border-grey7"
+            >
+              <MessageCircle className="h-5 w-5" aria-hidden />
+              프로젝트 대화
+            </Link>
+          )}
 
           {confirmDelete ? (
             <div className="rounded-tag border border-red-200 bg-red-50 p-5">

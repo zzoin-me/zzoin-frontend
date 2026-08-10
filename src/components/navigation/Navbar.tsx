@@ -16,7 +16,7 @@ export function Navbar() {
   const user = useAuthStore((s) => s.user);
 
   return (
-    <nav className="relative z-50 hidden border-b border-grey5 bg-grey1 lg:flex">
+    <nav className="relative z-50 hidden border-b border-grey5 bg-grey1 lg:flex native:hidden">
       <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-[120px] py-5">
         <div className="flex items-center gap-9">
           <Logo size={46} />

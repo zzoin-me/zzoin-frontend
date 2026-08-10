@@ -71,7 +71,7 @@ export function RecruitmentSelect({ value, onChange }: RecruitmentSelectProps) {
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <label className="mb-2 block font-medium text-[14px] text-grey8">카테고리</label>
+        <label className="mb-2 block font-medium text-[16px] text-grey8">카테고리</label>
         <div className="flex flex-wrap gap-2">
           {loading ? (
             <span className="font-regular text-[14px] text-grey6">불러오는 중...</span>
@@ -81,7 +81,7 @@ export function RecruitmentSelect({ value, onChange }: RecruitmentSelectProps) {
                 key={cat.id}
                 type="button"
                 onClick={() => handleCategoryClick(cat.categoryCode as RecruitmentCategory)}
-                className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
+                className={`rounded-tag border px-4 py-2 font-medium text-[16px] transition-colors ${
                   value.category === cat.categoryCode
                     ? "border-primary bg-primary text-white"
                     : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
@@ -96,7 +96,7 @@ export function RecruitmentSelect({ value, onChange }: RecruitmentSelectProps) {
 
       {value.category && (
         <div ref={dropdownRef} className="relative">
-          <label className="mb-2 block font-medium text-[14px] text-grey8">세부 직군</label>
+          <label className="mb-2 block font-medium text-[16px] text-grey8">세부 직군</label>
           <button
             type="button"
             onClick={() => setDropdownOpen((v) => !v)}

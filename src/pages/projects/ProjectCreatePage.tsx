@@ -289,24 +289,24 @@ export default function ProjectCreatePage() {
             <h2 className="font-bold text-[20px] text-grey9">1. 기본 정보 입력</h2>
             <div className="flex flex-col gap-[17px]">
               <div className="flex flex-col gap-1">
-                <span className="font-medium text-[20px] text-grey9">제목</span>
+                <span className="font-medium text-[16px] text-grey9">제목</span>
                 <input
                   placeholder="제목을 입력하세요 (2~30자)"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={30}
-                  className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="font-medium text-[20px] text-grey9">정보</span>
+                <span className="font-medium text-[16px] text-grey9">정보</span>
                 <textarea
                   placeholder="상세 정보를 입력하세요 (2~500자)"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   maxLength={500}
                   rows={4}
-                  className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                  className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                 />
               </div>
             </div>
@@ -317,7 +317,7 @@ export default function ProjectCreatePage() {
             <div className="flex flex-col gap-[17px]">
               <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                 <div className="flex flex-1 flex-col gap-1">
-                  <span className="font-medium text-[20px] text-grey9">진행 방식</span>
+                  <span className="font-medium text-[16px] text-grey9">진행 방식</span>
                   <div className="flex flex-wrap gap-2">
                     {collabOptions.map((opt) => (
                       <button
@@ -336,36 +336,36 @@ export default function ProjectCreatePage() {
                   </div>
                 </div>
                 <div className="flex flex-1 flex-col gap-1">
-                  <span className="font-medium text-[20px] text-grey9">커뮤니케이션 도구</span>
+                  <span className="font-medium text-[16px] text-grey9">커뮤니케이션 도구</span>
                   <input
                     placeholder="예: Discord, Slack"
                     value={communicationTool}
                     onChange={(e) => setCommunicationTool(e.target.value)}
-                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                 <div className="flex flex-1 flex-col gap-1">
-                  <span className="font-medium text-[20px] text-grey9">
-                    정기 모임 <span className="font-regular text-[16px] text-grey6">(선택)</span>
+                  <span className="font-medium text-[16px] text-grey9">
+                    정기 모임 <span className="font-regular text-[14px] text-grey6">(선택)</span>
                   </span>
                   <input
                     placeholder="예: 매주 화, 목 20시"
                     value={meetingSchedule}
                     onChange={(e) => setMeetingSchedule(e.target.value)}
-                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                   />
                 </div>
                 <div className="flex flex-1 flex-col gap-1">
-                  <span className="font-medium text-[20px] text-grey9">
-                    예상 기간 <span className="font-regular text-[16px] text-grey6">(선택)</span>
+                  <span className="font-medium text-[16px] text-grey9">
+                    예상 기간 <span className="font-regular text-[14px] text-grey6">(선택)</span>
                   </span>
                   <input
                     placeholder="예: 3개월"
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                    className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                   />
                 </div>
               </div>
@@ -375,7 +375,7 @@ export default function ProjectCreatePage() {
           <section className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4">
               <h2 className="font-bold text-[20px] text-grey9">3. 팀 구성 및 모집 역할</h2>
-              <span className="shrink-0 font-regular text-[13px] text-grey6">
+              <span className="shrink-0 font-regular text-[14px] text-grey6">
                 최대 {MAX_RECRUITMENTS}개
               </span>
             </div>
@@ -386,7 +386,7 @@ export default function ProjectCreatePage() {
                   className="flex flex-col gap-[17px] rounded-[20px] border border-grey3 p-5"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-[20px] text-grey9">모집 역할 {idx + 1}</span>
+                    <span className="font-medium text-[18px] text-grey9">모집 역할 {idx + 1}</span>
                     {recruitments.length > 1 && (
                       <button
                         type="button"
@@ -399,7 +399,7 @@ export default function ProjectCreatePage() {
                   </div>
                   <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1">
-                      <span className="font-medium text-[20px] text-grey9">모집 직군</span>
+                      <span className="font-medium text-[16px] text-grey9">모집 직군</span>
                       <RecruitmentSelect
                         value={{
                           category: r.category,
@@ -408,8 +408,8 @@ export default function ProjectCreatePage() {
                         onChange={(v) => updateRecruitmentRole(idx, v)}
                       />
                     </div>
-                    <div className="flex w-full flex-col gap-1 md:w-[133px]">
-                      <span className="font-medium text-[20px] text-grey9">인원 수</span>
+                    <div className="flex w-full flex-col gap-1 md:w-[160px]">
+                      <span className="font-medium text-[16px] text-grey9">인원 수</span>
                       <input
                         type="number"
                         min={1}
@@ -417,26 +417,26 @@ export default function ProjectCreatePage() {
                         value={r.count}
                         onChange={(e) => updateRecruitment(idx, "count", Number(e.target.value))}
                         placeholder="인원 수 입력"
-                        className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                        className="w-full rounded-[20px] border border-grey6 px-4 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                       />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="font-medium text-[20px] text-grey9">지원자격</span>
+                    <span className="font-medium text-[16px] text-grey9">지원자격</span>
                     <input
                       placeholder="지원자격을 입력하세요 (2~200자)"
                       value={r.qualification}
                       onChange={(e) => updateRecruitment(idx, "qualification", e.target.value)}
-                      className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                      className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="font-medium text-[20px] text-grey9">우대사항</span>
+                    <span className="font-medium text-[16px] text-grey9">우대사항</span>
                     <input
                       placeholder="우대사항을 입력하세요 (2~200자)"
                       value={r.preferred}
                       onChange={(e) => updateRecruitment(idx, "preferred", e.target.value)}
-                      className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[20px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                      className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -483,7 +483,7 @@ export default function ProjectCreatePage() {
                     className="flex flex-col gap-3 rounded-[20px] border border-grey3 p-5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-[16px] text-grey9">질문 {idx + 1}</span>
+                      <span className="font-medium text-[18px] text-grey9">질문 {idx + 1}</span>
                       <button
                         type="button"
                         onClick={() => removeQuestion(idx)}
@@ -494,12 +494,12 @@ export default function ProjectCreatePage() {
                       </button>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="font-medium text-[14px] text-grey8">답변 형식</span>
+                      <span className="font-medium text-[16px] text-grey8">답변 형식</span>
                       <div className="flex gap-2">
                         <button
                           type="button"
                           onClick={() => updateQuestionType(idx, false)}
-                          className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
+                          className={`rounded-tag border px-3 py-1.5 font-medium text-[14px] transition-colors ${
                             q.type === "TEXT"
                               ? "border-primary bg-primary text-white"
                               : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
@@ -510,7 +510,7 @@ export default function ProjectCreatePage() {
                         <button
                           type="button"
                           onClick={() => updateQuestionType(idx, true)}
-                          className={`rounded-tag border px-3 py-1.5 font-medium text-[13px] transition-colors ${
+                          className={`rounded-tag border px-3 py-1.5 font-medium text-[14px] transition-colors ${
                             q.type === "SINGLE_CHOICE" || q.type === "MULTI_CHOICE"
                               ? "border-primary bg-primary text-white"
                               : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
@@ -521,7 +521,7 @@ export default function ProjectCreatePage() {
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="font-medium text-[14px] text-grey8">질문 내용</span>
+                      <span className="font-medium text-[16px] text-grey8">질문 내용</span>
                       <input
                         placeholder={
                           q.type === "SINGLE_CHOICE" || q.type === "MULTI_CHOICE"
@@ -531,12 +531,12 @@ export default function ProjectCreatePage() {
                         value={q.label}
                         onChange={(e) => updateQuestionLabel(idx, e.target.value)}
                         maxLength={100}
-                        className="w-full rounded-tag border border-grey3 px-4 py-2.5 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                        className="w-full rounded-tag border border-grey3 px-4 py-2.5 font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                       />
                     </div>
                     {(q.type === "SINGLE_CHOICE" || q.type === "MULTI_CHOICE") && (
                       <div className="flex flex-col gap-2">
-                        <span className="font-medium text-[14px] text-grey8">옵션</span>
+                        <span className="font-medium text-[16px] text-grey8">옵션</span>
                         <div className="flex flex-col gap-2">
                           {(q.optionsText ?? []).map((opt, optIdx) => (
                             <div key={optIdx} className="flex items-center gap-2">
@@ -545,7 +545,7 @@ export default function ProjectCreatePage() {
                                 value={opt}
                                 onChange={(e) => updateOptionText(idx, optIdx, e.target.value)}
                                 maxLength={50}
-                                className="flex-1 rounded-tag border border-grey3 px-4 py-2 font-regular text-[15px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                                className="min-w-0 flex-1 rounded-tag border border-grey3 px-4 py-2 font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                               />
                               <button
                                 type="button"

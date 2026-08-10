@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { ChevronLeft, ImageIcon } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft, ImageIcon, RotateCcw } from "lucide-react";
 import { Button } from "@/components/common/Button";
+import { LoadingState } from "@/components/common/LoadingState";
 import { createPost, getPostById, updatePost } from "@/api/community";
 import { ApiError } from "@/api/client";
 import { useAuthStore } from "@/stores/authStore";
-import type { PostDetail } from "@/types";
 
 export default function CommunityNewPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const { id } = useParams();
   const isEdit = Boolean(id);
@@ -25,19 +27,22 @@ export default function CommunityNewPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const editPostQuery = useQuery({
+    queryKey: ["post", postId],
+    queryFn: () => getPostById(postId!),
+    enabled: isEdit && postId != null,
+  });
+
   useEffect(() => {
-    if (!isEdit || !postId) return;
-    getPostById(postId)
-      .then((p: PostDetail) => {
-        if (!p.isMine) {
-          navigate(`/community/${postId}`, { replace: true });
-          return;
-        }
-        setTitle(p.title);
-        setContent(p.content);
-      })
-      .catch(() => navigate("/community", { replace: true }));
-  }, [isEdit, postId, navigate]);
+    const post = editPostQuery.data;
+    if (!post || !postId) return;
+    if (!post.isMine) {
+      navigate(`/community/${postId}`, { replace: true });
+      return;
+    }
+    setTitle(post.title);
+    setContent(post.content);
+  }, [editPostQuery.data, postId, navigate]);
 
   const handleSubmit = async () => {
     setError("");
@@ -53,15 +58,24 @@ export default function CommunityNewPage() {
       setError("내용을 입력해주세요.");
       return;
     }
+    if (content.length > 10000) {
+      setError("내용은 10,000자 이하로 입력해주세요.");
+      return;
+    }
 
     setLoading(true);
     try {
       if (isEdit && postId) {
         await updatePost(postId, { title: title.trim(), content: content.trim() });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["posts"] }),
+          queryClient.invalidateQueries({ queryKey: ["post", postId] }),
+        ]);
         navigate(`/community/${postId}`, { replace: true });
       } else {
-        await createPost({ title: title.trim(), content: content.trim() });
-        navigate("/community", { replace: true });
+        const createdPostId = await createPost({ title: title.trim(), content: content.trim() });
+        await queryClient.invalidateQueries({ queryKey: ["posts"] });
+        navigate(`/community/${createdPostId}`, { replace: true });
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "등록에 실패했습니다.");
@@ -70,8 +84,24 @@ export default function CommunityNewPage() {
     }
   };
 
+  if (isEdit && editPostQuery.isLoading) {
+    return <LoadingState label="게시글을 불러오는 중..." />;
+  }
+
+  if (isEdit && editPostQuery.isError) {
+    return (
+      <div className="flex min-h-[50dvh] flex-col items-center justify-center gap-4 px-5 text-center">
+        <p className="font-medium text-[15px] text-grey7">게시글을 불러오지 못했습니다.</p>
+        <Button variant="outline" onClick={() => void editPostQuery.refetch()}>
+          <RotateCcw className="h-4 w-4" aria-hidden />
+          다시 시도
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px]">
+    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] native:px-8">
       <button
         onClick={() => navigate(-1)}
         className="mb-4 flex items-center text-grey9"
@@ -100,8 +130,12 @@ export default function CommunityNewPage() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={12}
+          maxLength={10000}
           className="mt-6 w-full font-medium text-[16px] placeholder:text-grey6 focus:outline-none md:text-[18px]"
         />
+        <p className="mt-2 text-right font-medium text-[12px] text-grey5">
+          {content.length.toLocaleString()}/10,000
+        </p>
       </div>
 
       <div className="mt-6 flex items-center justify-between">

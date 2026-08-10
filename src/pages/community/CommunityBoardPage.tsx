@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { ChevronLeft, Heart, MessageCircle, Eye, PencilLine } from "lucide-react";
+import { ChevronLeft, PencilLine } from "lucide-react";
 import { SearchBar } from "@/components/common/SearchBar";
 import { Pagination } from "@/components/common/Pagination";
+import { CommunityPostList } from "@/components/community/CommunityPostList";
 import { getPosts } from "@/api/community";
-import { formatKoreanDatetime } from "@/utils/datetime";
 import { useAuthStore } from "@/stores/authStore";
 import type { CommunityBoardType } from "@/types";
 
@@ -45,7 +45,7 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
   const apiBoard: CommunityBoardType = board === "popular" ? "all" : board;
   const apiSort = board === "popular" ? "POPULAR" : "LATEST";
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["posts", { board: apiBoard, sort: apiSort, keyword: searchKeyword, page }],
     queryFn: () =>
       getPosts({
@@ -65,8 +65,8 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
   const meta = boardMeta[board];
 
   return (
-    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10">
-      <div className="flex items-center gap-3 lg:hidden">
+    <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10 native:px-8 native:py-6">
+      <div className="flex items-center gap-3 lg:hidden native:flex">
         <button
           type="button"
           onClick={() => navigate("/community")}
@@ -78,7 +78,7 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
         <h1 className="font-bold text-[20px] text-grey9">{meta.title}</h1>
       </div>
 
-      <div className="hidden items-center justify-between lg:flex">
+      <div className="hidden items-center justify-between lg:flex native:hidden">
         <div className="flex flex-col gap-1">
           <h1 className="font-bold text-[24px] text-grey9">{meta.title}</h1>
           <p className="font-regular text-[14px] text-grey6">{meta.description}</p>
@@ -109,7 +109,7 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
         <button
           type="button"
           onClick={handleWriteClick}
-          className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 lg:hidden ${
+          className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 lg:hidden native:flex ${
             isVerified ? "border-primary bg-primary" : "border-grey4 bg-grey4"
           }`}
           aria-label="글쓰기"
@@ -118,49 +118,15 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
         </button>
       </div>
 
-      <ul className="mt-8 flex flex-col gap-4 md:gap-6">
-        {isLoading ? (
-          <li className="py-20 text-center font-regular text-[16px] text-grey6">불러오는 중...</li>
-        ) : posts.length === 0 ? (
-          <li className="py-20 text-center font-regular text-[16px] text-grey6">
-            게시글이 없어요.
-          </li>
-        ) : (
-          posts.map((p) => (
-            <li key={p.id}>
-              <Link
-                to={`/community/${p.id}`}
-                className="block rounded-[16px] border border-grey3 p-5 transition-shadow hover:shadow-sm md:rounded-card md:border-grey5 md:p-6 lg:p-8"
-              >
-                <h2 className="font-bold text-[16px] text-grey9 md:text-[18px] lg:text-[20px]">
-                  {p.title}
-                </h2>
-                <p className="mt-2 line-clamp-2 font-medium text-[13px] text-grey7 md:text-[14px] lg:text-[16px]">
-                  {p.contentPreview}
-                </p>
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-grey3 pt-3 md:mt-5 md:pt-4">
-                  <div className="flex items-center gap-2 font-regular text-[12px] text-grey6">
-                    <span className="font-medium text-grey9">{p.author.nickname}</span>
-                    <span aria-hidden>·</span>
-                    <span>{formatKoreanDatetime(p.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-3 font-regular text-[12px] text-grey6">
-                    <span className="flex items-center gap-1">
-                      <Heart className="h-3.5 w-3.5" aria-hidden /> {p.likeCount}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MessageCircle className="h-3.5 w-3.5" aria-hidden /> {p.commentCount}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-3.5 w-3.5" aria-hidden /> {p.viewCount}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </li>
-          ))
-        )}
-      </ul>
+      <div className="mt-8">
+        <CommunityPostList
+          posts={posts}
+          isLoading={isLoading}
+          isFetching={isFetching}
+          isError={isError}
+          onRetry={() => void refetch()}
+        />
+      </div>
 
       {totalPages > 1 && (
         <div className="mt-10">

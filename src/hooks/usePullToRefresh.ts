@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 const THRESHOLD = 70;
 const MAX_PULL = 100;
 
-export function usePullToRefresh(onRefresh: () => void | Promise<void>) {
+export function usePullToRefresh(onRefresh: () => void | Promise<void>, enabled = true) {
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const startY = useRef(0);
@@ -88,6 +88,7 @@ export function usePullToRefresh(onRefresh: () => void | Promise<void>) {
   }, [updatePullDistance]);
 
   useEffect(() => {
+    if (!enabled) return;
     const el = containerRef.current ?? document.body;
     el.addEventListener("touchstart", handleTouchStart, { passive: true });
     el.addEventListener("touchmove", handleTouchMove, { passive: false });
@@ -100,7 +101,7 @@ export function usePullToRefresh(onRefresh: () => void | Promise<void>) {
       el.removeEventListener("touchend", handleTouchEnd);
       el.removeEventListener("touchcancel", handleTouchCancel);
     };
-  }, [handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel]);
+  }, [enabled, handleTouchStart, handleTouchMove, handleTouchEnd, handleTouchCancel]);
 
   return { pullDistance, isRefreshing, containerRef };
 }

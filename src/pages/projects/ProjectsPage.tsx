@@ -20,7 +20,7 @@ import type { RecruitmentCategory, GoalType } from "@/types";
 
 const PAGE_SIZE = 12;
 
-type FilterTab = "전체" | "추천" | "인기" | "신규" | "마감임박";
+type FilterTab = "전체" | "추천" | "인기" | "마감임박";
 
 function sortFromTab(tab: FilterTab): string {
   if (tab === "마감임박") return "DEADLINE";
@@ -88,9 +88,10 @@ export default function ProjectsPage() {
 
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
 
-  const [activeTab, setActiveTab] = useState<FilterTab>(
-    (searchParams.get("tab") as FilterTab) || "전체",
-  );
+  const [activeTab, setActiveTab] = useState<FilterTab>(() => {
+    const tab = searchParams.get("tab");
+    return tab === "추천" || tab === "인기" || tab === "마감임박" ? tab : "전체";
+  });
   const [searchInput, setSearchInput] = useState(searchParams.get("q") ?? "");
   const [keyword, setKeyword] = useState(searchParams.get("q") ?? "");
   const [isSearching, setIsSearching] = useState(!!searchParams.get("q"));
@@ -113,8 +114,8 @@ export default function ProjectsPage() {
   };
 
   const tabs: FilterTab[] = isLoggedIn
-    ? ["전체", "추천", "인기", "신규", "마감임박"]
-    : ["전체", "인기", "신규", "마감임박"];
+    ? ["전체", "추천", "인기", "마감임박"]
+    : ["전체", "인기", "마감임박"];
 
   const buildListParams = (): ProjectListParams | null => {
     if (activeTab === "추천") return null;

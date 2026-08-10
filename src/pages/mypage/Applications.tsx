@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { ClipboardPenLine } from "lucide-react";
 import { CountTabs, type CountTab } from "@/components/common/CountTabs";
 import { FilterDropdown, type FilterOption } from "@/components/common/FilterDropdown";
 import { Pagination } from "@/components/common/Pagination";
@@ -169,7 +170,7 @@ export default function MyPageApplicationsPage() {
                     </span>
                   </div>
                 </Link>
-                {app.status === "PENDING" && (
+                {app.status === "PENDING" ? (
                   <button
                     type="button"
                     onClick={() => handleCancel(app.applicationId)}
@@ -178,7 +179,26 @@ export default function MyPageApplicationsPage() {
                   >
                     {cancelingId === app.applicationId ? "취소 중..." : "지원 취소"}
                   </button>
-                )}
+                ) : app.status === "APPROVED" &&
+                  (app.projectStatus === "IN_PROGRESS" || app.projectStatus === "COMPLETED") ? (
+                  <div className="flex shrink-0 items-center gap-2 self-center">
+                    <Link
+                      to={`/projects/${app.projectId}/chat`}
+                      className="rounded-tag border border-grey5 px-4 py-2 font-medium text-[13px] text-grey8"
+                    >
+                      대화방
+                    </Link>
+                    {app.projectStatus === "COMPLETED" && (
+                      <Link
+                        to={`/mypage/reviews/${app.projectId}`}
+                        className="inline-flex items-center gap-1.5 rounded-tag bg-primary px-4 py-2 font-medium text-[13px] text-white"
+                      >
+                        <ClipboardPenLine className="h-4 w-4" aria-hidden />
+                        후기
+                      </Link>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </div>
           ))

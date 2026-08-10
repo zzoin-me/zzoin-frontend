@@ -27,6 +27,35 @@ export function formatKoreanDatetime(iso: string): string {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${meridiem} ${h12}시 ${String(d.getMinutes()).padStart(2, "0")}분`;
 }
 
+export function formatCommunityListDate(iso: string, now = new Date()): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return iso;
+
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+  const values = (target: Date) =>
+    Object.fromEntries(
+      formatter
+        .formatToParts(target)
+        .filter((part) => part.type !== "literal")
+        .map((part) => [part.type, part.value]),
+    );
+  const current = values(now);
+  const created = values(date);
+  const isToday =
+    current.year === created.year && current.month === created.month && current.day === created.day;
+
+  return isToday ? `${created.hour}:${created.minute}` : `${created.month}.${created.day}`;
+}
+
 function parseLocalDatetime(value: string): string | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(value);
   if (!m) return null;

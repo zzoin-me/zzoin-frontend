@@ -20,6 +20,7 @@ const desktopMenus = [
     group: "활동",
     items: [
       { to: "/mypage/notifications", label: "알림", end: false },
+      { to: "/mypage/chats", label: "프로젝트 대화", end: false },
       { to: "/mypage/applications", label: "프로젝트 지원 현황", end: false },
       { to: "/mypage/projects", label: "내 프로젝트 관리", end: false },
       { to: "/mypage/reviews", label: "프로젝트 후기", end: false },
@@ -40,7 +41,7 @@ export function MyPageLayout() {
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 md:px-8 lg:px-[120px]">
       <div className="flex gap-10">
-        <aside className="hidden w-[200px] shrink-0 py-10 lg:block">
+        <aside className="hidden w-[200px] shrink-0 py-10 lg:block native:hidden">
           <nav className="sticky top-10 flex flex-col gap-8">
             {desktopMenus.map((group) => (
               <div key={group.group} className="flex flex-col gap-2">
@@ -89,7 +90,7 @@ export function MyPageLayout() {
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1 py-6 lg:py-10">
+        <main className="min-w-0 flex-1 py-6 lg:py-10 native:py-6">
           <Outlet />
         </main>
       </div>

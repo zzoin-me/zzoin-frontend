@@ -5,6 +5,7 @@ import { App } from "@capacitor/app";
 
 export async function setupNative() {
   if (!Capacitor.isNativePlatform()) return;
+  document.documentElement.classList.add("native-app");
 
   try {
     if (Capacitor.getPlatform() === "ios") {

@@ -21,7 +21,7 @@ export default function VerifyUnivPage() {
   const [error, setError] = useState("");
 
   const fullEmail = emailPrefix && domain ? `${emailPrefix}@${domain}` : "";
-  const { isUniv: isUnivEmail } = useUnivEmail(fullEmail);
+  const { isUniv: isUnivEmail, matchedUniv } = useUnivEmail(fullEmail);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +121,11 @@ export default function VerifyUnivPage() {
               className="w-1/2 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
             />
           </div>
+          {matchedUniv && (
+            <p className="mt-2 font-medium text-[13px] text-green-600">
+              ✓ {matchedUniv.name} 이메일입니다. 2차 대학 인증이 자동 완료됩니다.
+            </p>
+          )}
         </div>
 
         <div className="flex gap-2">

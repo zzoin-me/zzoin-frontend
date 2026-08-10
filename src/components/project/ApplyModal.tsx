@@ -209,7 +209,7 @@ export function ApplyModal({ isOpen, onClose, recruitments, questions = [] }: Ap
                         <button
                           key={opt}
                           type="button"
-                          onClick={() => setAnswer(q.id, opt)}
+                          onClick={() => setAnswer(q.id, answers[q.id] === opt ? "" : opt)}
                           className={`rounded-tag border px-4 py-2 font-medium text-[14px] transition-colors ${
                             answers[q.id] === opt
                               ? "border-primary bg-primary text-white"

@@ -253,13 +253,19 @@ export interface Post {
 export interface Comment {
   id: number;
   content: string;
-  author: AuthorDTO;
+  author?: AuthorDTO;
   parentId: number | null;
   depth: number;
   createdAt: string;
   isMine: boolean;
   isDeleted: boolean;
   children?: Comment[];
+}
+
+export interface CommentPageResponse {
+  comments: Comment[];
+  nextCursor: number | null;
+  hasNext: boolean;
 }
 
 export type CommunityBoardType = "all" | "popular" | "mine" | "comments" | "likes" | "saved";
@@ -331,7 +337,34 @@ export interface MyApplicationPreview {
   appliedRecruitmentName: string;
   appliedRecruitmentCategory: RecruitmentCategory;
   status: ApplicationStatus;
+  projectStatus: ProjectStatus;
   createdAt: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  senderId: number;
+  senderNickname: string;
+  senderProfileUrl?: string;
+  content: string;
+  createdAt: string;
+  mine: boolean;
+}
+
+export interface ChatMessagesResponse {
+  messages: ChatMessage[];
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
+export interface ChatRoom {
+  projectId: number;
+  projectTitle: string;
+  projectImageUrl?: string;
+  projectStatus: ProjectStatus;
+  lastMessage?: string;
+  lastMessageAt?: string;
+  unreadCount: number;
 }
 
 export interface MyProjectPreview {
@@ -342,20 +375,89 @@ export interface MyProjectPreview {
   createdAt: string;
 }
 
-export type ReviewType = "received" | "written";
-
-export interface Review {
-  id: number;
+export interface ReviewableProject {
   projectId: number;
-  projectTitle: string;
-  rating: number;
-  content: string;
-  createdAt: string;
-  type: ReviewType;
+  title: string;
+  recruitment: string;
+  joinedAt: string;
+  completedAt: string;
+  totalTargetCount: number;
+  reviewedTargetCount: number;
+  reviewCompleted: boolean;
 }
 
-export interface ReviewSummary {
+export interface ReviewTarget {
+  userId: number;
+  nickname: string;
+  recruitment: string;
+  profileUrl?: string;
+  reviewed: boolean;
+}
+
+export interface ReviewTargetsResponse {
+  projectId: number;
+  projectTitle: string;
+  totalTargetCount: number;
+  reviewedTargetCount: number;
+  targets: ReviewTarget[];
+}
+
+export interface CreateReviewRequest {
+  targetUserId: number;
+  contribution: number;
+  participation: number;
+  responsibility: number;
+  comment?: string;
+}
+
+export interface ReceivedReview {
+  reviewId: number;
+  projectId: number;
+  projectTitle: string;
+  contribution: number;
+  participation: number;
+  responsibility: number;
   avgRating: number;
-  totalCount: number;
-  distribution: Record<5 | 4 | 3 | 2 | 1, number>;
+  comment?: string;
+  createdAt: string;
+}
+
+export interface WrittenReview extends ReceivedReview {
+  targetUserId: number;
+  targetNickname: string;
+  targetProfileUrl?: string;
+  hidden: boolean;
+}
+
+export interface ProjectWrittenReview {
+  reviewId: number;
+  targetUserId: number;
+  nickname: string;
+  recruitments: string[];
+  profileUrl?: string;
+  contribution: number;
+  participation: number;
+  responsibility: number;
+  avgRating: number;
+  comment?: string;
+  createdAt: string;
+  hidden: boolean;
+}
+
+export interface ProjectWrittenReviewsResponse {
+  members: ProjectWrittenReview[];
+}
+
+export interface ReceivedReviewsResponse {
+  ratingAvg: number;
+  ratingCount: number;
+  contributionAvg: number;
+  participationAvg: number;
+  responsibilityAvg: number;
+  score5: number;
+  score4: number;
+  score3: number;
+  score2: number;
+  score1: number;
+  reviews: PageResponse<ReceivedReview>;
 }

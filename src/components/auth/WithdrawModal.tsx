@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
@@ -15,7 +16,8 @@ interface WithdrawModalProps {
 
 export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
   const navigate = useNavigate();
-  const logout = useAuthStore((s) => s.logout);
+  const queryClient = useQueryClient();
+  const clearSession = useAuthStore((s) => s.clearSession);
 
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
@@ -75,11 +77,12 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     }
   };
 
-  const handleComplete = async () => {
+  const handleComplete = () => {
+    queryClient.clear();
+    clearSession();
     resetState();
     onClose();
-    await logout();
-    navigate("/");
+    navigate("/login", { replace: true });
   };
 
   return (

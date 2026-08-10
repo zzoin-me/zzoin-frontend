@@ -22,6 +22,7 @@ export function AppLayout() {
   const isMobile = useIsMobile();
   const location = useLocation();
   const isHomePage = location.pathname === "/";
+  const isChatPage = /^\/projects\/\d+\/chat$/.test(location.pathname);
   const queryClient = useQueryClient();
 
   const realtimeNotification = useNotificationSSE();
@@ -31,7 +32,7 @@ export function AppLayout() {
     await queryClient.invalidateQueries();
   };
 
-  const { pullDistance, isRefreshing, containerRef } = usePullToRefresh(handleRefresh);
+  const { pullDistance, isRefreshing, containerRef } = usePullToRefresh(handleRefresh, !isChatPage);
   const showSpinner = pullDistance > 0 || isRefreshing;
   const spinnerOffset = isRefreshing ? THRESHOLD : pullDistance;
   const spinnerRotation = pullDistance * 3;
@@ -72,7 +73,7 @@ export function AppLayout() {
       <Navbar />
 
       {isHomePage && (
-        <header className="flex items-center justify-between border-b border-grey3 bg-grey1 px-5 py-3 lg:hidden">
+        <header className="flex items-center justify-between border-b border-grey3 bg-grey1 px-5 py-3 lg:hidden native:flex">
           <Logo size={32} />
           <div className="flex items-center gap-3">
             {isLoggedIn && <NotificationBadge />}
@@ -89,7 +90,7 @@ export function AppLayout() {
         </header>
       )}
 
-      <main className="pb-20 lg:pb-0">
+      <main className={isChatPage ? "pb-0" : "pb-20 lg:pb-0 native:pb-20"}>
         <Outlet />
       </main>
 
