@@ -37,7 +37,11 @@ export function getProjectChatWebSocketUrl(projectId: number): string | null {
   if (!token) return null;
   const base = webSocketBaseUrl || apiBaseUrl || window.location.origin;
   const url = new URL(base, window.location.origin);
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  if (url.protocol === "https:") {
+    url.protocol = "wss:";
+  } else if (url.protocol === "http:") {
+    url.protocol = "ws:";
+  }
   url.pathname = `/ws/projects/${projectId}`;
   url.search = new URLSearchParams({ token }).toString();
   return url.toString();
