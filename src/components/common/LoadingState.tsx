@@ -12,8 +12,10 @@ export function LoadingState({ fullScreen = false, label = "불러오는 중..."
         fullScreen ? "min-h-screen" : "min-h-[50dvh]"
       }`}
       role="status"
+      aria-live="polite"
+      aria-busy="true"
     >
-      <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
+      <Loader2 className="h-8 w-8 motion-safe:animate-spin text-primary" aria-hidden />
       <span className="font-medium text-[15px] text-grey6">{label}</span>
     </div>
   );

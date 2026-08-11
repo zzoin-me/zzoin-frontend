@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { ClipboardPenLine } from "lucide-react";
+import { ClipboardPenLine, Loader2 } from "lucide-react";
 import { CountTabs, type CountTab } from "@/components/common/CountTabs";
 import { FilterDropdown, type FilterOption } from "@/components/common/FilterDropdown";
 import { Pagination } from "@/components/common/Pagination";
@@ -11,6 +11,9 @@ import { cancelApplication } from "@/api/application";
 import { RECRUITMENT_CATEGORIES } from "@/constants/recruitment";
 import type { ApplicationStatus, RecruitmentCategory } from "@/types";
 import { MyPageTitle } from "@/components/mypage/MyPageTitle";
+import { InlineLoading } from "@/components/common/InlineLoading";
+import { ApplicationListSkeleton } from "@/components/mypage/MyPageSkeletons";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 
 type StatusFilter = "ALL" | ApplicationStatus;
 
@@ -58,7 +61,7 @@ export default function MyPageApplicationsPage() {
 
   const status = activeTab === "ALL" ? undefined : (activeTab as ApplicationStatus);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["my-applications", { status, page }],
     queryFn: () => getMyApplications({ status, page: page - 1, size: PAGE_SIZE }),
     placeholderData: keepPreviousData,
@@ -96,6 +99,8 @@ export default function MyPageApplicationsPage() {
   );
 
   const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+  const initialLoading = isLoading && !data;
+  const refreshing = isFetching && !initialLoading;
 
   const tabs: CountTab[] = [
     { label: "전체", value: "ALL", count: counts.ALL },
@@ -137,19 +142,29 @@ export default function MyPageApplicationsPage() {
         />
       </div>
 
-      <div className="flex flex-col gap-4 md:gap-5">
-        {isLoading ? (
-          <p className="py-20 text-center font-regular text-[16px] text-grey6">불러오는 중...</p>
+      <div className="relative">
+        {refreshing && <InlineLoading className="absolute -top-5 right-0" />}
+        {initialLoading ? (
+          <ApplicationListSkeleton />
+        ) : isError && !data ? (
+          <QueryErrorState
+            message="프로젝트 지원 현황을 불러오지 못했습니다."
+            onRetry={() => void refetch()}
+          />
         ) : filtered.length === 0 ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">
             지원한 프로젝트가 없어요.
           </p>
         ) : (
-          filtered.map((app) => (
-            <div
-              key={app.applicationId}
-              className="flex flex-col gap-2 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8"
-            >
+          <div
+            className={`flex flex-col gap-4 transition-opacity md:gap-5 ${refreshing ? "opacity-70" : ""}`}
+            aria-busy={refreshing}
+          >
+            {filtered.map((app) => (
+              <div
+                key={app.applicationId}
+                className="flex flex-col gap-2 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8"
+              >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Link
                   to={`/projects/${app.projectId}`}
@@ -177,7 +192,14 @@ export default function MyPageApplicationsPage() {
                     disabled={cancelingId === app.applicationId}
                     className="shrink-0 self-start rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 sm:self-center"
                   >
-                    {cancelingId === app.applicationId ? "취소 중..." : "지원 취소"}
+                    {cancelingId === app.applicationId ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
+                        취소 중
+                      </span>
+                    ) : (
+                      "지원 취소"
+                    )}
                   </button>
                 ) : app.status === "APPROVED" &&
                   (app.projectStatus === "IN_PROGRESS" || app.projectStatus === "COMPLETED") ? (
@@ -200,8 +222,9 @@ export default function MyPageApplicationsPage() {
                   </div>
                 ) : null}
               </div>
-            </div>
-          ))
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

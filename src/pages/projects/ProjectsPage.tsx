@@ -6,6 +6,7 @@ import { SearchBar } from "@/components/common/SearchBar";
 import { ProjectGrid } from "@/components/project/ProjectGrid";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton";
+import { InlineLoading } from "@/components/common/InlineLoading";
 import { RecommendProjectBanner } from "@/components/project/RecommendProjectBanner";
 import { getProjects, getRecommendProjects, type ProjectListParams } from "@/api/projects";
 import { getPageList } from "@/utils/pagination";
@@ -136,7 +137,7 @@ export default function ProjectsPage() {
 
   const listParams = buildListParams();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ["projects", "list", listParams],
     queryFn: () => getProjects(listParams!),
     enabled: listParams !== null,
@@ -151,7 +152,11 @@ export default function ProjectsPage() {
     staleTime: 60_000,
   });
 
-  const { data: recommendTabData, isLoading: recommendTabLoading } = useQuery({
+  const {
+    data: recommendTabData,
+    isLoading: recommendTabLoading,
+    isFetching: recommendTabFetching,
+  } = useQuery({
     queryKey: ["projects", "recommend-tab", page],
     queryFn: () => getRecommendProjects(page - 1, PAGE_SIZE),
     enabled: isLoggedIn && activeTab === "추천",
@@ -165,6 +170,11 @@ export default function ProjectsPage() {
   const recommendTabProjects = recommendTabData?.content ?? [];
   const recommendTabTotal = recommendTabData?.totalElements ?? 0;
   const loading = isLoading && !data;
+  const recommendTabInitialLoading = recommendTabLoading && !recommendTabData;
+  const listRefreshing =
+    activeTab === "추천"
+      ? recommendTabFetching && !recommendTabInitialLoading
+      : isFetching && !loading;
 
   useEffect(() => {
     setPage(1);
@@ -469,9 +479,14 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      <div className="mt-8">
+      <div className="relative mt-8">
+        {listRefreshing && <InlineLoading className="absolute -top-5 right-0" />}
+        <div
+          className={`transition-opacity ${listRefreshing ? "opacity-70" : ""}`}
+          aria-busy={listRefreshing}
+        >
         {activeTab === "추천" ? (
-          recommendTabLoading ? (
+          recommendTabInitialLoading ? (
             <ProjectGrid>
               {Array.from({ length: 9 }).map((_, i) => (
                 <ProjectCardSkeleton key={i} />
@@ -505,6 +520,7 @@ export default function ProjectsPage() {
             ))}
           </ProjectGrid>
         )}
+        </div>
       </div>
 
       {totalPages > 1 && (

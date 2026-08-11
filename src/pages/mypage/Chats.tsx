@@ -2,9 +2,10 @@ import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle } from "lucide-react";
 import { getChatRooms } from "@/api/chat";
-import { LoadingState } from "@/components/common/LoadingState";
 import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 import { useAuthStore } from "@/stores/authStore";
+import { ChatRoomListSkeleton } from "@/components/mypage/MyPageSkeletons";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 
 function formatTime(value?: string): string {
   if (!value) return "대화를 시작해보세요";
@@ -22,6 +23,7 @@ export default function MyPageChatsPage() {
     data: rooms = [],
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["project-chats"],
     queryFn: getChatRooms,
@@ -44,11 +46,12 @@ export default function MyPageChatsPage() {
           </p>
         </div>
       ) : isLoading ? (
-        <LoadingState />
+        <ChatRoomListSkeleton />
       ) : isError ? (
-        <div className="flex min-h-64 items-center justify-center rounded-card border border-grey3 text-center">
-          <p className="font-regular text-[15px] text-red-500">대화방을 불러오지 못했습니다.</p>
-        </div>
+        <QueryErrorState
+          message="대화방을 불러오지 못했습니다."
+          onRetry={() => void refetch()}
+        />
       ) : rooms.length === 0 ? (
         <div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-card border border-grey3 text-center">
           <MessageCircle className="h-8 w-8 text-grey5" aria-hidden />

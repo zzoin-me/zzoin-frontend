@@ -5,6 +5,7 @@ import { Input } from "@/components/common/Input";
 import { linkAccount } from "@/api/auth";
 import { useAuthStore } from "@/stores/authStore";
 import { ApiError } from "@/api/client";
+import { Loader2 } from "lucide-react";
 
 export default function LinkAccountPage() {
   const navigate = useNavigate();
@@ -76,7 +77,8 @@ export default function LinkAccountPage() {
         />
         {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? "연결 중..." : "계정 연결하기"}
+          {loading && <Loader2 className="h-5 w-5 motion-safe:animate-spin" aria-hidden />}
+          {loading ? "연결 중" : "계정 연결하기"}
         </Button>
         <Button
           type="button"

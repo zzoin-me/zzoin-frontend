@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { Skeleton } from "@/components/common/Skeleton";
 import { getJobCategories, getJobRoles } from "@/api/jobRole";
 import type { JobCategory, JobRole, RecruitmentCategory } from "@/types";
 
@@ -74,7 +75,12 @@ export function RecruitmentSelect({ value, onChange }: RecruitmentSelectProps) {
         <label className="mb-2 block font-medium text-[16px] text-grey8">카테고리</label>
         <div className="flex flex-wrap gap-2">
           {loading ? (
-            <span className="font-regular text-[14px] text-grey6">불러오는 중...</span>
+            <div className="flex flex-wrap gap-2" role="status" aria-label="모집 카테고리를 불러오는 중">
+              {[72, 88, 76, 92].map((width) => (
+                <Skeleton key={width} className="h-10 rounded-tag" style={{ width }} />
+              ))}
+              <span className="sr-only">모집 카테고리를 불러오는 중</span>
+            </div>
           ) : (
             categories.map((cat) => (
               <button

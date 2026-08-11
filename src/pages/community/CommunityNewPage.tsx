@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ImageIcon, RotateCcw, X } from "lucide-react";
+import { ChevronLeft, ImageIcon, Loader2, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { LoadingState } from "@/components/common/LoadingState";
 import { createPost, getPostById, updatePost, uploadPostImages } from "@/api/community";
@@ -299,7 +299,8 @@ export default function CommunityNewPage() {
             취소
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {uploading ? "이미지 업로드 중..." : loading ? "저장 중..." : isEdit ? "수정" : "등록"}
+            {loading && <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden />}
+            {uploading ? "이미지 업로드 중" : loading ? "저장 중" : isEdit ? "수정" : "등록"}
           </Button>
         </div>
       </div>

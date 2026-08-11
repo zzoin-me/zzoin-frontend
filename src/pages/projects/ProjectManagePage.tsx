@@ -9,6 +9,8 @@ import { RecruitmentSelect } from "@/components/common/RecruitmentSelect";
 import type { RecruitmentSelectValue } from "@/components/common/RecruitmentSelect";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { LoadingState } from "@/components/common/LoadingState";
+import { ApplicantListSkeleton } from "@/components/mypage/MyPageSkeletons";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import { ApplicantDetailModal } from "@/components/project/ApplicantDetailModal";
 import { deleteProject, getProjectById, updateProject, updateProjectStatus } from "@/api/projects";
 import { getApplicants, updateApplicantStatus } from "@/api/application";
@@ -85,6 +87,7 @@ export default function ProjectManagePage() {
 
   const [applicants, setApplicants] = useState<ProjectApplicant[]>([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
+  const [applicantsError, setApplicantsError] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<ProjectApplicant | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
 
@@ -193,9 +196,10 @@ export default function ProjectManagePage() {
   const loadApplicants = () => {
     if (!id) return;
     setApplicantsLoading(true);
+    setApplicantsError(false);
     getApplicants(Number(id))
       .then((data) => setApplicants(data.applicants))
-      .catch(() => {})
+      .catch(() => setApplicantsError(true))
       .finally(() => setApplicantsLoading(false));
   };
 
@@ -534,7 +538,14 @@ export default function ProjectManagePage() {
               </h2>
             </div>
             {applicantsLoading ? (
-              <p className="mt-6 font-regular text-[14px] text-grey6">불러오는 중...</p>
+              <ApplicantListSkeleton className="mt-5" />
+            ) : applicantsError ? (
+              <QueryErrorState
+                compact
+                className="mt-5"
+                message="지원자 목록을 불러오지 못했습니다."
+                onRetry={loadApplicants}
+              />
             ) : applicants.length === 0 ? (
               <p className="mt-6 font-regular text-[14px] text-grey6">아직 지원자가 없어요.</p>
             ) : (

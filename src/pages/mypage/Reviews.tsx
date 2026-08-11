@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ClipboardPenLine, Star } from "lucide-react";
 import { CountTabs, type CountTab } from "@/components/common/CountTabs";
 import { FilterDropdown, type FilterOption } from "@/components/common/FilterDropdown";
-import { LoadingState } from "@/components/common/LoadingState";
 import { Pagination } from "@/components/common/Pagination";
 import { MyPageTitle } from "@/components/mypage/MyPageTitle";
+import { InlineLoading } from "@/components/common/InlineLoading";
+import {
+  ReviewListSkeleton,
+  ReviewSummarySkeleton,
+} from "@/components/mypage/MyPageSkeletons";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 import {
   getPendingReviewCount,
   getReceivedReviews,
@@ -96,6 +101,7 @@ export default function MyPageReviewsPage() {
     queryKey: ["reviews", "reviewable", page],
     queryFn: () => getReviewableProjects({ page: page - 1, size: PAGE_SIZE }),
     enabled: activeTab === "reviewable",
+    placeholderData: keepPreviousData,
   });
   const reviewableCountQuery = useQuery({
     queryKey: ["reviews", "reviewable", "count"],
@@ -105,6 +111,7 @@ export default function MyPageReviewsPage() {
     queryKey: ["reviews", "received", page, sortValue],
     queryFn: () => getReceivedReviews({ page: page - 1, size: PAGE_SIZE, sort: sortValue }),
     enabled: activeTab === "received",
+    placeholderData: keepPreviousData,
   });
   const receivedCountQuery = useQuery({
     queryKey: ["reviews", "received", "count"],
@@ -114,6 +121,7 @@ export default function MyPageReviewsPage() {
     queryKey: ["reviews", "written", page, sortValue],
     queryFn: () => getWrittenReviews({ page: page - 1, size: PAGE_SIZE, sort: sortValue }),
     enabled: activeTab === "written",
+    placeholderData: keepPreviousData,
   });
   const writtenCountQuery = useQuery({
     queryKey: ["reviews", "written", "count"],
@@ -150,6 +158,8 @@ export default function MyPageReviewsPage() {
       : activeTab === "received"
         ? receivedQuery.data?.reviews.totalPages
         : writtenQuery.data?.totalPages;
+  const initialLoading = activeQuery.isLoading && !activeQuery.data;
+  const refreshing = activeQuery.isFetching && !initialLoading;
 
   return (
     <div className="flex flex-col gap-6">
@@ -204,12 +214,18 @@ export default function MyPageReviewsPage() {
         </div>
       )}
 
-      {activeQuery.isLoading ? (
-        <LoadingState />
-      ) : activeQuery.isError ? (
-        <div className="flex min-h-64 items-center justify-center rounded-card border border-grey3">
-          <p className="font-medium text-[15px] text-red-500">후기를 불러오지 못했습니다.</p>
+      {refreshing && <InlineLoading className="self-end" />}
+
+      {initialLoading ? (
+        <div className="flex flex-col gap-6">
+          {activeTab === "received" && <ReviewSummarySkeleton />}
+          <ReviewListSkeleton />
         </div>
+      ) : activeQuery.isError && !activeQuery.data ? (
+        <QueryErrorState
+          message="후기를 불러오지 못했습니다."
+          onRetry={() => void activeQuery.refetch()}
+        />
       ) : activeTab === "reviewable" ? (
         <div className="flex flex-col gap-4">
           {(reviewableQuery.data?.content ?? []).length === 0 ? (

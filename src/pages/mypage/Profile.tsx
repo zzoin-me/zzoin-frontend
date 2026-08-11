@@ -7,6 +7,9 @@ import { getMyProfile, getMySchoolProfile } from "@/api/user";
 import { Avatar } from "@/components/common/Avatar";
 import { EditProfileModal } from "@/components/mypage/EditProfileModal";
 import { MyPageTitle } from "@/components/mypage/MyPageTitle";
+import { InlineLoading } from "@/components/common/InlineLoading";
+import { ProfileInfoSkeleton } from "@/components/mypage/MyPageSkeletons";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 
 export default function MyPageProfilePage() {
   const user = useAuthStore((s) => s.user);
@@ -28,7 +31,9 @@ export default function MyPageProfilePage() {
 
   const profile = profileQuery.data ?? null;
   const schoolProfile = schoolProfileQuery.data ?? null;
-  const loading = profileQuery.isLoading;
+  const loading = profileQuery.isLoading && !profileQuery.data;
+  const refreshing =
+    (profileQuery.isFetching || schoolProfileQuery.isFetching) && !loading;
   const reloadProfile = () => {
     queryClient.invalidateQueries({ queryKey: ["my-profile"] });
     queryClient.invalidateQueries({ queryKey: ["my-school-profile"] });
@@ -70,11 +75,24 @@ export default function MyPageProfilePage() {
       </section>
 
       <section className="rounded-[20px] border border-grey5 px-5 py-6 md:px-8 md:py-8 lg:px-10 lg:py-10">
-        <h2 className="font-bold text-[16px] text-grey9 md:text-[18px]">기본 프로필 정보</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-bold text-[16px] text-grey9 md:text-[18px]">기본 프로필 정보</h2>
+          {refreshing && <InlineLoading label="프로필 갱신 중" />}
+        </div>
         {loading ? (
-          <p className="mt-6 font-regular text-[14px] text-grey6">불러오는 중...</p>
+          <ProfileInfoSkeleton />
+        ) : profileQuery.isError && !profile ? (
+          <QueryErrorState
+            compact
+            className="mt-5"
+            message="프로필 정보를 불러오지 못했습니다."
+            onRetry={() => void profileQuery.refetch()}
+          />
         ) : (
-          <div className="mt-5 flex flex-col gap-4 md:mt-6">
+          <div
+            className={`mt-5 flex flex-col gap-4 transition-opacity md:mt-6 ${refreshing ? "opacity-70" : ""}`}
+            aria-busy={refreshing}
+          >
             <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
               <span className="w-20 shrink-0 font-medium text-[14px] text-grey6 md:text-[16px]">
                 직군

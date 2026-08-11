@@ -150,12 +150,15 @@ export default function ProjectChatPage() {
           <h1 className="truncate font-bold text-[17px] text-grey9 md:text-[20px]">
             {room.projectTitle}
           </h1>
-          <p className="font-regular text-[12px] text-grey6">
+          <p className="flex items-center gap-1 font-regular text-[12px] text-grey6">
+            {connectionState !== "connected" && (
+              <Loader2 className="h-3 w-3 motion-safe:animate-spin" aria-hidden />
+            )}
             {connectionState === "connected"
               ? "실시간 연결됨"
               : connectionState === "connecting"
-                ? "연결 중..."
-                : "재연결 중..."}
+                ? "연결 중"
+                : "재연결 중"}
           </p>
         </Link>
       </header>
@@ -167,9 +170,12 @@ export default function ProjectChatPage() {
               type="button"
               onClick={loadOlder}
               disabled={loadingOlder}
-              className="rounded-full border border-grey3 px-4 py-2 font-medium text-[13px] text-grey7 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-grey3 px-4 py-2 font-medium text-[13px] text-grey7 disabled:opacity-50"
             >
-              {loadingOlder ? "불러오는 중..." : "이전 메시지 보기"}
+              {loadingOlder && (
+                <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
+              )}
+              {loadingOlder ? "불러오는 중" : "이전 메시지 보기"}
             </button>
           </div>
         )}
@@ -262,7 +268,11 @@ export default function ProjectChatPage() {
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-white disabled:opacity-40"
             aria-label="메시지 보내기"
           >
-            {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+            {sending ? (
+              <Loader2 className="h-5 w-5 motion-safe:animate-spin" aria-hidden />
+            ) : (
+              <Send className="h-5 w-5" aria-hidden />
+            )}
           </button>
         </div>
       )}

@@ -11,6 +11,12 @@ import { getMyProjects } from "@/api/user";
 import { getApplicants, updateApplicantStatus } from "@/api/application";
 import type { ProjectApplicant } from "@/types";
 import { MyPageTitle } from "@/components/mypage/MyPageTitle";
+import { InlineLoading } from "@/components/common/InlineLoading";
+import {
+  ApplicantListSkeleton,
+  ManagedProjectListSkeleton,
+} from "@/components/mypage/MyPageSkeletons";
+import { QueryErrorState } from "@/components/common/QueryErrorState";
 
 type StatusFilter = "ALL" | "RECRUITING" | "CLOSED";
 
@@ -54,13 +60,14 @@ export default function MyPageProjectsPage() {
     Record<number, ProjectApplicant[]>
   >({});
   const [applicantsLoadingId, setApplicantsLoadingId] = useState<number | null>(null);
+  const [applicantsErrorId, setApplicantsErrorId] = useState<number | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [selectedApplicant, setSelectedApplicant] = useState<ProjectApplicant | null>(null);
   const [error, setError] = useState("");
 
   const statusParam = activeTab === "ALL" ? undefined : activeTab;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["my-projects", { status: statusParam, hasApplicants: onlyWithApplicants, page }],
     queryFn: () =>
       getMyProjects({
@@ -94,12 +101,13 @@ export default function MyPageProjectsPage() {
 
   const loadApplicants = useCallback((projectId: number) => {
     setApplicantsLoadingId(projectId);
+    setApplicantsErrorId(null);
     getApplicants(projectId)
       .then((data) => {
         setApplicantsByProject((prev) => ({ ...prev, [projectId]: data.applicants }));
       })
       .catch(() => {
-        setApplicantsByProject((prev) => ({ ...prev, [projectId]: [] }));
+        setApplicantsErrorId(projectId);
       })
       .finally(() => setApplicantsLoadingId(null));
   }, []);
@@ -143,6 +151,8 @@ export default function MyPageProjectsPage() {
   const pagedProjects = allProjects.filter((p) => withinPeriod(p.createdAt, period));
   const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
+  const initialLoading = isLoading && !data;
+  const refreshing = isFetching && !initialLoading;
 
   const tabs: CountTab[] = [
     { label: "전체", value: "ALL", count: counts.ALL },
@@ -197,15 +207,25 @@ export default function MyPageProjectsPage() {
         </label>
       </div>
 
-      <div className="flex flex-col gap-4 md:gap-5">
-        {isLoading ? (
-          <p className="py-20 text-center font-regular text-[16px] text-grey6">불러오는 중...</p>
+      <div className="relative">
+        {refreshing && <InlineLoading className="absolute -top-5 right-0" />}
+        {initialLoading ? (
+          <ManagedProjectListSkeleton />
+        ) : isError && !data ? (
+          <QueryErrorState
+            message="내 프로젝트를 불러오지 못했습니다."
+            onRetry={() => void refetch()}
+          />
         ) : pagedProjects.length === 0 ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">
             생성한 프로젝트가 없어요.
           </p>
         ) : (
-          pagedProjects.map((project) => {
+          <div
+            className={`flex flex-col gap-4 transition-opacity md:gap-5 ${refreshing ? "opacity-70" : ""}`}
+            aria-busy={refreshing}
+          >
+          {pagedProjects.map((project) => {
             const isExpanded = expandedId === project.id;
             const applicants = applicantsByProject[project.id];
             return (
@@ -271,7 +291,13 @@ export default function MyPageProjectsPage() {
                 {isExpanded && (
                   <div className="border-t border-grey3 bg-grey1 px-5 py-5 md:px-6 lg:px-8">
                     {applicantsLoadingId === project.id ? (
-                      <p className="font-regular text-[14px] text-grey6">불러오는 중...</p>
+                      <ApplicantListSkeleton />
+                    ) : applicantsErrorId === project.id ? (
+                      <QueryErrorState
+                        compact
+                        message="지원자 목록을 불러오지 못했습니다."
+                        onRetry={() => loadApplicants(project.id)}
+                      />
                     ) : !applicants || applicants.length === 0 ? (
                       <p className="font-regular text-[14px] text-grey6">아직 지원자가 없어요.</p>
                     ) : (
@@ -349,7 +375,8 @@ export default function MyPageProjectsPage() {
                 )}
               </div>
             );
-          })
+          })}
+          </div>
         )}
       </div>
 

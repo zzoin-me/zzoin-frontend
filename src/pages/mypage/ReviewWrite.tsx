@@ -6,6 +6,7 @@ import { ApiError } from "@/api/client";
 import { createReview, getMyProjectReviews, getReviewTargets } from "@/api/reviews";
 import { LoadingState } from "@/components/common/LoadingState";
 import { MyPageTitle } from "@/components/mypage/MyPageTitle";
+import { ReviewListSkeleton } from "@/components/mypage/MyPageSkeletons";
 
 type ScoreKey = "contribution" | "participation" | "responsibility";
 
@@ -123,7 +124,7 @@ export default function ReviewWritePage() {
           </div>
 
           {writtenReviewsQuery.isLoading ? (
-            <LoadingState />
+            <ReviewListSkeleton count={2} />
           ) : writtenReviewsQuery.isError ? (
             <p className="py-8 text-center font-medium text-[14px] text-red-500">
               작성한 후기를 불러오지 못했습니다.
