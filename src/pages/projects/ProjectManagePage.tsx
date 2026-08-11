@@ -25,6 +25,7 @@ import type {
   UpdateRecruitment,
 } from "@/types";
 import { MAX_RECRUITMENTS } from "@/constants/recruitment";
+import { showSnackbar } from "@/stores/snackbarStore";
 
 const collabOptions: { value: CollaborationType; label: string }[] = [
   { value: "ONLINE", label: "온라인" },
@@ -189,7 +190,10 @@ export default function ProjectManagePage() {
       void queryClient.invalidateQueries({ queryKey: ["my-projects"] });
       void queryClient.invalidateQueries({ queryKey: ["project-chats"] });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "상태 변경에 실패했습니다.");
+      showSnackbar({
+        type: "error",
+        message: err instanceof ApiError ? err.message : "상태 변경에 실패했습니다.",
+      });
     }
   };
 
@@ -212,7 +216,10 @@ export default function ProjectManagePage() {
       await updateApplicantStatus(applicationId, { status: newStatus });
       loadApplicants();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "처리에 실패했습니다.");
+      showSnackbar({
+        type: "error",
+        message: err instanceof ApiError ? err.message : "처리에 실패했습니다.",
+      });
     } finally {
       setProcessingId(null);
     }
@@ -280,7 +287,10 @@ export default function ProjectManagePage() {
       await deleteProject(Number(id));
       navigate("/projects", { replace: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "삭제에 실패했습니다.");
+      showSnackbar({
+        type: "error",
+        message: err instanceof ApiError ? err.message : "삭제에 실패했습니다.",
+      });
       setConfirmDelete(false);
     }
   };

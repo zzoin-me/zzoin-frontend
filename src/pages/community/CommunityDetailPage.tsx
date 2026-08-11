@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,9 +9,9 @@ import {
   Bookmark,
   Pencil,
   Trash2,
-  CornerDownRight,
   Loader2,
   RotateCcw,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Avatar } from "@/components/common/Avatar";
@@ -28,10 +28,19 @@ import {
   deletePost,
   recordPostView,
 } from "@/api/community";
-import { formatKoreanDatetime } from "@/utils/datetime";
+import { formatCommunityListDate } from "@/utils/datetime";
 import { useAuthStore } from "@/stores/authStore";
+import { showSnackbar } from "@/stores/snackbarStore";
 import { ApiError } from "@/api/client";
 import type { PostDetail, Comment } from "@/types";
+
+const resizeTextarea = (textarea: HTMLTextAreaElement | null) => {
+  if (!textarea) return;
+  textarea.style.height = "auto";
+  const nextHeight = Math.min(textarea.scrollHeight, 160);
+  textarea.style.height = `${nextHeight}px`;
+  textarea.style.overflowY = textarea.scrollHeight > 160 ? "auto" : "hidden";
+};
 
 export default function CommunityDetailPage() {
   const { id } = useParams();
@@ -44,7 +53,8 @@ export default function CommunityDetailPage() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editContent, setEditContent] = useState("");
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const commentTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const replyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const postId = id ? Number(id) : NaN;
 
@@ -65,6 +75,14 @@ export default function CommunityDetailPage() {
   const post = postQuery.data ?? null;
   const comments = commentsQuery.data?.pages.flatMap((page) => page.comments) ?? [];
   const loading = postQuery.isLoading;
+
+  useEffect(() => {
+    resizeTextarea(commentTextareaRef.current);
+  }, [newComment]);
+
+  useEffect(() => {
+    resizeTextarea(replyTextareaRef.current);
+  }, [replyContent, replyTo]);
 
   useEffect(() => {
     if (Number.isNaN(postId)) return;
@@ -171,39 +189,63 @@ export default function CommunityDetailPage() {
 
   const isVerified = !!user?.verified;
 
+  const showVerificationSnackbar = (message: string) => {
+    showSnackbar({
+      type: "warning",
+      message,
+      actionLabel: "인증하기",
+      onAction: () => navigate("/mypage/verify-univ"),
+    });
+  };
+
   const handleLike = () => {
     if (!isVerified) {
-      setError("좋아요를 누르려면 대학 인증이 필요합니다.");
+      showVerificationSnackbar("좋아요를 누르려면 대학 인증이 필요합니다.");
       return;
     }
     likeMutation.mutate(undefined, {
       onError: (err) =>
-        setError(err instanceof ApiError ? err.message : "좋아요 처리에 실패했습니다."),
+        showSnackbar({
+          type: "error",
+          message: err instanceof ApiError ? err.message : "좋아요 처리에 실패했습니다.",
+        }),
     });
   };
 
   const handleSave = () => {
     if (!isVerified) {
-      setError("저장하려면 대학 인증이 필요합니다.");
+      showVerificationSnackbar("저장하려면 대학 인증이 필요합니다.");
       return;
     }
     saveMutation.mutate(undefined, {
       onError: (err) =>
-        setError(err instanceof ApiError ? err.message : "저장 처리에 실패했습니다."),
+        showSnackbar({
+          type: "error",
+          message: err instanceof ApiError ? err.message : "저장 처리에 실패했습니다.",
+        }),
     });
   };
 
   const handleDeletePost = () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     deletePostMutation.mutate(undefined, {
-      onError: (err) => setError(err instanceof ApiError ? err.message : "삭제에 실패했습니다."),
+      onError: (err) =>
+        showSnackbar({
+          type: "error",
+          message: err instanceof ApiError ? err.message : "삭제에 실패했습니다.",
+        }),
     });
   };
 
   const handleCreateComment = () => {
-    if (!newComment.trim() || createCommentMutation.isPending) return;
+    if (createCommentMutation.isPending) return;
+    if (newComment.length > 1000) {
+      showSnackbar({ type: "error", message: "댓글은 1,000자 이하로 작성해주세요." });
+      return;
+    }
+    if (!newComment.trim()) return;
     if (!isVerified) {
-      setError("댓글을 작성하려면 대학 인증이 필요합니다.");
+      showVerificationSnackbar("댓글을 작성하려면 대학 인증이 필요합니다.");
       return;
     }
     createCommentMutation.mutate(
@@ -211,15 +253,23 @@ export default function CommunityDetailPage() {
       {
         onSuccess: () => setNewComment(""),
         onError: (err) =>
-          setError(err instanceof ApiError ? err.message : "댓글 등록에 실패했습니다."),
+          showSnackbar({
+            type: "error",
+            message: err instanceof ApiError ? err.message : "댓글 등록에 실패했습니다.",
+          }),
       },
     );
   };
 
   const handleCreateReply = (parentId: number) => {
-    if (!replyContent.trim() || createCommentMutation.isPending) return;
+    if (createCommentMutation.isPending) return;
+    if (replyContent.length > 1000) {
+      showSnackbar({ type: "error", message: "대댓글은 1,000자 이하로 작성해주세요." });
+      return;
+    }
+    if (!replyContent.trim()) return;
     if (!isVerified) {
-      setError("대댓글을 작성하려면 대학 인증이 필요합니다.");
+      showVerificationSnackbar("대댓글을 작성하려면 대학 인증이 필요합니다.");
       return;
     }
     createCommentMutation.mutate(
@@ -230,7 +280,10 @@ export default function CommunityDetailPage() {
           setReplyTo(null);
         },
         onError: (err) =>
-          setError(err instanceof ApiError ? err.message : "대댓글 등록에 실패했습니다."),
+          showSnackbar({
+            type: "error",
+            message: err instanceof ApiError ? err.message : "대댓글 등록에 실패했습니다.",
+          }),
       },
     );
   };
@@ -245,7 +298,10 @@ export default function CommunityDetailPage() {
           setEditContent("");
         },
         onError: (err) =>
-          setError(err instanceof ApiError ? err.message : "댓글 수정에 실패했습니다."),
+          showSnackbar({
+            type: "error",
+            message: err instanceof ApiError ? err.message : "댓글 수정에 실패했습니다.",
+          }),
       },
     );
   };
@@ -255,7 +311,10 @@ export default function CommunityDetailPage() {
     if (!confirm("댓글을 삭제하시겠습니까?")) return;
     deleteCommentMutation.mutate(commentId, {
       onError: (err) =>
-        setError(err instanceof ApiError ? err.message : "댓글 삭제에 실패했습니다."),
+        showSnackbar({
+          type: "error",
+          message: err instanceof ApiError ? err.message : "댓글 삭제에 실패했습니다.",
+        }),
     });
   };
 
@@ -289,34 +348,49 @@ export default function CommunityDetailPage() {
       className={
         isReply
           ? "ml-3 min-w-0 rounded-card border border-grey3 bg-grey1 p-3 md:ml-5 md:p-4 native:ml-3"
-          : "min-w-0 border-b border-grey3 pb-6 last:border-b-0"
+          : "min-w-0 rounded-card border border-grey3 bg-bg p-3 md:p-4"
       }
     >
-      <div className="flex min-w-0 items-start gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         <Avatar nickname={c.author?.nickname} profileUrl={c.author?.profileUrl} size="sm" />
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 pt-1">
-          <span className="min-w-0 break-words font-semibold text-[14px] text-grey9">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <span className="min-w-0 truncate font-semibold text-[14px] text-grey9">
             {c.author?.nickname ?? "알 수 없음"}
           </span>
           <span className="shrink-0 font-regular text-[12px] text-grey6">
-            {formatKoreanDatetime(c.createdAt)}
+            {formatCommunityListDate(c.createdAt)}
           </span>
         </div>
-        {c.isMine && !c.isDeleted && (
-          <div className="shrink-0 md:hidden native:block">
-            <CommunityActionMenu
-              open={openActionMenu === `comment-${c.id}`}
-              onOpenChange={(open) => setOpenActionMenu(open ? `comment-${c.id}` : null)}
-              onEdit={() => {
-                setEditingCommentId(c.id);
-                setEditContent(c.content);
+        <div className="flex shrink-0 items-center gap-1">
+          {!isReply && !c.isDeleted && (
+            <button
+              type="button"
+              onClick={() => {
+                setReplyTo(replyTo === c.id ? null : c.id);
+                setReplyContent("");
               }}
-              onDelete={() => handleDeleteComment(c.id)}
-              label="댓글 작업 메뉴"
-              disabled={deleteCommentMutation.isPending}
-            />
-          </div>
-        )}
+              className="inline-flex min-h-9 items-center gap-1 rounded-tag px-2 font-regular text-[12px] text-grey6 hover:bg-grey1 hover:text-grey9"
+            >
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+              답글
+            </button>
+          )}
+          {c.isMine && !c.isDeleted && (
+            <div className="md:hidden native:block">
+              <CommunityActionMenu
+                open={openActionMenu === `comment-${c.id}`}
+                onOpenChange={(open) => setOpenActionMenu(open ? `comment-${c.id}` : null)}
+                onEdit={() => {
+                  setEditingCommentId(c.id);
+                  setEditContent(c.content);
+                }}
+                onDelete={() => handleDeleteComment(c.id)}
+                label="댓글 작업 메뉴"
+                disabled={deleteCommentMutation.isPending}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {editingCommentId === c.id ? (
@@ -354,64 +428,28 @@ export default function CommunityDetailPage() {
         </p>
       )}
 
-      <div className="mt-3 flex min-h-11 flex-wrap items-center gap-2">
-        {!c.isDeleted && (
+      {c.isMine && !c.isDeleted && (
+        <div className="mt-3 hidden items-center gap-2 md:flex native:hidden">
           <button
             type="button"
             onClick={() => {
-              setReplyTo(replyTo === c.id ? null : c.id);
-              setReplyContent("");
+              setEditingCommentId(c.id);
+              setEditContent(c.content);
             }}
-            className="inline-flex min-h-11 items-center gap-1 rounded-tag px-2 font-regular text-[12px] text-grey6 hover:bg-grey1 hover:text-grey9"
+            className="inline-flex min-h-9 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9"
           >
-            <CornerDownRight className="h-3.5 w-3.5" />
-            답글
+            <Pencil className="h-3.5 w-3.5" />
+            수정
           </button>
-        )}
-        {c.isMine && !c.isDeleted && (
-          <div className="hidden items-center gap-2 md:flex native:hidden">
-            <button
-              type="button"
-              onClick={() => {
-                setEditingCommentId(c.id);
-                setEditContent(c.content);
-              }}
-              className="inline-flex min-h-9 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              수정
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDeleteComment(c.id)}
-              disabled={deleteCommentMutation.isPending}
-              className="inline-flex min-h-9 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9 disabled:opacity-50"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              삭제
-            </button>
-          </div>
-        )}
-      </div>
-
-      {replyTo === c.id && (
-        <div className="mt-3 flex min-w-0 flex-col gap-2 md:flex-row md:items-start native:flex-col">
-          <textarea
-            value={replyContent}
-            onChange={(e) => setReplyContent(e.target.value.slice(0, 1000))}
-            maxLength={1000}
-            placeholder="대댓글을 입력하세요"
-            rows={2}
-            className="min-w-0 flex-1 resize-none rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[14px] focus:border-grey9 focus:outline-none"
-          />
-          <Button
-            size="sm"
-            onClick={() => handleCreateReply(c.id)}
-            disabled={createCommentMutation.isPending}
-            className="shrink-0 self-end"
+          <button
+            type="button"
+            onClick={() => handleDeleteComment(c.id)}
+            disabled={deleteCommentMutation.isPending}
+            className="inline-flex min-h-9 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9 disabled:opacity-50"
           >
-            {createCommentMutation.isPending ? "등록 중" : "등록"}
-          </Button>
+            <Trash2 className="h-3.5 w-3.5" />
+            삭제
+          </button>
         </div>
       )}
 
@@ -419,6 +457,42 @@ export default function CommunityDetailPage() {
         <ul className="mt-4 flex min-w-0 flex-col gap-3 md:mt-5 md:gap-4">
           {c.children.map((r) => renderComment(r, true))}
         </ul>
+      )}
+
+      {!isReply && replyTo === c.id && (
+        <div className="mt-4 flex min-w-0 flex-col gap-2 md:mt-5 md:flex-row md:items-start native:flex-col">
+          <div className="relative min-w-0 flex-1">
+            <textarea
+              ref={replyTextareaRef}
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              placeholder="대댓글을 입력하세요"
+              rows={1}
+              className="block max-h-40 min-h-11 w-full resize-none overflow-y-hidden rounded-tag border border-grey3 bg-bg px-4 py-2.5 font-regular text-[14px] leading-6 focus:border-grey9 focus:outline-none native:pr-12"
+            />
+            <button
+              type="button"
+              onClick={() => handleCreateReply(c.id)}
+              disabled={!replyContent.trim() || createCommentMutation.isPending}
+              className="absolute right-1.5 bottom-1.5 hidden h-8 w-8 items-center justify-center text-primary disabled:opacity-40 native:flex"
+              aria-label="답글 보내기"
+            >
+              {createCommentMutation.isPending ? (
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+              ) : (
+                <Send className="h-5 w-5" aria-hidden />
+              )}
+            </button>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => handleCreateReply(c.id)}
+            disabled={!replyContent.trim() || createCommentMutation.isPending}
+            className="shrink-0 self-end native:hidden"
+          >
+            {createCommentMutation.isPending ? "등록 중" : "등록"}
+          </Button>
+        </div>
       )}
     </li>
   );
@@ -433,12 +507,6 @@ export default function CommunityDetailPage() {
       >
         <ChevronLeft className="h-7 w-7" />
       </button>
-
-      {error && (
-        <p className="mb-4 rounded-tag bg-red-50 px-4 py-2 font-regular text-[13px] text-red-500">
-          {error}
-        </p>
-      )}
 
       <article className="border-b border-grey5 pb-10">
         <div className="relative flex min-w-0 items-start justify-between gap-3">
@@ -481,7 +549,7 @@ export default function CommunityDetailPage() {
         </div>
         <div className="mt-3 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 font-regular text-[12px] text-grey6">
           <span className="min-w-0 break-words font-medium text-grey9">{post.author.nickname}</span>
-          <span className="shrink-0">{formatKoreanDatetime(post.createdAt)}</span>
+          <span className="shrink-0">{formatCommunityListDate(post.createdAt)}</span>
         </div>
         <p className="mt-8 whitespace-pre-wrap break-words font-medium text-[16px] leading-relaxed text-grey9 [overflow-wrap:anywhere] md:text-[18px]">
           {post.content}
@@ -597,26 +665,32 @@ export default function CommunityDetailPage() {
         )}
 
         {user && isVerified && (
-          <div className="mt-10 flex min-w-0 items-start gap-3 rounded-card border border-grey3 p-4 md:gap-4 md:p-5">
-            <Avatar
-              nickname={user.nickname}
-              profileUrl={user.profileImage}
-              size="md"
-              className="hidden sm:flex"
-            />
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <textarea
-                placeholder="댓글을 입력해주세요"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value.slice(0, 1000))}
-                maxLength={1000}
-                rows={3}
-                className="min-w-0 resize-none rounded-tag border border-grey4 bg-bg px-4 py-3 font-regular text-[14px] focus:border-grey9 focus:outline-none"
-              />
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-regular text-[12px] text-grey5">
-                  {newComment.length}/1000
-                </span>
+          <div className="mt-10 min-w-0">
+            <div className="flex min-w-0 flex-col gap-2">
+              <div className="relative min-w-0">
+                <textarea
+                  ref={commentTextareaRef}
+                  placeholder="댓글을 입력해주세요"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  rows={1}
+                  className="block max-h-40 min-h-11 w-full resize-none overflow-y-hidden rounded-tag border border-grey4 bg-bg px-4 py-2.5 font-regular text-[14px] leading-6 focus:border-grey9 focus:outline-none native:pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateComment}
+                  disabled={!newComment.trim() || createCommentMutation.isPending}
+                  className="absolute right-1.5 bottom-1.5 hidden h-8 w-8 items-center justify-center text-primary disabled:opacity-40 native:flex"
+                  aria-label="댓글 보내기"
+                >
+                  {createCommentMutation.isPending ? (
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                  ) : (
+                    <Send className="h-5 w-5" aria-hidden />
+                  )}
+                </button>
+              </div>
+              <div className="flex justify-end native:hidden">
                 <Button
                   size="sm"
                   onClick={handleCreateComment}

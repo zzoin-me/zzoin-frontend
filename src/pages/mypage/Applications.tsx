@@ -14,6 +14,7 @@ import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 import { InlineLoading } from "@/components/common/InlineLoading";
 import { ApplicationListSkeleton } from "@/components/mypage/MyPageSkeletons";
 import { QueryErrorState } from "@/components/common/QueryErrorState";
+import { showSnackbar } from "@/stores/snackbarStore";
 
 type StatusFilter = "ALL" | ApplicationStatus;
 
@@ -57,7 +58,6 @@ export default function MyPageApplicationsPage() {
   const [category, setCategory] = useState<RecruitmentCategory | null>(null);
   const [page, setPage] = useState(1);
   const [cancelingId, setCancelingId] = useState<number | null>(null);
-  const [error, setError] = useState("");
 
   const status = activeTab === "ALL" ? undefined : (activeTab as ApplicationStatus);
 
@@ -115,7 +115,7 @@ export default function MyPageApplicationsPage() {
       await cancelApplication({ applicationId });
       queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     } catch {
-      setError("지원 취소에 실패했습니다. 다시 시도해주세요.");
+      showSnackbar({ type: "error", message: "지원 취소에 실패했습니다. 다시 시도해주세요." });
     } finally {
       setCancelingId(null);
     }
@@ -165,70 +165,68 @@ export default function MyPageApplicationsPage() {
                 key={app.applicationId}
                 className="flex flex-col gap-2 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8"
               >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Link
-                  to={`/projects/${app.projectId}`}
-                  className="flex min-w-0 flex-1 flex-col gap-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-[16px] text-grey9 md:text-[18px] lg:text-[20px]">
-                      {app.projectTitle}
-                    </h3>
-                    <StatusBadge status={app.status} />
-                  </div>
-                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-5">
-                    <span className="font-medium text-[14px] text-grey7 sm:border-r sm:border-grey7 sm:pr-5 md:text-[16px]">
-                      {app.appliedRecruitmentName}
-                    </span>
-                    <span className="font-medium text-[14px] text-grey7 md:text-[16px]">
-                      지원일 {formatDate(app.createdAt)}
-                    </span>
-                  </div>
-                </Link>
-                {app.status === "PENDING" ? (
-                  <button
-                    type="button"
-                    onClick={() => handleCancel(app.applicationId)}
-                    disabled={cancelingId === app.applicationId}
-                    className="shrink-0 self-start rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 sm:self-center"
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <Link
+                    to={`/projects/${app.projectId}`}
+                    className="flex min-w-0 flex-1 flex-col gap-2"
                   >
-                    {cancelingId === app.applicationId ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
-                        취소 중
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-[16px] text-grey9 md:text-[18px] lg:text-[20px]">
+                        {app.projectTitle}
+                      </h3>
+                      <StatusBadge status={app.status} />
+                    </div>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-5">
+                      <span className="font-medium text-[14px] text-grey7 sm:border-r sm:border-grey7 sm:pr-5 md:text-[16px]">
+                        {app.appliedRecruitmentName}
                       </span>
-                    ) : (
-                      "지원 취소"
-                    )}
-                  </button>
-                ) : app.status === "APPROVED" &&
-                  (app.projectStatus === "IN_PROGRESS" || app.projectStatus === "COMPLETED") ? (
-                  <div className="flex shrink-0 items-center gap-2 self-center">
-                    <Link
-                      to={`/projects/${app.projectId}/chat`}
-                      className="rounded-tag border border-grey5 px-4 py-2 font-medium text-[13px] text-grey8"
+                      <span className="font-medium text-[14px] text-grey7 md:text-[16px]">
+                        지원일 {formatDate(app.createdAt)}
+                      </span>
+                    </div>
+                  </Link>
+                  {app.status === "PENDING" ? (
+                    <button
+                      type="button"
+                      onClick={() => handleCancel(app.applicationId)}
+                      disabled={cancelingId === app.applicationId}
+                      className="shrink-0 self-start rounded-tag border border-red-200 bg-bg px-4 py-2 font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 sm:self-center"
                     >
-                      대화방
-                    </Link>
-                    {app.projectStatus === "COMPLETED" && (
+                      {cancelingId === app.applicationId ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
+                          취소 중
+                        </span>
+                      ) : (
+                        "지원 취소"
+                      )}
+                    </button>
+                  ) : app.status === "APPROVED" &&
+                    (app.projectStatus === "IN_PROGRESS" || app.projectStatus === "COMPLETED") ? (
+                    <div className="flex shrink-0 items-center gap-2 self-center">
                       <Link
-                        to={`/mypage/reviews/${app.projectId}`}
-                        className="inline-flex items-center gap-1.5 rounded-tag bg-primary px-4 py-2 font-medium text-[13px] text-white"
+                        to={`/projects/${app.projectId}/chat`}
+                        className="rounded-tag border border-grey5 px-4 py-2 font-medium text-[13px] text-grey8"
                       >
-                        <ClipboardPenLine className="h-4 w-4" aria-hidden />
-                        후기
+                        대화방
                       </Link>
-                    )}
-                  </div>
-                ) : null}
-              </div>
+                      {app.projectStatus === "COMPLETED" && (
+                        <Link
+                          to={`/mypage/reviews/${app.projectId}`}
+                          className="inline-flex items-center gap-1.5 rounded-tag bg-primary px-4 py-2 font-medium text-[13px] text-white"
+                        >
+                          <ClipboardPenLine className="h-4 w-4" aria-hidden />
+                          후기
+                        </Link>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
-
-      {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 
       <Pagination
         currentPage={Math.min(page, totalPages)}

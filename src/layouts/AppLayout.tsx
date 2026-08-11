@@ -1,5 +1,6 @@
 import { Link, Navigate, Outlet, useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { Capacitor } from "@capacitor/core";
 import { Loader2 } from "lucide-react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { TabBar } from "@/components/navigation/TabBar";
@@ -13,7 +14,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useIsMobile } from "@/utils/useMediaQuery";
 import { useNotificationSSE } from "@/hooks/useNotificationSSE";
 import { useFCMPush } from "@/hooks/useFCMPush";
-import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { PULL_TO_REFRESH_THRESHOLD, usePullToRefresh } from "@/hooks/usePullToRefresh";
 
 export function AppLayout() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
@@ -23,6 +24,7 @@ export function AppLayout() {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   const isChatPage = /^\/projects\/\d+\/chat$/.test(location.pathname);
+  const isNativeApp = Capacitor.isNativePlatform();
   const queryClient = useQueryClient();
 
   const realtimeNotification = useNotificationSSE();
@@ -32,9 +34,12 @@ export function AppLayout() {
     await queryClient.invalidateQueries();
   };
 
-  const { pullDistance, isRefreshing, containerRef } = usePullToRefresh(handleRefresh, !isChatPage);
+  const { pullDistance, isRefreshing, containerRef } = usePullToRefresh(
+    handleRefresh,
+    isNativeApp && !isChatPage,
+  );
   const showSpinner = pullDistance > 0 || isRefreshing;
-  const spinnerOffset = isRefreshing ? THRESHOLD : pullDistance;
+  const spinnerOffset = isRefreshing ? PULL_TO_REFRESH_THRESHOLD : pullDistance;
   const spinnerRotation = pullDistance * 3;
 
   if (!initialized) {
@@ -52,11 +57,11 @@ export function AppLayout() {
         className="fixed top-0 left-0 right-0 z-40 h-[env(safe-area-inset-top)] bg-bg"
       />
 
-      {isMobile && showSpinner && (
+      {isNativeApp && showSpinner && (
         <div
           className="pointer-events-none fixed left-0 right-0 top-[env(safe-area-inset-top)] z-50 flex items-center justify-center"
           style={{
-            transform: `translateY(${spinnerOffset - 40}px)`,
+            transform: `translateY(${spinnerOffset - 32}px)`,
             transition: isRefreshing || pullDistance === 0 ? "transform 0.3s ease" : "none",
           }}
         >
@@ -98,5 +103,3 @@ export function AppLayout() {
     </div>
   );
 }
-
-const THRESHOLD = 70;

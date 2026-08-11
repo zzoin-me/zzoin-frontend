@@ -1,4 +1,5 @@
 import type { CapacitorConfig } from "@capacitor/cli";
+import { KeyboardResize } from "@capacitor/keyboard";
 
 const localHttp = process.env.CAPACITOR_LOCAL_HTTP === "true";
 
@@ -13,6 +14,10 @@ const config: CapacitorConfig = {
   plugins: {
     CapacitorHttp: {
       enabled: true,
+    },
+    Keyboard: {
+      resize: KeyboardResize.Native,
+      resizeOnFullScreen: true,
     },
   },
 };

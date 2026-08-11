@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const THRESHOLD = 70;
-const MAX_PULL = 100;
+export const PULL_TO_REFRESH_THRESHOLD = 60;
+
+const MAX_PULL = 96;
+const PULL_RESISTANCE = 0.6;
+const DIRECTION_LOCK_DISTANCE = 8;
 
 export function usePullToRefresh(onRefresh: () => void | Promise<void>, enabled = true) {
   const [pullDistance, setPullDistance] = useState(0);
@@ -9,6 +12,7 @@ export function usePullToRefresh(onRefresh: () => void | Promise<void>, enabled 
   const startY = useRef(0);
   const startX = useRef(0);
   const isPulling = useRef(false);
+  const direction = useRef<"pending" | "vertical">("pending");
   const pullDistanceRef = useRef(0);
   const isRefreshingRef = useRef(false);
   const onRefreshRef = useRef(onRefresh);
@@ -26,10 +30,10 @@ export function usePullToRefresh(onRefresh: () => void | Promise<void>, enabled 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const target = e.target instanceof Element ? e.target : null;
     if (
-      window.scrollY > 0 ||
+      window.scrollY > 1 ||
       isRefreshingRef.current ||
       target?.closest(
-        '[role="dialog"], [data-pull-to-refresh-ignore], input, textarea, select, button, a, [contenteditable="true"]',
+        '[role="dialog"], [data-pull-to-refresh-ignore], input, textarea, select, [contenteditable="true"]',
       )
     ) {
       isPulling.current = false;
@@ -38,6 +42,7 @@ export function usePullToRefresh(onRefresh: () => void | Promise<void>, enabled 
     startY.current = e.touches[0].clientY;
     startX.current = e.touches[0].clientX;
     isPulling.current = true;
+    direction.current = "pending";
   }, []);
 
   const handleTouchMove = useCallback(
@@ -46,15 +51,26 @@ export function usePullToRefresh(onRefresh: () => void | Promise<void>, enabled 
       const diffY = e.touches[0].clientY - startY.current;
       const diffX = e.touches[0].clientX - startX.current;
 
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        isPulling.current = false;
-        updatePullDistance(0);
-        return;
+      if (direction.current === "pending") {
+        if (
+          Math.abs(diffX) < DIRECTION_LOCK_DISTANCE &&
+          Math.abs(diffY) < DIRECTION_LOCK_DISTANCE
+        ) {
+          return;
+        }
+
+        if (diffY <= 0 || Math.abs(diffX) > Math.abs(diffY)) {
+          isPulling.current = false;
+          updatePullDistance(0);
+          return;
+        }
+
+        direction.current = "vertical";
       }
 
-      if (diffY > 0 && window.scrollY <= 0) {
-        e.preventDefault();
-        updatePullDistance(Math.min(diffY * 0.5, MAX_PULL));
+      if (diffY > 0 && window.scrollY <= 1) {
+        if (e.cancelable) e.preventDefault();
+        updatePullDistance(Math.min(diffY * PULL_RESISTANCE, MAX_PULL));
       }
     },
     [updatePullDistance],
@@ -64,10 +80,10 @@ export function usePullToRefresh(onRefresh: () => void | Promise<void>, enabled 
     if (!isPulling.current) return;
     isPulling.current = false;
 
-    if (pullDistanceRef.current >= THRESHOLD) {
+    if (pullDistanceRef.current >= PULL_TO_REFRESH_THRESHOLD) {
       isRefreshingRef.current = true;
       setIsRefreshing(true);
-      updatePullDistance(THRESHOLD);
+      updatePullDistance(PULL_TO_REFRESH_THRESHOLD);
       try {
         await onRefreshRef.current();
       } finally {

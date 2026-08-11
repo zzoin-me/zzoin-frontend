@@ -5,6 +5,7 @@ import { getChatMessages, getChatRooms, markChatRead, sendChatMessage } from "@/
 import { ApiError } from "@/api/client";
 import { LoadingState } from "@/components/common/LoadingState";
 import { useProjectChatSocket } from "@/hooks/useProjectChatSocket";
+import { showSnackbar } from "@/stores/snackbarStore";
 import type { ChatMessage, ChatRoom } from "@/types";
 
 function formatMessageTime(value: string): string {
@@ -51,6 +52,15 @@ export default function ProjectChatPage() {
   );
 
   useEffect(() => {
+    if (!socketError) return;
+    showSnackbar({
+      dedupeKey: `chat-socket:${socketError}`,
+      type: "error",
+      message: socketError,
+    });
+  }, [socketError]);
+
+  useEffect(() => {
     if (!Number.isFinite(projectId)) return;
     Promise.all([getChatRooms(), getChatMessages(projectId)])
       .then(([rooms, history]) => {
@@ -94,7 +104,10 @@ export default function ProjectChatPage() {
       setHasNext(history.hasNext);
       setNextCursor(history.nextCursor);
     } catch (reason) {
-      setError(reason instanceof ApiError ? reason.message : "이전 메시지를 불러오지 못했습니다.");
+      showSnackbar({
+        type: "error",
+        message: reason instanceof ApiError ? reason.message : "이전 메시지를 불러오지 못했습니다.",
+      });
     } finally {
       setLoadingOlder(false);
     }
@@ -104,13 +117,15 @@ export default function ProjectChatPage() {
     const normalized = content.trim();
     if (!normalized || sending || room?.projectStatus === "COMPLETED") return;
     setContent("");
-    setError("");
     setSending(true);
     try {
       appendMessage(await sendChatMessage(projectId, normalized));
     } catch (reason) {
       setContent(normalized);
-      setError(reason instanceof ApiError ? reason.message : "메시지를 보내지 못했습니다.");
+      showSnackbar({
+        type: "error",
+        message: reason instanceof ApiError ? reason.message : "메시지를 보내지 못했습니다.",
+      });
     } finally {
       setSending(false);
     }
@@ -232,12 +247,6 @@ export default function ProjectChatPage() {
         )}
         <div ref={bottomRef} />
       </div>
-
-      {(error || socketError) && (
-        <p className="shrink-0 px-4 py-1 text-center font-regular text-[12px] text-red-500">
-          {error || socketError}
-        </p>
-      )}
 
       {readOnly ? (
         <div className="flex shrink-0 items-center justify-center gap-2 border-t border-grey3 px-4 py-4 text-grey6">

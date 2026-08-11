@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router";
 import { Home, FolderGit2, MessageCircle, User } from "lucide-react";
-import { Capacitor } from "@capacitor/core";
-import { Keyboard } from "@capacitor/keyboard";
+import { useKeyboardState } from "@/hooks/useKeyboardState";
 
 const tabs = [
   { to: "/", label: "홈", icon: Home, end: true },
@@ -13,32 +11,7 @@ const tabs = [
 
 export function TabBar() {
   const location = useLocation();
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-
-    let showListener: { remove: () => void } | undefined;
-    let hideListener: { remove: () => void } | undefined;
-
-    (async () => {
-      try {
-        showListener = await Keyboard.addListener("keyboardWillShow", () => {
-          setKeyboardVisible(true);
-        });
-        hideListener = await Keyboard.addListener("keyboardWillHide", () => {
-          setKeyboardVisible(false);
-        });
-      } catch {
-        // no-op
-      }
-    })();
-
-    return () => {
-      showListener?.remove();
-      hideListener?.remove();
-    };
-  }, []);
+  const { keyboardVisible } = useKeyboardState();
 
   if (keyboardVisible || /^\/projects\/\d+\/chat$/.test(location.pathname)) return null;
 

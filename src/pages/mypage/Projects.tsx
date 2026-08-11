@@ -17,6 +17,7 @@ import {
   ManagedProjectListSkeleton,
 } from "@/components/mypage/MyPageSkeletons";
 import { QueryErrorState } from "@/components/common/QueryErrorState";
+import { showSnackbar } from "@/stores/snackbarStore";
 
 type StatusFilter = "ALL" | "RECRUITING" | "CLOSED";
 
@@ -63,7 +64,6 @@ export default function MyPageProjectsPage() {
   const [applicantsErrorId, setApplicantsErrorId] = useState<number | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [selectedApplicant, setSelectedApplicant] = useState<ProjectApplicant | null>(null);
-  const [error, setError] = useState("");
 
   const statusParam = activeTab === "ALL" ? undefined : activeTab;
 
@@ -133,7 +133,10 @@ export default function MyPageProjectsPage() {
       loadApplicants(projectId);
       queryClient.invalidateQueries({ queryKey: ["my-projects", "stats"] });
     } catch {
-      setError("지원자 상태 변경에 실패했습니다. 다시 시도해주세요.");
+      showSnackbar({
+        type: "error",
+        message: "지원자 상태 변경에 실패했습니다. 다시 시도해주세요.",
+      });
     } finally {
       setProcessingId(null);
     }
@@ -225,164 +228,170 @@ export default function MyPageProjectsPage() {
             className={`flex flex-col gap-4 transition-opacity md:gap-5 ${refreshing ? "opacity-70" : ""}`}
             aria-busy={refreshing}
           >
-          {pagedProjects.map((project) => {
-            const isExpanded = expandedId === project.id;
-            const applicants = applicantsByProject[project.id];
-            return (
-              <div
-                key={project.id}
-                className={`overflow-hidden rounded-[20px] border transition-colors ${
-                  isExpanded ? "border-grey7" : "border-grey5"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3 p-5 md:p-6 lg:p-8">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleExpand(project.id)}
-                    className={`flex min-w-0 flex-1 flex-col gap-2 text-left ${
-                      project.status === "RECRUITMENT_CLOSED" || project.status === "COMPLETED"
-                        ? "opacity-40"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                      <h3 className="font-bold text-[16px] text-grey9 md:text-[18px] lg:text-[20px]">
-                        {project.title}
-                      </h3>
-                      <StatusBadge status={project.status} />
-                    </div>
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-5">
-                      <span className="font-medium text-[14px] text-grey7 sm:border-r sm:border-grey7 sm:pr-5 md:text-[16px]">
-                        지원자 {project.applicantCount}명
-                      </span>
-                      <span className="font-medium text-[14px] text-grey7 md:text-[16px]">
-                        등록일 {formatDate(project.createdAt)}
-                      </span>
-                    </div>
-                  </button>
-                  <div className="flex shrink-0 items-center gap-2 self-center">
-                    {(project.status === "IN_PROGRESS" || project.status === "COMPLETED") && (
-                      <Link
-                        to={`/projects/${project.id}/chat`}
-                        className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-grey5 text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:h-14 md:w-14"
-                        aria-label="프로젝트 대화방"
-                      >
-                        <MessageCircle className="h-5 w-5" aria-hidden />
-                      </Link>
-                    )}
-                    {project.status === "COMPLETED" && (
-                      <Link
-                        to={`/mypage/reviews/${project.id}`}
-                        className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-grey5 text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:h-14 md:w-14"
-                        aria-label="팀원 후기 작성"
-                      >
-                        <ClipboardPenLine className="h-5 w-5" aria-hidden />
-                      </Link>
-                    )}
-                    <Link
-                      to={`/projects/${project.id}/manage`}
-                      className="rounded-[20px] border border-grey5 px-4 py-2 font-medium text-[14px] text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:px-4 md:py-4 md:text-[20px]"
+            {pagedProjects.map((project) => {
+              const isExpanded = expandedId === project.id;
+              const applicants = applicantsByProject[project.id];
+              return (
+                <div
+                  key={project.id}
+                  className={`overflow-hidden rounded-[20px] border transition-colors ${
+                    isExpanded ? "border-grey7" : "border-grey5"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3 p-5 md:p-6 lg:p-8">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleExpand(project.id)}
+                      className={`flex min-w-0 flex-1 flex-col gap-2 text-left ${
+                        project.status === "RECRUITMENT_CLOSED" || project.status === "COMPLETED"
+                          ? "opacity-40"
+                          : ""
+                      }`}
                     >
-                      관리
-                    </Link>
-                  </div>
-                </div>
-
-                {isExpanded && (
-                  <div className="border-t border-grey3 bg-grey1 px-5 py-5 md:px-6 lg:px-8">
-                    {applicantsLoadingId === project.id ? (
-                      <ApplicantListSkeleton />
-                    ) : applicantsErrorId === project.id ? (
-                      <QueryErrorState
-                        compact
-                        message="지원자 목록을 불러오지 못했습니다."
-                        onRetry={() => loadApplicants(project.id)}
-                      />
-                    ) : !applicants || applicants.length === 0 ? (
-                      <p className="font-regular text-[14px] text-grey6">아직 지원자가 없어요.</p>
-                    ) : (
-                      <div className="flex flex-col gap-3">
-                        <span className="font-medium text-[14px] text-grey8 md:text-[16px]">
-                          지원자 ({applicants.length}명)
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                        <h3 className="font-bold text-[16px] text-grey9 md:text-[18px] lg:text-[20px]">
+                          {project.title}
+                        </h3>
+                        <StatusBadge status={project.status} />
+                      </div>
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-5">
+                        <span className="font-medium text-[14px] text-grey7 sm:border-r sm:border-grey7 sm:pr-5 md:text-[16px]">
+                          지원자 {project.applicantCount}명
                         </span>
-                        {applicants.map((a) => (
-                          <div
-                            key={a.applicationId}
-                            className="flex flex-col gap-3 rounded-[16px] border border-grey3 bg-bg p-4 sm:flex-row sm:items-center sm:justify-between"
-                          >
-                            <div className="flex min-w-0 flex-1 items-center gap-3">
-                              {a.profileUrl ? (
-                                <img
-                                  src={a.profileUrl}
-                                  alt={a.nickName}
-                                  loading="lazy"
-                                  className="h-10 w-10 shrink-0 rounded-full object-cover"
-                                />
-                              ) : (
-                                <div className="h-10 w-10 shrink-0 rounded-full bg-grey4" />
-                              )}
-                              <div className="flex min-w-0 flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="truncate font-medium text-[15px] text-grey9">
-                                    {a.nickName}
+                        <span className="font-medium text-[14px] text-grey7 md:text-[16px]">
+                          등록일 {formatDate(project.createdAt)}
+                        </span>
+                      </div>
+                    </button>
+                    <div className="flex shrink-0 items-center gap-2 self-center">
+                      {(project.status === "IN_PROGRESS" || project.status === "COMPLETED") && (
+                        <Link
+                          to={`/projects/${project.id}/chat`}
+                          className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-grey5 text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:h-14 md:w-14"
+                          aria-label="프로젝트 대화방"
+                        >
+                          <MessageCircle className="h-5 w-5" aria-hidden />
+                        </Link>
+                      )}
+                      {project.status === "COMPLETED" && (
+                        <Link
+                          to={`/mypage/reviews/${project.id}`}
+                          className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-grey5 text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:h-14 md:w-14"
+                          aria-label="팀원 후기 작성"
+                        >
+                          <ClipboardPenLine className="h-5 w-5" aria-hidden />
+                        </Link>
+                      )}
+                      <Link
+                        to={`/projects/${project.id}/manage`}
+                        className="rounded-[20px] border border-grey5 px-4 py-2 font-medium text-[14px] text-grey7 transition-colors hover:border-grey7 hover:text-grey9 md:px-4 md:py-4 md:text-[20px]"
+                      >
+                        관리
+                      </Link>
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="border-t border-grey3 bg-grey1 px-5 py-5 md:px-6 lg:px-8">
+                      {applicantsLoadingId === project.id ? (
+                        <ApplicantListSkeleton />
+                      ) : applicantsErrorId === project.id ? (
+                        <QueryErrorState
+                          compact
+                          message="지원자 목록을 불러오지 못했습니다."
+                          onRetry={() => loadApplicants(project.id)}
+                        />
+                      ) : !applicants || applicants.length === 0 ? (
+                        <p className="font-regular text-[14px] text-grey6">아직 지원자가 없어요.</p>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          <span className="font-medium text-[14px] text-grey8 md:text-[16px]">
+                            지원자 ({applicants.length}명)
+                          </span>
+                          {applicants.map((a) => (
+                            <div
+                              key={a.applicationId}
+                              className="flex flex-col gap-3 rounded-[16px] border border-grey3 bg-bg p-4 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                              <div className="flex min-w-0 flex-1 items-center gap-3">
+                                {a.profileUrl ? (
+                                  <img
+                                    src={a.profileUrl}
+                                    alt={a.nickName}
+                                    loading="lazy"
+                                    className="h-10 w-10 shrink-0 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="h-10 w-10 shrink-0 rounded-full bg-grey4" />
+                                )}
+                                <div className="flex min-w-0 flex-col gap-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="truncate font-medium text-[15px] text-grey9">
+                                      {a.nickName}
+                                    </span>
+                                    <StatusBadge status={a.status} />
+                                  </div>
+                                  <span className="truncate font-regular text-[13px] text-grey6">
+                                    {a.recruitmentName} · 지원일 {formatDate(a.applicationDate)}
                                   </span>
-                                  <StatusBadge status={a.status} />
                                 </div>
-                                <span className="truncate font-regular text-[13px] text-grey6">
-                                  {a.recruitmentName} · 지원일 {formatDate(a.applicationDate)}
-                                </span>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedApplicant(a)}
+                                  className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-primary bg-bg font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
+                                  aria-label="지원자 정보"
+                                >
+                                  정보
+                                </button>
+                                {a.status === "PENDING" && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleApplicantStatus(
+                                          project.id,
+                                          a.applicationId,
+                                          "APPROVED",
+                                        )
+                                      }
+                                      disabled={processingId === a.applicationId}
+                                      className="inline-flex h-9 w-14 items-center justify-center rounded-tag bg-green-600 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                                    >
+                                      승인
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleApplicantStatus(
+                                          project.id,
+                                          a.applicationId,
+                                          "REJECTED",
+                                        )
+                                      }
+                                      disabled={processingId === a.applicationId}
+                                      className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-red-200 bg-bg font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                                    >
+                                      거절
+                                    </button>
+                                  </>
+                                )}
                               </div>
                             </div>
-                            <div className="flex shrink-0 items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setSelectedApplicant(a)}
-                                className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-primary bg-bg font-medium text-[13px] text-primary transition-colors hover:bg-primary-light"
-                                aria-label="지원자 정보"
-                              >
-                                정보
-                              </button>
-                              {a.status === "PENDING" && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleApplicantStatus(project.id, a.applicationId, "APPROVED")
-                                    }
-                                    disabled={processingId === a.applicationId}
-                                    className="inline-flex h-9 w-14 items-center justify-center rounded-tag bg-green-600 font-medium text-[13px] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                                  >
-                                    승인
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleApplicantStatus(project.id, a.applicationId, "REJECTED")
-                                    }
-                                    disabled={processingId === a.applicationId}
-                                    className="inline-flex h-9 w-14 items-center justify-center rounded-tag border border-red-200 bg-bg font-medium text-[13px] text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-                                  >
-                                    거절
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setPage} />
-
-      {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}
 
       <ApplicantDetailModal
         applicant={selectedApplicant}

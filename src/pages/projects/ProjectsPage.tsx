@@ -11,6 +11,7 @@ import { RecommendProjectBanner } from "@/components/project/RecommendProjectBan
 import { getProjects, getRecommendProjects, type ProjectListParams } from "@/api/projects";
 import { getPageList } from "@/utils/pagination";
 import { useAuthStore } from "@/stores/authStore";
+import { showSnackbar } from "@/stores/snackbarStore";
 import { useIsMobile } from "@/utils/useMediaQuery";
 import {
   RECRUITMENT_CATEGORIES,
@@ -104,7 +105,6 @@ export default function ProjectsPage() {
   const [draftFilters, setDraftFilters] = useState<FilterState>(() =>
     parseFiltersFromParams(searchParams),
   );
-  const [toast, setToast] = useState(false);
   const [bannerHidden, setBannerHidden] = useState(
     () => sessionStorage.getItem("recommend-banner-hidden") === "1",
   );
@@ -179,12 +179,6 @@ export default function ProjectsPage() {
   useEffect(() => {
     setPage(1);
   }, [keyword, activeTab, appliedFilters]);
-
-  useEffect(() => {
-    if (!toast) return;
-    const id = setTimeout(() => setToast(false), 2500);
-    return () => clearTimeout(id);
-  }, [toast]);
 
   useEffect(() => {
     const next = new URLSearchParams();
@@ -485,41 +479,41 @@ export default function ProjectsPage() {
           className={`transition-opacity ${listRefreshing ? "opacity-70" : ""}`}
           aria-busy={listRefreshing}
         >
-        {activeTab === "추천" ? (
-          recommendTabInitialLoading ? (
+          {activeTab === "추천" ? (
+            recommendTabInitialLoading ? (
+              <ProjectGrid>
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <ProjectCardSkeleton key={i} />
+                ))}
+              </ProjectGrid>
+            ) : recommendTabProjects.length === 0 ? (
+              <p className="py-20 text-center font-regular text-[16px] text-grey6">
+                표시할 프로젝트가 없습니다.
+              </p>
+            ) : (
+              <ProjectGrid>
+                {recommendTabProjects.map((p) => (
+                  <ProjectCard key={p.id} project={p} />
+                ))}
+              </ProjectGrid>
+            )
+          ) : loading ? (
             <ProjectGrid>
               {Array.from({ length: 9 }).map((_, i) => (
                 <ProjectCardSkeleton key={i} />
               ))}
             </ProjectGrid>
-          ) : recommendTabProjects.length === 0 ? (
+          ) : allProjects.length === 0 ? (
             <p className="py-20 text-center font-regular text-[16px] text-grey6">
               표시할 프로젝트가 없습니다.
             </p>
           ) : (
             <ProjectGrid>
-              {recommendTabProjects.map((p) => (
+              {allProjects.map((p) => (
                 <ProjectCard key={p.id} project={p} />
               ))}
             </ProjectGrid>
-          )
-        ) : loading ? (
-          <ProjectGrid>
-            {Array.from({ length: 9 }).map((_, i) => (
-              <ProjectCardSkeleton key={i} />
-            ))}
-          </ProjectGrid>
-        ) : allProjects.length === 0 ? (
-          <p className="py-20 text-center font-regular text-[16px] text-grey6">
-            표시할 프로젝트가 없습니다.
-          </p>
-        ) : (
-          <ProjectGrid>
-            {allProjects.map((p) => (
-              <ProjectCard key={p.id} project={p} />
-            ))}
-          </ProjectGrid>
-        )}
+          )}
         </div>
       </div>
 
@@ -590,7 +584,12 @@ export default function ProjectsPage() {
         <button
           type="button"
           onClick={() => {
-            setToast(true);
+            showSnackbar({
+              type: "warning",
+              message: "프로젝트를 생성하려면 대학 인증이 필요합니다.",
+              actionLabel: "인증하기",
+              onAction: () => navigate("/mypage/verify-univ"),
+            });
           }}
           aria-label="프로젝트 등록"
           className="group fixed bottom-36 right-5 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-grey4 text-grey6 shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:h-14 lg:hover:w-44"
@@ -604,20 +603,6 @@ export default function ProjectsPage() {
             </span>
           </div>
         </button>
-      )}
-
-      {toast && (
-        <div className="fixed bottom-40 left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-card border border-grey7 bg-[#1a202c] px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
-          프로젝트를 생성하려면{" "}
-          <button
-            type="button"
-            onClick={() => navigate("/mypage/verify-univ")}
-            className="underline underline-offset-2 hover:text-grey3"
-          >
-            대학 인증
-          </button>
-          이 필요합니다.
-        </div>
       )}
     </div>
   );

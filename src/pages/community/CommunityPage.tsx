@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
@@ -17,6 +17,7 @@ import { Pagination } from "@/components/common/Pagination";
 import { CommunityPostList } from "@/components/community/CommunityPostList";
 import { getPosts } from "@/api/community";
 import { useAuthStore } from "@/stores/authStore";
+import { showSnackbar } from "@/stores/snackbarStore";
 import type { CommunityBoardType } from "@/types";
 
 interface SidebarMenu {
@@ -53,7 +54,6 @@ export default function CommunityPage() {
   const [keyword, setKeyword] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [page, setPage] = useState(0);
-  const [toast, setToast] = useState(false);
 
   const isVerified = !!user?.verified;
 
@@ -61,7 +61,12 @@ export default function CommunityPage() {
     if (isVerified) {
       navigate("/community/new");
     } else {
-      setToast(true);
+      showSnackbar({
+        type: "warning",
+        message: "글을 작성하려면 대학 인증이 필요합니다.",
+        actionLabel: "인증하기",
+        onAction: () => navigate("/mypage/verify-univ"),
+      });
     }
   };
 
@@ -86,12 +91,6 @@ export default function CommunityPage() {
     setSearchKeyword(keyword);
     setPage(0);
   };
-
-  useEffect(() => {
-    if (!toast) return;
-    const id = setTimeout(() => setToast(false), 2500);
-    return () => clearTimeout(id);
-  }, [toast]);
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10 native:px-8 native:py-6">
@@ -242,20 +241,6 @@ export default function CommunityPage() {
           )}
         </div>
       </div>
-
-      {toast && (
-        <div className="fixed bottom-40 left-1/2 z-[60] -translate-x-1/2 whitespace-nowrap rounded-card border border-grey7 bg-[#1a202c] px-5 py-3 font-medium text-[14px] text-white shadow-xl lg:bottom-24">
-          글을 작성하려면{" "}
-          <button
-            type="button"
-            onClick={() => navigate("/mypage/verify-univ")}
-            className="underline underline-offset-2 hover:text-grey3"
-          >
-            대학 인증
-          </button>
-          이 필요합니다.
-        </div>
-      )}
     </div>
   );
 }
