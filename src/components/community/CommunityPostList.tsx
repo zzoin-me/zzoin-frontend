@@ -86,10 +86,28 @@ export function CommunityPostList({
               to={`/community/${post.id}`}
               className="block rounded-[16px] border border-grey3 p-5 transition-shadow hover:shadow-sm md:rounded-card md:border-grey5 md:p-6"
             >
-              <h2 className="font-bold text-[16px] text-grey9 md:text-[20px]">{post.title}</h2>
-              <p className="mt-2 line-clamp-2 font-medium text-[13px] text-grey7 md:text-[16px]">
-                {post.contentPreview}
-              </p>
+              <div className="flex min-w-0 gap-4">
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-bold text-[16px] text-grey9 md:text-[20px]">{post.title}</h2>
+                  <p className="mt-2 line-clamp-2 font-medium text-[13px] text-grey7 md:text-[16px]">
+                    {post.contentPreview}
+                  </p>
+                </div>
+                {post.imageUrls?.[0] && (
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-tag bg-grey2 md:h-24 md:w-24">
+                    <img
+                      src={post.imageUrls[0]}
+                      alt="게시글 대표 이미지"
+                      className="h-full w-full object-cover"
+                    />
+                    {post.imageUrls.length > 1 && (
+                      <span className="absolute bottom-1 right-1 rounded-full bg-black/65 px-2 py-0.5 font-medium text-[11px] text-white">
+                        +{post.imageUrls.length - 1}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="mt-4 flex min-w-0 items-center gap-2 overflow-hidden border-t border-grey3 pt-3 md:mt-5 md:pt-4">
                 <div className="flex min-w-0 flex-1 items-center gap-1.5 font-regular text-[11px] text-grey6 md:gap-2 md:text-[12px]">
                   <span className="min-w-0 truncate font-medium text-grey9">

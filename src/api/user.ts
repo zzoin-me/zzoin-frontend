@@ -34,6 +34,23 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<void> {
   });
 }
 
+export async function uploadProfileImage(image: File): Promise<string | null> {
+  const formData = new FormData();
+  formData.append("image", image);
+  const result = await apiFetch<{ profileUrl: string | null }>("/api/users/me/profile-image", {
+    method: "PATCH",
+    body: formData,
+  });
+  return result.profileUrl;
+}
+
+export async function deleteProfileImage(): Promise<string | null> {
+  const result = await apiFetch<{ profileUrl: string | null }>("/api/users/me/profile-image", {
+    method: "DELETE",
+  });
+  return result.profileUrl;
+}
+
 export async function updateSchoolProfile(data: UpdateSchoolProfileRequest): Promise<void> {
   await apiFetch<void>("/api/users/me/school-profile", {
     method: "PATCH",

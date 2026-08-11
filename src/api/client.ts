@@ -73,14 +73,18 @@ export function refreshStoredTokens(): Promise<boolean> {
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const isFormData = options.body instanceof FormData;
+  const contentTypeHeaders: Record<string, string> = isFormData
+    ? {}
+    : { "Content-Type": "application/json" };
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...contentTypeHeaders,
     ...getAuthHeaders(),
     ...(options.headers as Record<string, string>),
   };
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+  const timeoutId = setTimeout(() => controller.abort(), isFormData ? 120_000 : 15_000);
 
   let res: Response;
   try {

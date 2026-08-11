@@ -38,6 +38,16 @@ export async function createPost(data: CreatePostRequest): Promise<number> {
   });
 }
 
+export async function uploadPostImages(images: File[]): Promise<string[]> {
+  const formData = new FormData();
+  images.forEach((image) => formData.append("images", image));
+  const result = await apiFetch<{ imageUrls: string[] }>("/api/posts/images", {
+    method: "POST",
+    body: formData,
+  });
+  return result.imageUrls;
+}
+
 export function recordPostView(id: number): Promise<{ counted: boolean }> {
   let viewerId = localStorage.getItem("community-viewer-id");
   if (!viewerId) {

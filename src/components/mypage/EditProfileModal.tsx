@@ -1,11 +1,18 @@
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Camera, Trash2, X } from "lucide-react";
 import { Button } from "@/components/common/Button";
+import { Avatar } from "@/components/common/Avatar";
 import { Input } from "@/components/common/Input";
 import { FieldSelect } from "@/components/common/FieldSelect";
 import { StackSelector } from "@/components/common/StackSelector";
 import { ApiError } from "@/api/client";
-import { updateProfile, updateSchoolProfile, getStacks } from "@/api/user";
+import {
+  deleteProfileImage,
+  getStacks,
+  updateProfile,
+  updateSchoolProfile,
+  uploadProfileImage,
+} from "@/api/user";
 import type { MyProfile, SchoolProfile, StackInfo } from "@/types";
 import { useModal } from "@/hooks/useModal";
 
@@ -31,12 +38,26 @@ export function EditProfileModal({
   const [major, setMajor] = useState("");
   const [grade, setGrade] = useState("");
   const [stacks, setStacks] = useState<StackInfo[]>([]);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [removeProfileImage, setRemoveProfileImage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const profileImagePreviewRef = useRef<string | null>(null);
   const modalRef = useModal(isOpen, onClose);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      if (profileImagePreviewRef.current) {
+        URL.revokeObjectURL(profileImagePreviewRef.current);
+        profileImagePreviewRef.current = null;
+      }
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
+      setRemoveProfileImage(false);
+      return;
+    }
     setNickName(profile?.name ?? "");
     setFields(profile?.fields ?? []);
     setBio(profile?.bio ?? "");
@@ -49,7 +70,52 @@ export function EditProfileModal({
       .catch((err) => console.error("[EditProfileModal] stacks load failed:", err));
   }, [isOpen, profile, schoolProfile]);
 
+  useEffect(
+    () => () => {
+      if (profileImagePreviewRef.current) {
+        URL.revokeObjectURL(profileImagePreviewRef.current);
+      }
+    },
+    [],
+  );
+
   if (!isOpen) return null;
+
+  const handleProfileImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const image = event.target.files?.[0];
+    event.target.value = "";
+    if (!image) return;
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(image.type)) {
+      setError("JPG, PNG, WebP, GIF 이미지만 사용할 수 있습니다.");
+      return;
+    }
+    if (image.size > 5 * 1024 * 1024) {
+      setError("프로필 이미지는 5MB 이하로 선택해주세요.");
+      return;
+    }
+    if (profileImagePreviewRef.current) {
+      URL.revokeObjectURL(profileImagePreviewRef.current);
+    }
+    const previewUrl = URL.createObjectURL(image);
+    profileImagePreviewRef.current = previewUrl;
+    setProfileImageFile(image);
+    setProfileImagePreview(previewUrl);
+    setRemoveProfileImage(false);
+    setError("");
+  };
+
+  const handleRemoveProfileImage = () => {
+    if (profileImageFile) {
+      if (profileImagePreviewRef.current) {
+        URL.revokeObjectURL(profileImagePreviewRef.current);
+        profileImagePreviewRef.current = null;
+      }
+      setProfileImageFile(null);
+      setProfileImagePreview(null);
+      return;
+    }
+    setRemoveProfileImage(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +140,12 @@ export function EditProfileModal({
           major: major.trim(),
           grade: grade ? Number(grade) : undefined,
         });
+      }
+
+      if (profileImageFile) {
+        await uploadProfileImage(profileImageFile);
+      } else if (removeProfileImage && profile?.customProfileImage) {
+        await deleteProfileImage();
       }
 
       onSaved();
@@ -107,6 +179,57 @@ export function EditProfileModal({
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col items-center gap-3 rounded-tag border border-grey3 bg-grey1 px-4 py-5">
+            <Avatar
+              nickname={nickName || profile?.name}
+              profileUrl={
+                profileImagePreview ??
+                (removeProfileImage ? profile?.socialProfileUrl : profile?.profileUrl)
+              }
+              size="xl"
+              className="h-20 w-20 text-[28px]"
+            />
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handleProfileImageSelection}
+            />
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="inline-flex min-h-10 items-center gap-2 rounded-tag border border-grey4 bg-bg px-4 font-medium text-[13px] text-grey8 hover:border-grey6"
+              >
+                <Camera className="h-4 w-4" aria-hidden />
+                {profile?.profileUrl || profileImageFile ? "사진 변경" : "사진 추가"}
+              </button>
+              {(profileImageFile || (!removeProfileImage && profile?.customProfileImage)) && (
+                <button
+                  type="button"
+                  onClick={handleRemoveProfileImage}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-tag border border-grey4 bg-bg px-4 font-medium text-[13px] text-grey7 hover:border-grey6"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden />
+                  {profileImageFile ? "선택 취소" : "사진 삭제"}
+                </button>
+              )}
+              {removeProfileImage && (
+                <button
+                  type="button"
+                  onClick={() => setRemoveProfileImage(false)}
+                  className="min-h-10 rounded-tag border border-grey4 bg-bg px-4 font-medium text-[13px] text-grey7 hover:border-grey6"
+                >
+                  삭제 취소
+                </button>
+              )}
+            </div>
+            <p className="text-center font-regular text-[12px] text-grey6">
+              JPG, PNG, WebP, GIF · 최대 5MB
+            </p>
+          </div>
+
           {(() => {
             const changeableAt = profile?.nicknameChangeableAt
               ? new Date(profile.nicknameChangeableAt)

@@ -1,12 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ImageIcon, RotateCcw } from "lucide-react";
+import { ChevronLeft, ImageIcon, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { LoadingState } from "@/components/common/LoadingState";
-import { createPost, getPostById, updatePost } from "@/api/community";
+import { createPost, getPostById, updatePost, uploadPostImages } from "@/api/community";
 import { ApiError } from "@/api/client";
 import { useAuthStore } from "@/stores/authStore";
+
+const MAX_IMAGES = 10;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+interface PendingImage {
+  id: string;
+  file: File;
+  previewUrl: string;
+}
 
 export default function CommunityNewPage() {
   const navigate = useNavigate();
@@ -15,6 +25,8 @@ export default function CommunityNewPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const postId = id ? Number(id) : null;
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const pendingImagesRef = useRef<PendingImage[]>([]);
 
   useEffect(() => {
     if (user && !user.verified) {
@@ -24,8 +36,22 @@ export default function CommunityNewPage() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    pendingImagesRef.current = pendingImages;
+  }, [pendingImages]);
+
+  useEffect(
+    () => () => {
+      pendingImagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    },
+    [],
+  );
 
   const editPostQuery = useQuery({
     queryKey: ["post", postId],
@@ -42,7 +68,48 @@ export default function CommunityNewPage() {
     }
     setTitle(post.title);
     setContent(post.content);
+    setImageUrls(post.imageUrls ?? []);
   }, [editPostQuery.data, postId, navigate]);
+
+  const handleImageSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (files.length === 0) return;
+
+    if (files.some((file) => !ALLOWED_IMAGE_TYPES.has(file.type))) {
+      setError("JPG, PNG, WebP, GIF 이미지만 첨부할 수 있습니다.");
+      return;
+    }
+    if (files.some((file) => file.size > MAX_IMAGE_SIZE)) {
+      setError("이미지는 한 장당 5MB 이하로 첨부해주세요.");
+      return;
+    }
+    if (imageUrls.length + pendingImages.length + files.length > MAX_IMAGES) {
+      setError("이미지는 최대 10장까지 첨부할 수 있습니다.");
+      return;
+    }
+
+    setError("");
+    setPendingImages((current) => [
+      ...current,
+      ...files.map((file) => ({
+        id:
+          typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random()}`,
+        file,
+        previewUrl: URL.createObjectURL(file),
+      })),
+    ]);
+  };
+
+  const removePendingImage = (id: string) => {
+    setPendingImages((current) => {
+      const target = current.find((image) => image.id === id);
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return current.filter((image) => image.id !== id);
+    });
+  };
 
   const handleSubmit = async () => {
     setError("");
@@ -65,21 +132,41 @@ export default function CommunityNewPage() {
 
     setLoading(true);
     try {
+      let nextImageUrls = [...imageUrls];
+      if (pendingImages.length > 0) {
+        setUploading(true);
+        const uploadedImageUrls = await uploadPostImages(pendingImages.map((image) => image.file));
+        nextImageUrls = [...nextImageUrls, ...uploadedImageUrls];
+        pendingImages.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+        setPendingImages([]);
+        setImageUrls(nextImageUrls);
+        setUploading(false);
+      }
+
       if (isEdit && postId) {
-        await updatePost(postId, { title: title.trim(), content: content.trim() });
+        await updatePost(postId, {
+          title: title.trim(),
+          content: content.trim(),
+          imageUrls: nextImageUrls,
+        });
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ["posts"] }),
           queryClient.invalidateQueries({ queryKey: ["post", postId] }),
         ]);
         navigate(`/community/${postId}`, { replace: true });
       } else {
-        const createdPostId = await createPost({ title: title.trim(), content: content.trim() });
+        const createdPostId = await createPost({
+          title: title.trim(),
+          content: content.trim(),
+          imageUrls: nextImageUrls,
+        });
         await queryClient.invalidateQueries({ queryKey: ["posts"] });
         navigate(`/community/${createdPostId}`, { replace: true });
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "등록에 실패했습니다.");
     } finally {
+      setUploading(false);
       setLoading(false);
     }
   };
@@ -136,24 +223,83 @@ export default function CommunityNewPage() {
         <p className="mt-2 text-right font-medium text-[12px] text-grey5">
           {content.length.toLocaleString()}/10,000
         </p>
+
+        {(imageUrls.length > 0 || pendingImages.length > 0) && (
+          <div className="mt-6 border-t border-grey3 pt-5">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-medium text-[14px] text-grey8">첨부 이미지</span>
+              <span className="font-regular text-[12px] text-grey6">
+                {imageUrls.length + pendingImages.length}/{MAX_IMAGES}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 md:grid-cols-5 md:gap-3">
+              {imageUrls.map((imageUrl) => (
+                <div
+                  key={imageUrl}
+                  className="relative aspect-square overflow-hidden rounded-tag bg-grey2"
+                >
+                  <img src={imageUrl} alt="첨부 이미지" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setImageUrls((current) => current.filter((url) => url !== imageUrl))
+                    }
+                    className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white"
+                    aria-label="이미지 삭제"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                  </button>
+                </div>
+              ))}
+              {pendingImages.map((image) => (
+                <div
+                  key={image.id}
+                  className="relative aspect-square overflow-hidden rounded-tag bg-grey2"
+                >
+                  <img
+                    src={image.previewUrl}
+                    alt={image.file.name}
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePendingImage(image.id)}
+                    className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white"
+                    aria-label="이미지 삭제"
+                  >
+                    <X className="h-4 w-4" aria-hidden />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          multiple
+          className="hidden"
+          onChange={handleImageSelection}
+        />
         <button
           type="button"
-          disabled
-          className="flex cursor-not-allowed items-center gap-2 rounded-card border border-grey5 bg-grey3 px-5 py-3 font-medium text-[16px] text-grey6 opacity-60"
-          title="이미지 첨부는 추후 지원됩니다"
+          onClick={() => imageInputRef.current?.click()}
+          disabled={loading || imageUrls.length + pendingImages.length >= MAX_IMAGES}
+          className="flex items-center gap-2 rounded-card border border-grey5 bg-bg px-4 py-3 font-medium text-[14px] text-grey8 transition-colors hover:bg-grey1 disabled:cursor-not-allowed disabled:opacity-50 md:px-5 md:text-[16px]"
         >
           <ImageIcon className="h-5 w-5" aria-hidden />
-          사진 불러오기
+          사진 추가
         </button>
-        <div className="flex gap-4">
+        <div className="ml-auto flex gap-3 md:gap-4">
           <Button variant="outline" type="button" onClick={() => navigate(-1)}>
             취소
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "등록 중..." : isEdit ? "수정" : "등록"}
+            {uploading ? "이미지 업로드 중..." : loading ? "저장 중..." : isEdit ? "수정" : "등록"}
           </Button>
         </div>
       </div>

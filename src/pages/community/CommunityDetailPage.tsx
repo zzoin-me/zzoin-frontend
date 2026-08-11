@@ -486,6 +486,31 @@ export default function CommunityDetailPage() {
         <p className="mt-8 whitespace-pre-wrap break-words font-medium text-[16px] leading-relaxed text-grey9 [overflow-wrap:anywhere] md:text-[18px]">
           {post.content}
         </p>
+        {post.imageUrls?.length > 0 && (
+          <div className="mt-6 grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
+            {post.imageUrls.map((imageUrl, index) => (
+              <a
+                key={imageUrl}
+                href={imageUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={`overflow-hidden rounded-tag bg-grey2 ${
+                  post.imageUrls.length === 1 ? "col-span-2 md:col-span-3" : "aspect-square"
+                }`}
+              >
+                <img
+                  src={imageUrl}
+                  alt={`게시글 첨부 이미지 ${index + 1}`}
+                  className={`w-full ${
+                    post.imageUrls.length === 1
+                      ? "max-h-[640px] object-contain"
+                      : "h-full object-cover"
+                  }`}
+                />
+              </a>
+            ))}
+          </div>
+        )}
         <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 font-regular text-[14px] text-grey6">
           <button
             type="button"

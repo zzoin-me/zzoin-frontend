@@ -125,6 +125,8 @@ export interface MyProfile {
   fields?: string[];
   bio?: string;
   profileUrl?: string;
+  socialProfileUrl?: string;
+  customProfileImage: boolean;
   verified: boolean;
   verifiedEmail?: string;
   nicknameChangeableAt?: string;
@@ -150,7 +152,6 @@ export interface UpdateProfileRequest {
   nickName?: string;
   bio?: string;
   fields?: string[];
-  profileUrl?: string;
   stackIds?: number[];
 }
 
@@ -220,6 +221,7 @@ export interface PostPreview {
   viewCount: number;
   likedByMe: boolean;
   savedByMe: boolean;
+  imageUrls: string[];
 }
 
 export interface PostDetail {
@@ -235,6 +237,7 @@ export interface PostDetail {
   likedByMe: boolean;
   savedByMe: boolean;
   isMine: boolean;
+  imageUrls: string[];
 }
 
 export interface Post {
@@ -309,11 +312,13 @@ export interface PostListParams {
 export interface CreatePostRequest {
   title: string;
   content: string;
+  imageUrls?: string[];
 }
 
 export interface UpdatePostRequest {
   title?: string;
   content?: string;
+  imageUrls?: string[];
 }
 
 export interface CreateCommentRequest {
