@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ImageIcon, Loader2, RotateCcw, X } from "lucide-react";
+import { ImageIcon, Loader2, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { LoadingState } from "@/components/common/LoadingState";
 import { createPost, getPostById, updatePost, uploadPostImages } from "@/api/community";
 import { ApiError } from "@/api/client";
 import { useAuthStore } from "@/stores/authStore";
+import { PageHeader } from "@/components/common/PageHeader";
+import { useBackNavigation } from "@/hooks/useBackNavigation";
 
 const MAX_IMAGES = 10;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -25,6 +27,8 @@ export default function CommunityNewPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const postId = id ? Number(id) : null;
+  const backTo = isEdit && postId ? `/community/${postId}` : "/community";
+  const handleBack = useBackNavigation(backTo);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const pendingImagesRef = useRef<PendingImage[]>([]);
 
@@ -189,13 +193,7 @@ export default function CommunityNewPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] native:px-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 flex items-center text-grey9"
-        aria-label="뒤로 가기"
-      >
-        <ChevronLeft className="h-9 w-9" />
-      </button>
+      <PageHeader title={isEdit ? "게시글 수정" : "게시글 작성"} backTo={backTo} className="mb-6" />
 
       {error && (
         <p className="mb-4 rounded-tag bg-red-50 px-4 py-2 font-regular text-[13px] text-red-500">
@@ -295,7 +293,7 @@ export default function CommunityNewPage() {
           사진 추가
         </button>
         <div className="ml-auto flex gap-3 md:gap-4">
-          <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+          <Button variant="outline" type="button" onClick={handleBack}>
             취소
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>

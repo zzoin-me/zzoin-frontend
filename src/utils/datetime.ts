@@ -27,33 +27,51 @@ export function formatKoreanDatetime(iso: string): string {
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${meridiem} ${h12}시 ${String(d.getMinutes()).padStart(2, "0")}분`;
 }
 
+const communityDateTimeFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+const getCommunityDateParts = (target: Date) =>
+  Object.fromEntries(
+    communityDateTimeFormatter
+      .formatToParts(target)
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value]),
+  );
+
 export function formatCommunityListDate(iso: string, now = new Date()): string {
   if (!iso) return "";
   const date = new Date(iso);
   if (isNaN(date.getTime())) return iso;
 
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  });
-  const values = (target: Date) =>
-    Object.fromEntries(
-      formatter
-        .formatToParts(target)
-        .filter((part) => part.type !== "literal")
-        .map((part) => [part.type, part.value]),
-    );
-  const current = values(now);
-  const created = values(date);
+  const current = getCommunityDateParts(now);
+  const created = getCommunityDateParts(date);
   const isToday =
     current.year === created.year && current.month === created.month && current.day === created.day;
 
   return isToday ? `${created.hour}:${created.minute}` : `${created.month}.${created.day}`;
+}
+
+export function formatCommunityDetailDate(iso: string, now = new Date()) {
+  if (!iso) return { full: "", compact: "" };
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return { full: iso, compact: iso };
+
+  const current = getCommunityDateParts(now);
+  const created = getCommunityDateParts(date);
+  const full = `${created.year}.${created.month}.${created.day} ${created.hour}:${created.minute}`;
+  const compact =
+    current.year === created.year
+      ? `${created.month}.${created.day} ${created.hour}:${created.minute}`
+      : `${created.year.slice(-2)}.${created.month}.${created.day}`;
+
+  return { full, compact };
 }
 
 function parseLocalDatetime(value: string): string | null {

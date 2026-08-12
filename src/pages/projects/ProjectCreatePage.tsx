@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ChevronLeft, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { createProject } from "@/api/projects";
 import { ApiError } from "@/api/client";
 import { DateTimePicker } from "@/components/common/DateTimePicker";
 import { RecruitmentSelect } from "@/components/common/RecruitmentSelect";
+import { PageHeader } from "@/components/common/PageHeader";
 import type { RecruitmentSelectValue } from "@/components/common/RecruitmentSelect";
 import type {
   CreateProjectRequest,
@@ -275,13 +276,7 @@ export default function ProjectCreatePage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px]">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 flex items-center text-grey9"
-        aria-label="뒤로 가기"
-      >
-        <ChevronLeft className="h-9 w-9" />
-      </button>
+      <PageHeader title="프로젝트 생성" backTo="/projects" className="mb-8" />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10 lg:flex-row lg:items-start">
         <div className="flex flex-1 flex-col gap-10">

@@ -1,17 +1,11 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ChevronLeft,
-  Users,
-  Calendar,
-  MessageCircle,
-  Target,
-  ClipboardPenLine,
-} from "lucide-react";
+import { Users, Calendar, MessageCircle, Target, ClipboardPenLine } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Avatar } from "@/components/common/Avatar";
 import { LoadingState } from "@/components/common/LoadingState";
+import { PageHeader } from "@/components/common/PageHeader";
 import { ApplyModal } from "@/components/project/ApplyModal";
 import { getProjectById } from "@/api/projects";
 import { getChatRooms } from "@/api/chat";
@@ -23,7 +17,6 @@ import { getCategoryLabel } from "@/constants/recruitment";
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [showApplyModal, setShowApplyModal] = useState(false);
 
@@ -57,8 +50,9 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="mx-auto w-full max-w-[1440px] px-5 py-10 md:px-8 lg:px-[120px]">
-        <p className="font-regular text-[16px] text-grey6">프로젝트를 찾을 수 없습니다.</p>
+      <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] native:px-8">
+        <PageHeader title="프로젝트 상세" backTo="/projects" className="mb-2" />
+        <p className="py-10 font-regular text-[16px] text-grey6">프로젝트를 찾을 수 없습니다.</p>
       </div>
     );
   }
@@ -137,13 +131,7 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] native:px-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 flex items-center text-grey9"
-        aria-label="뒤로 가기"
-      >
-        <ChevronLeft className="h-9 w-9" />
-      </button>
+      <PageHeader title="프로젝트 상세" backTo="/projects" className="mb-2" />
 
       <div className="flex flex-col gap-6 border-b border-grey3 py-6 md:flex-row md:items-start md:gap-8 md:py-10 lg:items-end lg:justify-between native:flex-col native:items-stretch">
         <div className="flex items-start gap-4 md:gap-8 lg:gap-[50px]">

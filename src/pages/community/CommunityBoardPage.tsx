@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { ChevronLeft, PencilLine } from "lucide-react";
+import { PencilLine } from "lucide-react";
 import { SearchBar } from "@/components/common/SearchBar";
 import { Pagination } from "@/components/common/Pagination";
+import { PageBackButton } from "@/components/common/PageBackButton";
 import { CommunityPostList } from "@/components/community/CommunityPostList";
 import { getPosts } from "@/api/community";
 import { useAuthStore } from "@/stores/authStore";
@@ -66,14 +67,7 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10 native:px-8 native:py-6">
       <div className="flex items-center gap-3 lg:hidden native:flex">
-        <button
-          type="button"
-          onClick={() => navigate("/community")}
-          className="flex shrink-0 items-center text-grey9"
-          aria-label="커뮤니티로 돌아가기"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
+        <PageBackButton fallbackTo="/community" label="커뮤니티로 돌아가기" className="-ml-2" />
         <h1 className="font-bold text-[20px] text-grey9">{meta.title}</h1>
       </div>
 

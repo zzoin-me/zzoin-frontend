@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ChevronLeft,
   Heart,
   MessageCircle,
   Eye,
@@ -16,6 +15,7 @@ import {
 import { Button } from "@/components/common/Button";
 import { Avatar } from "@/components/common/Avatar";
 import { LoadingState } from "@/components/common/LoadingState";
+import { PageBackButton } from "@/components/common/PageBackButton";
 import { CommunityActionMenu } from "@/components/community/CommunityActionMenu";
 import {
   getPostById,
@@ -28,7 +28,7 @@ import {
   deletePost,
   recordPostView,
 } from "@/api/community";
-import { formatCommunityListDate } from "@/utils/datetime";
+import { formatCommunityDetailDate, formatCommunityListDate } from "@/utils/datetime";
 import { useAuthStore } from "@/stores/authStore";
 import { showSnackbar } from "@/stores/snackbarStore";
 import { ApiError } from "@/api/client";
@@ -342,6 +342,14 @@ export default function CommunityDetailPage() {
     );
   }
 
+  const postDate = formatCommunityDetailDate(post.createdAt);
+  const createdAtTime = Date.parse(post.createdAt);
+  const updatedAtTime = Date.parse(post.updatedAt);
+  const isEdited =
+    Number.isFinite(createdAtTime) &&
+    Number.isFinite(updatedAtTime) &&
+    updatedAtTime - createdAtTime > 1000;
+
   const renderComment = (c: Comment, isReply = false) => (
     <li
       key={c.id}
@@ -499,42 +507,33 @@ export default function CommunityDetailPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px]">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="mb-4 flex h-11 w-11 items-center justify-center rounded-full text-grey9 transition-colors hover:bg-grey1"
-        aria-label="뒤로 가기"
-      >
-        <ChevronLeft className="h-7 w-7" />
-      </button>
+      <div className="mx-auto w-full max-w-[960px]">
+        <div className="mb-4 flex items-center gap-1 md:mb-5">
+          <PageBackButton fallbackTo="/community" label="커뮤니티로 돌아가기" className="-ml-2" />
+          <span className="font-medium text-[15px] text-grey7 md:text-[16px]">커뮤니티</span>
+        </div>
 
-      <article className="border-b border-grey5 pb-10">
-        <div className="relative flex min-w-0 items-start justify-between gap-3">
-          <h1 className="min-w-0 flex-1 break-words font-bold text-[22px] leading-snug text-grey9 [overflow-wrap:anywhere] md:text-[24px]">
-            {post.title}
-          </h1>
-          {post.isMine && (
-            <>
-              <div className="hidden shrink-0 gap-2 md:flex native:hidden">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => navigate(`/community/${post.id}/edit`)}
-                >
-                  <Pencil className="h-4 w-4" />
-                  수정
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDeletePost}
-                  disabled={deletePostMutation.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {deletePostMutation.isPending ? "삭제 중" : "삭제"}
-                </Button>
+        <article className="border-y border-grey4 bg-bg md:rounded-[20px] md:border native:rounded-none native:border-x-0">
+          <header className="py-6 md:px-8 md:py-8 native:px-0">
+            <div className="flex min-w-0 items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar
+                  nickname={post.author.nickname}
+                  profileUrl={post.author.profileUrl}
+                  size="md"
+                />
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-[15px] text-grey9 md:text-[16px]">
+                    {post.author.nickname}
+                  </p>
+                  <p className="mt-0.5 flex items-center whitespace-nowrap font-regular text-[12px] text-grey6 md:text-[13px]">
+                    <span className="lg:hidden native:inline">{postDate.compact}</span>
+                    <span className="hidden lg:inline native:hidden">{postDate.full}</span>
+                    {isEdited && <span>&nbsp;· 수정됨</span>}
+                  </p>
+                </div>
               </div>
-              <div className="shrink-0 md:hidden native:block">
+              {post.isMine && (
                 <CommunityActionMenu
                   open={openActionMenu === "post"}
                   onOpenChange={(open) => setOpenActionMenu(open ? "post" : null)}
@@ -543,181 +542,185 @@ export default function CommunityDetailPage() {
                   label="게시글 작업 메뉴"
                   disabled={deletePostMutation.isPending}
                 />
-              </div>
-            </>
-          )}
-        </div>
-        <div className="mt-3 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 font-regular text-[12px] text-grey6">
-          <span className="min-w-0 break-words font-medium text-grey9">{post.author.nickname}</span>
-          <span className="shrink-0">{formatCommunityListDate(post.createdAt)}</span>
-        </div>
-        <p className="mt-8 whitespace-pre-wrap break-words font-medium text-[16px] leading-relaxed text-grey9 [overflow-wrap:anywhere] md:text-[18px]">
-          {post.content}
-        </p>
-        {post.imageUrls?.length > 0 && (
-          <div className="mt-6 grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
-            {post.imageUrls.map((imageUrl, index) => (
-              <a
-                key={imageUrl}
-                href={imageUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={`overflow-hidden rounded-tag bg-grey2 ${
-                  post.imageUrls.length === 1 ? "col-span-2 md:col-span-3" : "aspect-square"
-                }`}
-              >
-                <img
-                  src={imageUrl}
-                  alt={`게시글 첨부 이미지 ${index + 1}`}
-                  className={`w-full ${
-                    post.imageUrls.length === 1
-                      ? "max-h-[640px] object-contain"
-                      : "h-full object-cover"
-                  }`}
-                />
-              </a>
-            ))}
-          </div>
-        )}
-        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 font-regular text-[14px] text-grey6">
-          <button
-            type="button"
-            onClick={handleLike}
-            disabled={likeMutation.isPending}
-            className={`flex items-center gap-1 transition-colors hover:text-grey9 ${
-              post.likedByMe ? "text-primary" : ""
-            }`}
-          >
-            <Heart className={`h-4 w-4 ${post.likedByMe ? "fill-primary" : ""}`} />
-            {post.likeCount}
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saveMutation.isPending}
-            className={`flex items-center gap-1 transition-colors hover:text-grey9 ${
-              post.savedByMe ? "text-primary" : ""
-            }`}
-          >
-            <Bookmark className={`h-4 w-4 ${post.savedByMe ? "fill-primary" : ""}`} />
-            저장
-          </button>
-          <span className="flex items-center gap-1">
-            <MessageCircle className="h-4 w-4" /> {post.commentCount}
-          </span>
-          <span className="flex items-center gap-1">
-            <Eye className="h-4 w-4" /> {post.viewCount}
-          </span>
-        </div>
-      </article>
-
-      <section className="mt-10">
-        <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">
-          댓글 {post.commentCount}
-        </h2>
-        <ul className="mt-6 flex min-w-0 flex-col gap-6">
-          {commentsQuery.isLoading ? (
-            <li className="flex flex-col gap-6" aria-label="댓글 불러오는 중">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="animate-pulse border-b border-grey3 pb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 shrink-0 rounded-full bg-grey3" />
-                    <div className="h-4 w-32 rounded bg-grey3" />
-                  </div>
-                  <div className="mt-4 h-4 w-full rounded bg-grey2" />
-                  <div className="mt-2 h-4 w-3/4 rounded bg-grey2" />
-                </div>
-              ))}
-            </li>
-          ) : commentsQuery.isError ? (
-            <li className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-              <p className="font-medium text-[14px] text-grey6">댓글을 불러오지 못했습니다.</p>
-              <Button variant="outline" size="sm" onClick={() => void commentsQuery.refetch()}>
-                다시 시도
-              </Button>
-            </li>
-          ) : comments.length === 0 ? (
-            <li className="py-10 text-center font-regular text-[14px] text-grey6">
-              첫 댓글을 작성해보세요.
-            </li>
-          ) : (
-            comments.map((c) => renderComment(c))
-          )}
-        </ul>
-
-        {commentsQuery.hasNextPage && (
-          <div className="mt-7 flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => void commentsQuery.fetchNextPage()}
-              disabled={commentsQuery.isFetchingNextPage}
-            >
-              {commentsQuery.isFetchingNextPage ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                  불러오는 중
-                </>
-              ) : (
-                "댓글 더보기"
               )}
-            </Button>
-          </div>
-        )}
+            </div>
+            <h1 className="mt-6 break-words font-bold text-[22px] leading-snug text-grey9 [overflow-wrap:anywhere] md:text-[26px]">
+              {post.title}
+            </h1>
+          </header>
 
-        {user && isVerified && (
-          <div className="mt-10 min-w-0">
-            <div className="flex min-w-0 flex-col gap-2">
-              <div className="relative min-w-0">
-                <textarea
-                  ref={commentTextareaRef}
-                  placeholder="댓글을 입력해주세요"
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  rows={1}
-                  className="block max-h-40 min-h-11 w-full resize-none overflow-y-hidden rounded-tag border border-grey4 bg-bg px-4 py-2.5 font-regular text-[14px] leading-6 focus:border-grey9 focus:outline-none native:pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={handleCreateComment}
-                  disabled={!newComment.trim() || createCommentMutation.isPending}
-                  className="absolute right-1.5 bottom-1.5 hidden h-8 w-8 items-center justify-center text-primary disabled:opacity-40 native:flex"
-                  aria-label="댓글 보내기"
-                >
-                  {createCommentMutation.isPending ? (
-                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-                  ) : (
-                    <Send className="h-5 w-5" aria-hidden />
-                  )}
-                </button>
+          <div className="min-h-[140px] border-t border-grey3 py-6 md:min-h-[180px] md:px-8 md:py-8 native:px-0">
+            <p className="whitespace-pre-wrap break-words font-regular text-[16px] leading-[1.75] text-grey9 [overflow-wrap:anywhere] md:text-[18px]">
+              {post.content}
+            </p>
+            {post.imageUrls?.length > 0 && (
+              <div className="mt-8 grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
+                {post.imageUrls.map((imageUrl, index) => (
+                  <a
+                    key={imageUrl}
+                    href={imageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`overflow-hidden rounded-tag bg-grey2 ${
+                      post.imageUrls.length === 1 ? "col-span-2 md:col-span-3" : "aspect-square"
+                    }`}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`게시글 첨부 이미지 ${index + 1}`}
+                      className={`w-full ${
+                        post.imageUrls.length === 1
+                          ? "max-h-[640px] object-contain"
+                          : "h-full object-cover"
+                      }`}
+                    />
+                  </a>
+                ))}
               </div>
-              <div className="flex justify-end native:hidden">
-                <Button
-                  size="sm"
-                  onClick={handleCreateComment}
-                  disabled={!newComment.trim() || createCommentMutation.isPending}
-                  className="shrink-0"
-                >
-                  {createCommentMutation.isPending ? "등록 중" : "등록"}
+            )}
+          </div>
+
+          <footer className="flex min-h-16 flex-wrap items-center gap-1 border-t border-grey3 py-2 font-regular text-[14px] text-grey6 md:gap-2 md:px-5 native:px-0">
+            <button
+              type="button"
+              onClick={handleLike}
+              disabled={likeMutation.isPending}
+              className={`flex min-h-11 items-center gap-1.5 rounded-full px-3 transition-colors hover:bg-grey1 hover:text-grey9 disabled:opacity-50 ${
+                post.likedByMe ? "text-primary" : ""
+              }`}
+              aria-label={`좋아요 ${post.likeCount}개`}
+            >
+              <Heart className={`h-5 w-5 ${post.likedByMe ? "fill-primary" : ""}`} />
+              {post.likeCount}
+            </button>
+            <span className="flex min-h-11 items-center gap-1.5 rounded-full px-3">
+              <MessageCircle className="h-5 w-5" /> {post.commentCount}
+            </span>
+            <span className="flex min-h-11 items-center gap-1.5 rounded-full px-3">
+              <Eye className="h-5 w-5" /> {post.viewCount}
+            </span>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saveMutation.isPending}
+              className={`ml-auto flex min-h-11 items-center gap-1.5 rounded-full px-3 transition-colors hover:bg-grey1 hover:text-grey9 disabled:opacity-50 ${
+                post.savedByMe ? "text-primary" : ""
+              }`}
+            >
+              <Bookmark className={`h-5 w-5 ${post.savedByMe ? "fill-primary" : ""}`} />
+              저장
+            </button>
+          </footer>
+        </article>
+
+        <section className="mt-8 md:mt-10">
+          <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">
+            댓글 {post.commentCount}
+          </h2>
+          <ul className="mt-6 flex min-w-0 flex-col gap-6">
+            {commentsQuery.isLoading ? (
+              <li className="flex flex-col gap-6" aria-label="댓글 불러오는 중">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="animate-pulse border-b border-grey3 pb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 shrink-0 rounded-full bg-grey3" />
+                      <div className="h-4 w-32 rounded bg-grey3" />
+                    </div>
+                    <div className="mt-4 h-4 w-full rounded bg-grey2" />
+                    <div className="mt-2 h-4 w-3/4 rounded bg-grey2" />
+                  </div>
+                ))}
+              </li>
+            ) : commentsQuery.isError ? (
+              <li className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                <p className="font-medium text-[14px] text-grey6">댓글을 불러오지 못했습니다.</p>
+                <Button variant="outline" size="sm" onClick={() => void commentsQuery.refetch()}>
+                  다시 시도
                 </Button>
+              </li>
+            ) : comments.length === 0 ? (
+              <li className="py-10 text-center font-regular text-[14px] text-grey6">
+                첫 댓글을 작성해보세요.
+              </li>
+            ) : (
+              comments.map((c) => renderComment(c))
+            )}
+          </ul>
+
+          {commentsQuery.hasNextPage && (
+            <div className="mt-7 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() => void commentsQuery.fetchNextPage()}
+                disabled={commentsQuery.isFetchingNextPage}
+              >
+                {commentsQuery.isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                    불러오는 중
+                  </>
+                ) : (
+                  "댓글 더보기"
+                )}
+              </Button>
+            </div>
+          )}
+
+          {user && isVerified && (
+            <div className="mt-10 min-w-0">
+              <div className="flex min-w-0 flex-col gap-2">
+                <div className="relative min-w-0">
+                  <textarea
+                    ref={commentTextareaRef}
+                    placeholder="댓글을 입력해주세요"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    rows={1}
+                    className="block max-h-40 min-h-11 w-full resize-none overflow-y-hidden rounded-tag border border-grey4 bg-bg px-4 py-2.5 font-regular text-[14px] leading-6 focus:border-grey9 focus:outline-none native:pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCreateComment}
+                    disabled={!newComment.trim() || createCommentMutation.isPending}
+                    className="absolute right-1.5 bottom-1.5 hidden h-8 w-8 items-center justify-center text-primary disabled:opacity-40 native:flex"
+                    aria-label="댓글 보내기"
+                  >
+                    {createCommentMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                    ) : (
+                      <Send className="h-5 w-5" aria-hidden />
+                    )}
+                  </button>
+                </div>
+                <div className="flex justify-end native:hidden">
+                  <Button
+                    size="sm"
+                    onClick={handleCreateComment}
+                    disabled={!newComment.trim() || createCommentMutation.isPending}
+                    className="shrink-0"
+                  >
+                    {createCommentMutation.isPending ? "등록 중" : "등록"}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {user && !isVerified && (
-          <div className="mt-10 flex flex-col items-center justify-center gap-2 rounded-card border border-grey3 bg-grey1 px-5 py-4 text-center sm:flex-row">
-            <span className="font-regular text-[14px] text-grey6">
-              댓글을 작성하려면 대학 인증이 필요합니다.
-            </span>
-            <Link
-              to="/mypage/verify-univ"
-              className="font-medium text-[14px] text-primary underline underline-offset-2"
-            >
-              인증하기
-            </Link>
-          </div>
-        )}
-      </section>
+          {user && !isVerified && (
+            <div className="mt-10 flex flex-col items-center justify-center gap-2 rounded-card border border-grey3 bg-grey1 px-5 py-4 text-center sm:flex-row">
+              <span className="font-regular text-[14px] text-grey6">
+                댓글을 작성하려면 대학 인증이 필요합니다.
+              </span>
+              <Link
+                to="/mypage/verify-univ"
+                className="font-medium text-[14px] text-primary underline underline-offset-2"
+              >
+                인증하기
+              </Link>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

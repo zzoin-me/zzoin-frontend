@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ClipboardPenLine, MessageCircle, Plus, Trash2 } from "lucide-react";
+import { ClipboardPenLine, MessageCircle, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { DateTimePicker } from "@/components/common/DateTimePicker";
@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { LoadingState } from "@/components/common/LoadingState";
 import { ApplicantListSkeleton } from "@/components/mypage/MyPageSkeletons";
 import { QueryErrorState } from "@/components/common/QueryErrorState";
+import { PageHeader } from "@/components/common/PageHeader";
 import { ApplicantDetailModal } from "@/components/project/ApplicantDetailModal";
 import { deleteProject, getProjectById, updateProject, updateProjectStatus } from "@/api/projects";
 import { getApplicants, updateApplicantStatus } from "@/api/application";
@@ -305,23 +306,17 @@ export default function ProjectManagePage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] native:px-8">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 flex items-center text-grey9"
-        aria-label="뒤로 가기"
-      >
-        <ChevronLeft className="h-9 w-9" />
-      </button>
-
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-bold text-[22px] text-grey9 md:text-[26px] lg:text-[28px]">
-          프로젝트 관리
-        </h1>
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-[14px] text-grey6 md:text-[16px]">현재 상태</span>
-          <StatusBadge status={status} />
-        </div>
-      </div>
+      <PageHeader
+        title="프로젝트 관리"
+        backTo={`/projects/${id}`}
+        className="mb-8"
+        actions={
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-[14px] text-grey6 md:text-[16px]">현재 상태</span>
+            <StatusBadge status={status} />
+          </div>
+        }
+      />
 
       <section className="mb-10 rounded-[20px] border border-grey5 p-5 md:p-6 lg:p-8">
         <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">상태 변경</h2>

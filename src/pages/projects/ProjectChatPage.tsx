@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
-import { ChevronLeft, Loader2, Lock, Send } from "lucide-react";
+import { Link, useParams } from "react-router";
+import { Loader2, Lock, Send } from "lucide-react";
 import { getChatMessages, getChatRooms, markChatRead, sendChatMessage } from "@/api/chat";
 import { ApiError } from "@/api/client";
 import { LoadingState } from "@/components/common/LoadingState";
+import { PageBackButton } from "@/components/common/PageBackButton";
+import { useBackNavigation } from "@/hooks/useBackNavigation";
 import { useProjectChatSocket } from "@/hooks/useProjectChatSocket";
 import { showSnackbar } from "@/stores/snackbarStore";
 import type { ChatMessage, ChatRoom } from "@/types";
@@ -19,8 +21,9 @@ function formatMessageTime(value: string): string {
 
 export default function ProjectChatPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const projectId = Number(id);
+  const projectDetailPath = Number.isFinite(projectId) ? `/projects/${projectId}` : "/projects";
+  const handleBack = useBackNavigation(projectDetailPath);
   const [room, setRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +142,7 @@ export default function ProjectChatPage() {
         <p className="font-medium text-[16px] text-grey7">
           {error || "입장할 수 없는 대화방입니다."}
         </p>
-        <button onClick={() => navigate(-1)} className="font-medium text-[14px] text-primary">
+        <button onClick={handleBack} className="font-medium text-[14px] text-primary">
           이전 화면으로 돌아가기
         </button>
       </div>
@@ -154,13 +157,7 @@ export default function ProjectChatPage() {
       className="mx-auto flex h-[calc(100dvh_-_env(safe-area-inset-top))] w-full max-w-[960px] flex-col bg-bg px-0 md:px-8 lg:h-[calc(100dvh_-_72px)] lg:px-0"
     >
       <header className="flex shrink-0 items-center gap-3 border-b border-grey3 px-4 py-3 md:px-5">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-grey9 hover:bg-grey2"
-          aria-label="뒤로 가기"
-        >
-          <ChevronLeft className="h-6 w-6" aria-hidden />
-        </button>
+        <PageBackButton fallbackTo={projectDetailPath} label="프로젝트 상세로 돌아가기" />
         <Link to={`/projects/${projectId}`} className="min-w-0 flex-1">
           <h1 className="truncate font-bold text-[17px] text-grey9 md:text-[20px]">
             {room.projectTitle}
