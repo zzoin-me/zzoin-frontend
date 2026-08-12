@@ -21,6 +21,7 @@ const SignupPage = lazy(() => import("@/pages/SignupPage"));
 const OnboardingPage = lazy(() => import("@/pages/OnboardingPage"));
 const AuthCallbackPage = lazy(() => import("@/pages/AuthCallbackPage"));
 const LinkAccountPage = lazy(() => import("@/pages/LinkAccountPage"));
+const SocialSignupPage = lazy(() => import("@/pages/SocialSignupPage"));
 const MyPageIndexPage = lazy(() => import("@/pages/mypage/Index"));
 const MyPageProfilePage = lazy(() => import("@/pages/mypage/Profile"));
 const MyPageApplicationsPage = lazy(() => import("@/pages/mypage/Applications"));
@@ -172,6 +173,7 @@ export const router = createBrowserRouter([
       { path: "/login", element: lazyRoute(<LoginPage />) },
       { path: "/signup", element: lazyRoute(<SignupPage />) },
       { path: "/link-account", element: lazyRoute(<LinkAccountPage />) },
+      { path: "/social-signup", element: lazyRoute(<SocialSignupPage />) },
       {
         element: <ProtectedRoute />,
         children: [{ path: "/onboarding", element: lazyRoute(<OnboardingPage />) }],

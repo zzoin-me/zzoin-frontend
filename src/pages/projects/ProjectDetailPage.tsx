@@ -128,7 +128,7 @@ export default function ProjectDetailPage() {
     }
     return (
       <div
-        className={`flex h-[54px] items-center justify-center rounded-tag border border-grey4 bg-grey1 px-6 font-medium text-[15px] text-grey6 ${className}`}
+        className={`flex h-[54px] items-center justify-center whitespace-nowrap rounded-tag border border-grey4 bg-grey1 px-6 font-medium text-[15px] text-grey6 ${className}`}
       >
         모집이 마감되었습니다
       </div>
