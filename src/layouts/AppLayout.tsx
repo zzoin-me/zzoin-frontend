@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { Navbar } from "@/components/navigation/Navbar";
 import { TabBar } from "@/components/navigation/TabBar";
 import { CompactWebHeader } from "@/components/navigation/CompactWebHeader";
+import { NativeHomeHeader } from "@/components/navigation/NativeHomeHeader";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { NotificationToast } from "@/components/common/NotificationToast";
 import { LoadingState } from "@/components/common/LoadingState";
@@ -72,6 +73,7 @@ export function AppLayout() {
       <NotificationToast notification={realtimeNotification} />
       <Navbar />
       <CompactWebHeader />
+      {isNativeApp && location.pathname === "/" && <NativeHomeHeader />}
 
       <main
         className={

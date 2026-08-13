@@ -4,7 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { getUnreadCount } from "@/api/notification";
 import { useAuthStore } from "@/stores/authStore";
 
-export function NotificationBadge() {
+interface NotificationBadgeProps {
+  size?: "default" | "large";
+}
+
+export function NotificationBadge({ size = "default" }: NotificationBadgeProps) {
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const { data: unread } = useQuery({
@@ -29,7 +33,9 @@ export function NotificationBadge() {
       type="button"
       onClick={handleClick}
       aria-label="알림"
-      className="relative flex h-9 w-9 items-center justify-center rounded-full text-grey7 transition-colors hover:bg-grey2 hover:text-grey9"
+      className={`relative flex items-center justify-center rounded-full text-grey7 transition-colors hover:bg-grey2 hover:text-grey9 ${
+        size === "large" ? "h-11 w-11" : "h-9 w-9"
+      }`}
     >
       <Bell className="h-5 w-5" aria-hidden />
       {count > 0 && (
