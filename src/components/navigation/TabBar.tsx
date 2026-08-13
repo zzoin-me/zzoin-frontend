@@ -16,7 +16,7 @@ export function TabBar() {
   if (keyboardVisible || /^\/projects\/\d+\/chat$/.test(location.pathname)) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-grey3 bg-bg pb-[max(env(safe-area-inset-bottom),16px)] lg:hidden native:block">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 hidden border-t border-grey3 bg-bg pb-[max(env(safe-area-inset-bottom),16px)] native:block">
       <ul className="mx-auto flex h-16 max-w-[768px] items-stretch justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;

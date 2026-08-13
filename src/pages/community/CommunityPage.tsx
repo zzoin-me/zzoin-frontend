@@ -95,7 +95,7 @@ export default function CommunityPage() {
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px] lg:py-10 native:px-8 native:py-6">
       <div className="lg:hidden native:block">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <SearchBar
             className="flex-1"
             placeholder="게시글을 검색해보세요"
@@ -107,7 +107,7 @@ export default function CommunityPage() {
             type="button"
             onClick={handleWriteClick}
             aria-label="글쓰기"
-            className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 ${
+            className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-tag border px-0 font-bold text-[14px] text-white transition-opacity hover:opacity-90 ${
               isVerified ? "border-primary bg-primary" : "border-grey4 bg-grey4"
             }`}
           >

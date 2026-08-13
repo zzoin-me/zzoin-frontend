@@ -14,7 +14,7 @@ export function SearchBar({
 }: SearchBarProps) {
   return (
     <div
-      className={`flex h-[46px] items-center gap-2 rounded-tag border border-grey3 bg-bg px-4 focus-within:border-grey9 ${className}`}
+      className={`flex h-[46px] min-w-0 items-center gap-2 rounded-tag border border-grey3 bg-bg px-4 focus-within:border-grey9 ${className}`}
     >
       <input
         type="text"

@@ -3,6 +3,25 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { Keyboard } from "@capacitor/keyboard";
 import { App } from "@capacitor/app";
 
+function getAppPath(urlValue: string): string | null {
+  try {
+    const url = new URL(urlValue);
+    if (url.protocol !== "com.zzoin.app:" || url.hostname !== "open") return null;
+    const path = url.searchParams.get("path");
+    if (!path || !path.startsWith("/") || path.startsWith("//")) return "/";
+    return path;
+  } catch {
+    return null;
+  }
+}
+
+function openAppPath(urlValue: string) {
+  const path = getAppPath(urlValue);
+  if (!path) return;
+  window.history.replaceState({}, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
+
 export async function setupNative() {
   if (!Capacitor.isNativePlatform()) return;
   document.documentElement.classList.add("native-app");
@@ -24,6 +43,14 @@ export async function setupNative() {
         App.exitApp();
       }
     });
+  } catch {
+    // no-op
+  }
+
+  try {
+    await App.addListener("appUrlOpen", ({ url }) => openAppPath(url));
+    const launchUrl = await App.getLaunchUrl();
+    if (launchUrl?.url) openAppPath(launchUrl.url);
   } catch {
     // no-op
   }

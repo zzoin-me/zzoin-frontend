@@ -85,6 +85,17 @@ export default function CommunityDetailPage() {
   }, [replyContent, replyTo]);
 
   useEffect(() => {
+    if (replyTo === null) return;
+
+    const frame = requestAnimationFrame(() => {
+      replyTextareaRef.current?.focus({ preventScroll: true });
+      replyTextareaRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [replyTo]);
+
+  useEffect(() => {
     if (Number.isNaN(postId)) return;
     const viewedHour = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Seoul",
@@ -377,7 +388,13 @@ export default function CommunityDetailPage() {
                 setReplyTo(replyTo === c.id ? null : c.id);
                 setReplyContent("");
               }}
-              className="inline-flex min-h-11 items-center gap-1 rounded-tag px-3 font-regular text-[12px] text-grey6 hover:bg-grey1 hover:text-grey9"
+              aria-expanded={replyTo === c.id}
+              aria-controls={`reply-composer-${c.id}`}
+              className={`inline-flex min-h-11 items-center gap-1 rounded-tag px-3 font-regular text-[12px] transition-colors ${
+                replyTo === c.id
+                  ? "bg-primary-light text-primary"
+                  : "text-grey6 hover:bg-grey1 hover:text-grey9"
+              }`}
             >
               <MessageCircle className="h-3.5 w-3.5" aria-hidden />
               답글
@@ -461,14 +478,11 @@ export default function CommunityDetailPage() {
         </div>
       )}
 
-      {c.children && c.children.length > 0 && (
-        <ul className="mt-4 flex min-w-0 flex-col gap-3 md:mt-5 md:gap-4">
-          {c.children.map((r) => renderComment(r, true))}
-        </ul>
-      )}
-
       {!isReply && replyTo === c.id && (
-        <div className="mt-4 flex min-w-0 flex-col gap-2 md:mt-5 md:flex-row md:items-start native:flex-col">
+        <div
+          id={`reply-composer-${c.id}`}
+          className="mt-4 flex min-w-0 flex-col gap-2 rounded-tag bg-grey1 p-3 md:mt-5 md:flex-row md:items-start native:flex-col"
+        >
           <div className="relative min-w-0 flex-1">
             <textarea
               ref={replyTextareaRef}
@@ -501,6 +515,12 @@ export default function CommunityDetailPage() {
             {createCommentMutation.isPending ? "등록 중" : "등록"}
           </Button>
         </div>
+      )}
+
+      {c.children && c.children.length > 0 && (
+        <ul className="mt-4 flex min-w-0 flex-col gap-3 md:mt-5 md:gap-4">
+          {c.children.map((r) => renderComment(r, true))}
+        </ul>
       )}
     </li>
   );

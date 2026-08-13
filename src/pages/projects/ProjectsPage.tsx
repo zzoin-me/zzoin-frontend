@@ -258,7 +258,7 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <SearchBar
             placeholder="검색어를 입력해주세요"
             value={searchInput}
@@ -277,7 +277,7 @@ export default function ProjectsPage() {
             }}
             aria-label={hasActiveFilters ? "상세조건 필터 적용됨" : "상세조건"}
             aria-expanded={showFilters}
-            className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] transition-opacity hover:opacity-90 ${
+            className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center gap-1.5 rounded-tag border px-0 font-bold text-[14px] transition-opacity hover:opacity-90 md:w-auto md:px-4 ${
               hasActiveFilters
                 ? "border-primary bg-primary text-white"
                 : "border-primary bg-bg text-primary"
@@ -570,7 +570,7 @@ export default function ProjectsPage() {
         <Link
           to="/projects/create"
           aria-label="프로젝트 등록"
-          className="group fixed bottom-36 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:hover:w-44"
+          className="group fixed right-[calc(env(safe-area-inset-right)+20px)] bottom-[calc(env(safe-area-inset-bottom)+24px)] z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-all duration-300 active:scale-95 lg:right-[120px] lg:bottom-8 lg:hover:w-44 native:bottom-36"
         >
           <div className="flex items-center">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary">
@@ -595,7 +595,7 @@ export default function ProjectsPage() {
             });
           }}
           aria-label="프로젝트 등록"
-          className="group fixed bottom-36 right-5 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-grey4 text-grey6 shadow-lg transition-all duration-300 active:scale-95 lg:bottom-8 lg:right-[120px] lg:h-14 lg:hover:w-44"
+          className="group fixed right-[calc(env(safe-area-inset-right)+20px)] bottom-[calc(env(safe-area-inset-bottom)+24px)] z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-grey4 text-grey6 shadow-lg transition-all duration-300 active:scale-95 lg:right-[120px] lg:bottom-8 lg:h-14 lg:hover:w-44 native:bottom-36"
         >
           <div className="flex items-center">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-grey4">

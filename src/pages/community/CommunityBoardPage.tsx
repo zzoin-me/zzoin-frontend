@@ -88,7 +88,7 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
         </button>
       </div>
 
-      <div className="mt-6 flex items-center gap-3">
+      <div className="mt-6 flex min-w-0 items-center gap-3">
         <SearchBar
           className="flex-1"
           placeholder="게시글을 검색해보세요"
@@ -102,7 +102,7 @@ export default function CommunityBoardPage({ board }: { board: CommunityBoardTyp
         <button
           type="button"
           onClick={handleWriteClick}
-          className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 lg:hidden native:flex ${
+          className={`flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-tag border px-0 font-bold text-[14px] text-white transition-opacity hover:opacity-90 lg:hidden native:flex ${
             isVerified ? "border-primary bg-primary" : "border-grey4 bg-grey4"
           }`}
           aria-label="글쓰기"
