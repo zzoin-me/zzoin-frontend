@@ -61,11 +61,13 @@ export function AppLayout() {
             transition: isRefreshing || pullDistance === 0 ? "transform 0.3s ease" : "none",
           }}
         >
-          <Loader2
-            className={`h-7 w-7 text-primary ${isRefreshing ? "animate-spin" : ""}`}
-            style={{ transform: isRefreshing ? undefined : `rotate(${spinnerRotation}deg)` }}
-            aria-hidden
-          />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-grey9 shadow-lg ring-1 ring-grey6/20">
+            <Loader2
+              className={`h-7 w-7 text-primary ${isRefreshing ? "animate-spin" : ""}`}
+              style={{ transform: isRefreshing ? undefined : `rotate(${spinnerRotation}deg)` }}
+              aria-hidden
+            />
+          </div>
         </div>
       )}
 
