@@ -26,7 +26,6 @@ dist-ssr
 .env*
 
 *.md
-!view.md
 .vercel
 *.sh
 *.sql
