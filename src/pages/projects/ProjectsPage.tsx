@@ -589,7 +589,7 @@ export default function ProjectsPage() {
           onClick={() => {
             showSnackbar({
               type: "warning",
-              message: "프로젝트를 생성하려면 대학 인증이 필요합니다.",
+              message: "프로젝트를 등록하려면 대학 인증이 필요합니다.",
               actionLabel: "인증하기",
               onAction: () => navigate("/mypage/verify-univ"),
             });

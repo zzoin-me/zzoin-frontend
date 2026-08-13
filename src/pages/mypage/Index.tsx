@@ -12,6 +12,9 @@ import {
   Plus,
   PenSquare,
   MessageCircle,
+  ClipboardList,
+  FolderCog,
+  Star,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { WithdrawModal } from "@/components/auth/WithdrawModal";
@@ -25,13 +28,13 @@ const mobileMenuGroups = [
   {
     label: "계정",
     items: [
-      { to: "/mypage/profile", label: "내 프로필", desc: "닉네임 · 직군 · 기술 스택 관리" },
-      { to: "/mypage/account", label: "계정 정보", desc: "이메일 · 소셜 로그인 수단 관리" },
-      { to: "/mypage/verify-univ", label: "대학 인증", desc: "학교 · 학과 · 학년 정보 관리" },
+      { to: "/mypage/profile", label: "내 프로필", desc: "내 프로필 관리" },
+      { to: "/mypage/account", label: "계정 정보", desc: "이메일 · 소셜 로그인 관리" },
+      { to: "/mypage/verify-univ", label: "대학 인증", desc: "대학교 이메일 인증하기" },
     ],
   },
   {
-    label: "소식 · 대화",
+    label: "알림 · 대화",
     items: [
       { to: "/mypage/notifications", label: "알림", desc: "받은 알림 확인" },
       { to: "/mypage/chats", label: "프로젝트 대화", desc: "팀원들과 나눈 대화" },
@@ -41,7 +44,7 @@ const mobileMenuGroups = [
     label: "프로젝트",
     items: [
       { to: "/mypage/applications", label: "지원 현황", desc: "지원한 프로젝트 현황" },
-      { to: "/mypage/projects", label: "내 프로젝트 관리", desc: "생성한 프로젝트 관리" },
+      { to: "/mypage/projects", label: "내 프로젝트 관리", desc: "등록한 프로젝트 관리" },
       { to: "/mypage/reviews", label: "프로젝트 후기", desc: "참여한 팀원 평가" },
     ],
   },
@@ -85,7 +88,7 @@ export default function MyPageIndexPage() {
   const quickActions = [
     {
       label: "프로젝트 등록",
-      desc: "새로운 프로젝트를 모집해보세요",
+      desc: "새로운 프로젝트를 등록해보세요",
       icon: Plus,
       to: "/projects/create",
     },
@@ -100,6 +103,24 @@ export default function MyPageIndexPage() {
       desc: "참여 중인 팀원들과 대화하세요",
       icon: MessageCircle,
       to: "/mypage/chats",
+    },
+    {
+      label: "지원 현황",
+      desc: "지원한 프로젝트의 진행 상태를 확인하세요",
+      icon: ClipboardList,
+      to: "/mypage/applications",
+    },
+    {
+      label: "내 프로젝트 관리",
+      desc: "등록한 프로젝트와 지원자를 관리하세요",
+      icon: FolderCog,
+      to: "/mypage/projects",
+    },
+    {
+      label: "프로젝트 후기",
+      desc: "완료된 프로젝트의 후기를 확인하세요",
+      icon: Star,
+      to: "/mypage/reviews",
     },
   ];
 

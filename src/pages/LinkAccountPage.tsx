@@ -82,7 +82,7 @@ export default function LinkAccountPage() {
         </Button>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="lg"
           className="w-full"
           onClick={() => navigate("/login", { replace: true })}

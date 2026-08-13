@@ -82,8 +82,7 @@ export function SocialUnlinkModal({
           </button>
         </div>
         <p className="mt-5 font-regular text-[14px] leading-6 text-grey6">
-          연동을 해제하면 {providerLabel} 로그인을 사용할 수 없어요. 이메일 로그인은 계속 사용할 수
-          있습니다.
+          연동을 해제하면 {providerLabel} 로그인을 사용할 수 없어요.
         </p>
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <Input

@@ -167,7 +167,7 @@ export default function MyPageProjectsPage() {
     <div className="flex flex-col gap-6">
       <MyPageTitle>내 프로젝트 관리</MyPageTitle>
       <p className="font-medium text-[14px] text-grey7 md:text-[16px]">
-        내가 생성한 프로젝트예요. 클릭하면 지원자를 바로 확인할 수 있어요.
+        내가 등록한 프로젝트예요. 클릭하면 지원자를 바로 확인할 수 있어요.
       </p>
 
       <CountTabs tabs={tabs} active={activeTab} onChange={(v) => setActiveTab(v as StatusFilter)} />
@@ -221,7 +221,7 @@ export default function MyPageProjectsPage() {
           />
         ) : pagedProjects.length === 0 ? (
           <p className="py-20 text-center font-regular text-[16px] text-grey6">
-            생성한 프로젝트가 없어요.
+            등록한 프로젝트가 없어요.
           </p>
         ) : (
           <div

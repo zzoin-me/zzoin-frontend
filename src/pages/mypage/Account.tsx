@@ -14,6 +14,20 @@ function getProviderLabel(provider?: string): string {
   return "소셜";
 }
 
+type AccountStatusTone = "primary" | "success" | "info" | "neutral";
+
+const accountStatusClasses: Record<AccountStatusTone, string> = {
+  primary: "border-primary bg-primary-light text-grey9",
+  success:
+    "border-green-600 bg-green-600/10 text-grey9 dark:border-green-400 dark:bg-green-400/20",
+  info: "border-blue-600 bg-blue-600/10 text-grey9 dark:border-blue-400 dark:bg-blue-400/20",
+  neutral: "border-grey6 bg-grey6/10 text-grey9 dark:bg-grey6/20",
+};
+
+function statusBadgeClass(tone: AccountStatusTone): string {
+  return `inline-flex w-fit shrink-0 items-center rounded-full border px-3 py-1 font-medium text-[12px] ${accountStatusClasses[tone]}`;
+}
+
 export default function MyPageAccountPage() {
   const restoreSession = useAuthStore((state) => state.restoreSession);
   const queryClient = useQueryClient();
@@ -28,18 +42,26 @@ export default function MyPageAccountPage() {
 
   const profile = profileQuery.data;
   const socialProviderLabel = getProviderLabel(profile?.socialProvider);
-  const localLoginStatus =
+  const localLoginStatus: { label: string; tone: AccountStatusTone } =
     profile?.localLoginEnabled === true
-      ? "사용 중"
+      ? { label: "사용 중", tone: "success" }
       : profile?.localLoginEnabled === false
-        ? "소셜 전용"
-        : "확인 필요";
-  const socialLoginStatus =
+        ? { label: "소셜 전용", tone: "info" }
+        : { label: "확인 필요", tone: "primary" };
+  const socialLoginStatus: { label: string; tone: AccountStatusTone } =
     profile?.socialLinked === true
-      ? `${socialProviderLabel} 계정 연결됨`
+      ? {
+          label: `${socialProviderLabel} 계정 연결됨`,
+          tone:
+            profile.socialProvider === "kakao"
+              ? "primary"
+              : profile.socialProvider === "google"
+                ? "info"
+                : "success",
+        }
       : profile?.socialLinked === false
-        ? "연결된 계정 없음"
-        : "확인 필요";
+        ? { label: "연결된 계정 없음", tone: "neutral" }
+        : { label: "확인 필요", tone: "primary" };
 
   const reloadProfile = () => {
     queryClient.invalidateQueries({ queryKey: ["my-profile"] });
@@ -52,7 +74,7 @@ export default function MyPageAccountPage() {
       <section className="rounded-[20px] border border-grey5 px-5 py-6 md:px-8 md:py-8 lg:px-10 lg:py-10">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-bold text-[16px] text-grey9 md:text-[18px]">로그인 수단</h2>
+            <h2 className="font-bold text-[16px] text-grey9 md:text-[18px]">로그인 방법</h2>
             <p className="mt-1 font-regular text-[13px] text-grey6">
               이메일과 소셜 계정 연결 상태를 관리해요.
             </p>
@@ -77,8 +99,8 @@ export default function MyPageAccountPage() {
                   {profile?.email ?? "불러오는 중"}
                 </span>
               </div>
-              <span className="shrink-0 rounded-full bg-grey1 px-3 py-1 font-medium text-[12px] text-grey7">
-                {localLoginStatus}
+              <span className={statusBadgeClass(localLoginStatus.tone)}>
+                {localLoginStatus.label}
               </span>
             </div>
 
@@ -86,7 +108,9 @@ export default function MyPageAccountPage() {
               <Link2 className="h-5 w-5 shrink-0 text-grey6" aria-hidden />
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="font-medium text-[14px] text-grey9">소셜 로그인</span>
-                <span className="font-regular text-[12px] text-grey5">{socialLoginStatus}</span>
+                <span className={statusBadgeClass(socialLoginStatus.tone)}>
+                  {socialLoginStatus.label}
+                </span>
               </div>
               {profile?.socialLinked && profile.canUnlinkSocial && (
                 <button
@@ -98,7 +122,7 @@ export default function MyPageAccountPage() {
                 </button>
               )}
               {profile?.socialLinked && !profile.canUnlinkSocial && (
-                <span className="shrink-0 rounded-full bg-primary-light px-3 py-1 font-medium text-[12px] text-primary">
+                <span className={statusBadgeClass("primary")}>
                   기본 로그인
                 </span>
               )}
@@ -113,7 +137,7 @@ export default function MyPageAccountPage() {
         )}
         {profile?.socialLinked && !profile.canUnlinkSocial && (
           <p className="mt-3 font-regular text-[12px] leading-5 text-grey5">
-            소셜 전용 계정은 로그인 수단이 없어지므로 연동을 해제할 수 없어요.
+            소셜 전용 계정은 로그인 방법이 없어지므로 연동을 해제할 수 없어요.
           </p>
         )}
         {accountNotice && (

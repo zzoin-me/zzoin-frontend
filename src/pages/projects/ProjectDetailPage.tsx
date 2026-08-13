@@ -149,7 +149,7 @@ export default function ProjectDetailPage() {
               </p>
             </div>
             <span className="font-regular text-[14px] text-grey9 md:text-[16px]">
-              기한: ~ {formatKoreanDatetime(project.recruitmentDeadline)}
+              기한: {formatKoreanDatetime(project.recruitmentDeadline)}
             </span>
             <div className="flex flex-wrap gap-2">
               {project.recruitments.map((r) => (
