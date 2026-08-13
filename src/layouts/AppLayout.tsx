@@ -6,6 +6,7 @@ import { Navbar } from "@/components/navigation/Navbar";
 import { TabBar } from "@/components/navigation/TabBar";
 import { CompactWebHeader } from "@/components/navigation/CompactWebHeader";
 import { NativeHomeHeader } from "@/components/navigation/NativeHomeHeader";
+import { DesktopFooter } from "@/components/navigation/DesktopFooter";
 import { ScrollToTop } from "@/components/common/ScrollToTop";
 import { NotificationToast } from "@/components/common/NotificationToast";
 import { LoadingState } from "@/components/common/LoadingState";
@@ -47,7 +48,10 @@ export function AppLayout() {
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-bg pt-[env(safe-area-inset-top)]">
+    <div
+      ref={containerRef}
+      className="flex min-h-screen flex-col bg-bg pt-[env(safe-area-inset-top)]"
+    >
       <div
         aria-hidden
         className="fixed top-0 left-0 right-0 z-40 h-[env(safe-area-inset-top)] bg-bg"
@@ -79,12 +83,15 @@ export function AppLayout() {
 
       <main
         className={
-          isChatPage ? "pb-0" : "pb-0 native:pb-[calc(4rem+max(env(safe-area-inset-bottom),16px))]"
+          isChatPage
+            ? "flex-1 pb-0"
+            : "flex-1 pb-0 native:pb-[calc(4rem+max(env(safe-area-inset-bottom),16px))]"
         }
       >
         <Outlet />
       </main>
 
+      <DesktopFooter />
       <TabBar />
     </div>
   );

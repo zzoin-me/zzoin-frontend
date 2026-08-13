@@ -17,6 +17,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { WithdrawModal } from "@/components/auth/WithdrawModal";
 import { Avatar } from "@/components/common/Avatar";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { UsageGuideModal } from "@/components/mypage/UsageGuideModal";
 import { getMyProjects, getMyApplications } from "@/api/user";
 import { getPosts } from "@/api/community";
 
@@ -35,6 +36,7 @@ export default function MyPageIndexPage() {
   const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [usageGuideOpen, setUsageGuideOpen] = useState(false);
 
   const { data: projectsData } = useQuery({
     queryKey: ["my-projects", { status: "RECRUITING", page: 0 }],
@@ -120,7 +122,7 @@ export default function MyPageIndexPage() {
           </Link>
         )}
 
-        <div className="hidden gap-4 sm:grid-cols-3 lg:grid">
+        <div className="hidden gap-4 sm:grid-cols-3 lg:grid native:hidden">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
@@ -141,7 +143,7 @@ export default function MyPageIndexPage() {
           })}
         </div>
 
-        <div className="hidden gap-4 lg:grid lg:grid-cols-2 xl:grid-cols-3">
+        <div className="hidden gap-4 lg:grid lg:grid-cols-2 xl:grid-cols-3 native:hidden">
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
@@ -166,7 +168,7 @@ export default function MyPageIndexPage() {
           })}
         </div>
 
-        <div className="lg:hidden">
+        <div className="lg:hidden native:block">
           <nav className="flex flex-col divide-y divide-grey3 overflow-hidden rounded-card border border-grey3 bg-bg">
             {mobileMenus.map((menu) => (
               <Link
@@ -181,10 +183,23 @@ export default function MyPageIndexPage() {
                 <ChevronRight className="h-5 w-5 text-grey5" aria-hidden />
               </Link>
             ))}
+            <button
+              type="button"
+              onClick={() => setUsageGuideOpen(true)}
+              className="flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-grey1"
+            >
+              <div className="flex flex-col gap-0.5">
+                <span className="font-medium text-[16px] text-grey9">이용 안내</span>
+                <span className="font-regular text-[12px] text-grey5">
+                  약관 · 개인정보 · 문의 · 오픈소스
+                </span>
+              </div>
+              <ChevronRight className="h-5 w-5 text-grey5" aria-hidden />
+            </button>
           </nav>
         </div>
 
-        <div className="flex flex-col gap-3 lg:hidden">
+        <div className="flex flex-col gap-3 lg:hidden native:flex">
           <div className="rounded-card border border-grey3 bg-bg p-4">
             <span className="mb-2 block font-bold text-[13px] tracking-wide text-grey5 uppercase">
               테마
@@ -213,6 +228,7 @@ export default function MyPageIndexPage() {
       </div>
 
       <WithdrawModal isOpen={withdrawOpen} onClose={() => setWithdrawOpen(false)} />
+      <UsageGuideModal isOpen={usageGuideOpen} onClose={() => setUsageGuideOpen(false)} />
     </>
   );
 }
