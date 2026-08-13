@@ -106,26 +106,28 @@ export default function MyPageAccountPage() {
 
             <div className="flex items-center gap-3 px-4 py-4 md:px-5">
               <Link2 className="h-5 w-5 shrink-0 text-grey6" aria-hidden />
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div className="min-w-0 flex-1">
                 <span className="font-medium text-[14px] text-grey9">소셜 로그인</span>
+              </div>
+              <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
                 <span className={statusBadgeClass(socialLoginStatus.tone)}>
                   {socialLoginStatus.label}
                 </span>
+                {profile?.socialLinked && profile.canUnlinkSocial && (
+                  <button
+                    type="button"
+                    onClick={() => setUnlinkOpen(true)}
+                    className="shrink-0 rounded-tag border border-grey3 px-3 py-2 font-medium text-[13px] text-grey7 transition-colors hover:bg-grey1 hover:text-grey9"
+                  >
+                    연동 해제
+                  </button>
+                )}
+                {profile?.socialLinked && !profile.canUnlinkSocial && (
+                  <span className={statusBadgeClass("primary")}>
+                    기본 로그인
+                  </span>
+                )}
               </div>
-              {profile?.socialLinked && profile.canUnlinkSocial && (
-                <button
-                  type="button"
-                  onClick={() => setUnlinkOpen(true)}
-                  className="shrink-0 rounded-tag border border-grey3 px-3 py-2 font-medium text-[13px] text-grey7 transition-colors hover:bg-grey1 hover:text-grey9"
-                >
-                  연동 해제
-                </button>
-              )}
-              {profile?.socialLinked && !profile.canUnlinkSocial && (
-                <span className={statusBadgeClass("primary")}>
-                  기본 로그인
-                </span>
-              )}
             </div>
           </div>
         )}
