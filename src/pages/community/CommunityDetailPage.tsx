@@ -1,17 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Heart,
-  MessageCircle,
-  Eye,
-  Bookmark,
-  Pencil,
-  Trash2,
-  Loader2,
-  RotateCcw,
-  Send,
-} from "lucide-react";
+import { Heart, MessageCircle, Eye, Bookmark, Loader2, RotateCcw, Send } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { Avatar } from "@/components/common/Avatar";
 import { LoadingState } from "@/components/common/LoadingState";
@@ -401,19 +391,17 @@ export default function CommunityDetailPage() {
             </button>
           )}
           {c.isMine && !c.isDeleted && (
-            <div className="md:hidden native:block">
-              <CommunityActionMenu
-                open={openActionMenu === `comment-${c.id}`}
-                onOpenChange={(open) => setOpenActionMenu(open ? `comment-${c.id}` : null)}
-                onEdit={() => {
-                  setEditingCommentId(c.id);
-                  setEditContent(c.content);
-                }}
-                onDelete={() => handleDeleteComment(c.id)}
-                label="댓글 작업 메뉴"
-                disabled={deleteCommentMutation.isPending}
-              />
-            </div>
+            <CommunityActionMenu
+              open={openActionMenu === `comment-${c.id}`}
+              onOpenChange={(open) => setOpenActionMenu(open ? `comment-${c.id}` : null)}
+              onEdit={() => {
+                setEditingCommentId(c.id);
+                setEditContent(c.content);
+              }}
+              onDelete={() => handleDeleteComment(c.id)}
+              label="댓글 작업 메뉴"
+              disabled={deleteCommentMutation.isPending}
+            />
           )}
         </div>
       </div>
@@ -448,49 +436,21 @@ export default function CommunityDetailPage() {
           </div>
         </div>
       ) : (
-        <p className="mt-3 break-words font-regular text-[14px] leading-relaxed text-grey9 [overflow-wrap:anywhere]">
+        <p className="mt-3 whitespace-pre-wrap break-words font-regular text-[14px] leading-relaxed text-grey9 [overflow-wrap:anywhere]">
           {c.content}
         </p>
       )}
 
-      {c.isMine && !c.isDeleted && (
-        <div className="mt-3 hidden items-center gap-2 md:flex native:hidden">
-          <button
-            type="button"
-            onClick={() => {
-              setEditingCommentId(c.id);
-              setEditContent(c.content);
-            }}
-            className="inline-flex min-h-11 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            수정
-          </button>
-          <button
-            type="button"
-            onClick={() => handleDeleteComment(c.id)}
-            disabled={deleteCommentMutation.isPending}
-            className="inline-flex min-h-11 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9 disabled:opacity-50"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            삭제
-          </button>
-        </div>
-      )}
-
       {!isReply && replyTo === c.id && (
-        <div
-          id={`reply-composer-${c.id}`}
-          className="mt-4 flex min-w-0 flex-col gap-2 rounded-tag bg-grey1 p-3 md:mt-5 md:flex-row md:items-start native:flex-col"
-        >
-          <div className="relative min-w-0 flex-1">
+        <div id={`reply-composer-${c.id}`} className="mt-4 rounded-tag bg-grey1 p-3 md:mt-5">
+          <div className="relative min-w-0">
             <textarea
               ref={replyTextareaRef}
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               placeholder="대댓글을 입력하세요"
               rows={1}
-              className="block max-h-40 min-h-11 w-full resize-none overflow-y-hidden rounded-tag border border-grey3 bg-bg px-4 py-2.5 font-regular text-[14px] leading-6 focus:border-grey9 focus:outline-none native:pr-12"
+              className="block max-h-40 min-h-14 w-full resize-none overflow-y-hidden rounded-tag border border-grey3 bg-bg py-3 pr-24 pl-4 font-regular text-[14px] leading-6 focus:border-primary focus:outline-none native:min-h-11 native:py-2.5 native:pr-12"
             />
             <button
               type="button"
@@ -505,15 +465,20 @@ export default function CommunityDetailPage() {
                 <Send className="h-5 w-5" aria-hidden />
               )}
             </button>
+            <button
+              type="button"
+              onClick={() => handleCreateReply(c.id)}
+              disabled={!replyContent.trim() || createCommentMutation.isPending}
+              className="absolute right-2 bottom-2 inline-flex h-10 items-center gap-1.5 rounded-tag bg-primary px-4 font-bold text-[13px] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 native:hidden"
+            >
+              {createCommentMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : (
+                <Send className="h-4 w-4" aria-hidden />
+              )}
+              {createCommentMutation.isPending ? "등록 중" : "등록"}
+            </button>
           </div>
-          <Button
-            size="sm"
-            onClick={() => handleCreateReply(c.id)}
-            disabled={!replyContent.trim() || createCommentMutation.isPending}
-            className="shrink-0 self-end native:hidden"
-          >
-            {createCommentMutation.isPending ? "등록 중" : "등록"}
-          </Button>
         </div>
       )}
 
@@ -528,9 +493,9 @@ export default function CommunityDetailPage() {
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px]">
       <div className="mx-auto w-full max-w-[960px]">
-        <div className="mb-4 flex items-center gap-1 md:mb-5">
+        <div className="mb-4 flex items-center gap-3 md:mb-5">
           <PageBackButton fallbackTo="/community" label="커뮤니티로 돌아가기" className="-ml-2" />
-          <span className="font-medium text-[15px] text-grey7 md:text-[16px]">커뮤니티</span>
+          <h1 className="font-bold text-[20px] text-grey9">커뮤니티</h1>
         </div>
 
         <article className="border-y border-grey4 bg-bg md:rounded-[20px] md:border native:rounded-none native:border-x-0">
@@ -688,40 +653,41 @@ export default function CommunityDetailPage() {
 
           {user && isVerified && (
             <div className="mt-10 min-w-0">
-              <div className="flex min-w-0 flex-col gap-2">
-                <div className="relative min-w-0">
-                  <textarea
-                    ref={commentTextareaRef}
-                    placeholder="댓글을 입력해주세요"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    rows={1}
-                    className="block max-h-40 min-h-11 w-full resize-none overflow-y-hidden rounded-tag border border-grey4 bg-bg px-4 py-2.5 font-regular text-[14px] leading-6 focus:border-grey9 focus:outline-none native:pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCreateComment}
-                    disabled={!newComment.trim() || createCommentMutation.isPending}
-                    className="absolute right-0 bottom-0 hidden h-11 w-11 items-center justify-center rounded-tag text-primary disabled:opacity-40 native:flex"
-                    aria-label="댓글 보내기"
-                  >
-                    {createCommentMutation.isPending ? (
-                      <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-                    ) : (
-                      <Send className="h-5 w-5" aria-hidden />
-                    )}
-                  </button>
-                </div>
-                <div className="flex justify-end native:hidden">
-                  <Button
-                    size="sm"
-                    onClick={handleCreateComment}
-                    disabled={!newComment.trim() || createCommentMutation.isPending}
-                    className="shrink-0"
-                  >
-                    {createCommentMutation.isPending ? "등록 중" : "등록"}
-                  </Button>
-                </div>
+              <div className="relative min-w-0">
+                <textarea
+                  ref={commentTextareaRef}
+                  placeholder="댓글을 입력해주세요"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  rows={1}
+                  className="block max-h-40 min-h-14 w-full resize-none overflow-y-hidden rounded-tag border border-grey4 bg-bg py-3 pr-24 pl-4 font-regular text-[14px] leading-6 focus:border-primary focus:outline-none native:min-h-11 native:py-2.5 native:pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreateComment}
+                  disabled={!newComment.trim() || createCommentMutation.isPending}
+                  className="absolute right-0 bottom-0 hidden h-11 w-11 items-center justify-center rounded-tag text-primary disabled:opacity-40 native:flex"
+                  aria-label="댓글 보내기"
+                >
+                  {createCommentMutation.isPending ? (
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+                  ) : (
+                    <Send className="h-5 w-5" aria-hidden />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateComment}
+                  disabled={!newComment.trim() || createCommentMutation.isPending}
+                  className="absolute right-2 bottom-2 inline-flex h-10 items-center gap-1.5 rounded-tag bg-primary px-4 font-bold text-[13px] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 native:hidden"
+                >
+                  {createCommentMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  ) : (
+                    <Send className="h-4 w-4" aria-hidden />
+                  )}
+                  {createCommentMutation.isPending ? "등록 중" : "등록"}
+                </button>
               </div>
             </div>
           )}
