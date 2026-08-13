@@ -242,7 +242,7 @@ export default function CommunityNewPage() {
                     onClick={() =>
                       setImageUrls((current) => current.filter((url) => url !== imageUrl))
                     }
-                    className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white"
+                    className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-black/65 text-white"
                     aria-label="이미지 삭제"
                   >
                     <X className="h-4 w-4" aria-hidden />
@@ -262,7 +262,7 @@ export default function CommunityNewPage() {
                   <button
                     type="button"
                     onClick={() => removePendingImage(image.id)}
-                    className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/65 text-white"
+                    className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-black/65 text-white"
                     aria-label="이미지 삭제"
                   >
                     <X className="h-4 w-4" aria-hidden />

@@ -257,7 +257,7 @@ export default function ReviewWritePage() {
                           onClick={() =>
                             setScores((current) => ({ ...current, [criterion.key]: score }))
                           }
-                          className="rounded-full p-1"
+                          className="flex h-11 w-11 items-center justify-center rounded-full"
                           aria-label={`${score}점`}
                         >
                           <Star

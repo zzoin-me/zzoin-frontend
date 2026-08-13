@@ -377,7 +377,7 @@ export default function CommunityDetailPage() {
                 setReplyTo(replyTo === c.id ? null : c.id);
                 setReplyContent("");
               }}
-              className="inline-flex min-h-9 items-center gap-1 rounded-tag px-2 font-regular text-[12px] text-grey6 hover:bg-grey1 hover:text-grey9"
+              className="inline-flex min-h-11 items-center gap-1 rounded-tag px-3 font-regular text-[12px] text-grey6 hover:bg-grey1 hover:text-grey9"
             >
               <MessageCircle className="h-3.5 w-3.5" aria-hidden />
               답글
@@ -444,7 +444,7 @@ export default function CommunityDetailPage() {
               setEditingCommentId(c.id);
               setEditContent(c.content);
             }}
-            className="inline-flex min-h-9 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9"
+            className="inline-flex min-h-11 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9"
           >
             <Pencil className="h-3.5 w-3.5" />
             수정
@@ -453,7 +453,7 @@ export default function CommunityDetailPage() {
             type="button"
             onClick={() => handleDeleteComment(c.id)}
             disabled={deleteCommentMutation.isPending}
-            className="inline-flex min-h-9 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center gap-1 rounded-tag border border-grey3 px-3 font-regular text-[12px] text-grey7 hover:bg-grey1 hover:text-grey9 disabled:opacity-50"
           >
             <Trash2 className="h-3.5 w-3.5" />
             삭제
@@ -482,7 +482,7 @@ export default function CommunityDetailPage() {
               type="button"
               onClick={() => handleCreateReply(c.id)}
               disabled={!replyContent.trim() || createCommentMutation.isPending}
-              className="absolute right-1.5 bottom-1.5 hidden h-8 w-8 items-center justify-center text-primary disabled:opacity-40 native:flex"
+              className="absolute right-0 bottom-0 hidden h-11 w-11 items-center justify-center rounded-tag text-primary disabled:opacity-40 native:flex"
               aria-label="답글 보내기"
             >
               {createCommentMutation.isPending ? (
@@ -682,7 +682,7 @@ export default function CommunityDetailPage() {
                     type="button"
                     onClick={handleCreateComment}
                     disabled={!newComment.trim() || createCommentMutation.isPending}
-                    className="absolute right-1.5 bottom-1.5 hidden h-8 w-8 items-center justify-center text-primary disabled:opacity-40 native:flex"
+                    className="absolute right-0 bottom-0 hidden h-11 w-11 items-center justify-center rounded-tag text-primary disabled:opacity-40 native:flex"
                     aria-label="댓글 보내기"
                   >
                     {createCommentMutation.isPending ? (

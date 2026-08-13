@@ -20,7 +20,7 @@ export function LatestProjectList({ projects }: LatestProjectListProps) {
           >
             <h3 className="truncate font-bold text-[18px] text-grey9">{p.title}</h3>
             <p className="line-clamp-1 font-regular text-[14px] text-grey6">{p.description}</p>
-            <div className="flex gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {p.recruitments.map((tag, i) => (
                 <span
                   key={`${tag}-${i}`}

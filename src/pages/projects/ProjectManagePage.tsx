@@ -489,7 +489,8 @@ export default function ProjectManagePage() {
                         <button
                           type="button"
                           onClick={() => removeRecruitment(idx)}
-                          className="text-grey5 hover:text-red-500"
+                          className="flex h-11 w-11 items-center justify-center rounded-full text-grey5 hover:bg-grey1 hover:text-red-500"
+                          aria-label={`모집 역할 ${idx + 1} 삭제`}
                         >
                           <Trash2 className="h-4 w-4" aria-hidden />
                         </button>

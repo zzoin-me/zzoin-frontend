@@ -19,7 +19,7 @@ export function SearchBar({
       <input
         type="text"
         placeholder={placeholder}
-        className="w-full bg-transparent font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:outline-none"
+        className="min-w-0 flex-1 bg-transparent font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:outline-none"
         onKeyDown={(e) => {
           if (e.key === "Enter" && onSearch) {
             e.preventDefault();
@@ -32,7 +32,7 @@ export function SearchBar({
         <button
           type="button"
           onClick={onSearch}
-          className="shrink-0 cursor-pointer text-primary hover:opacity-70"
+          className="-mr-3 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-primary hover:bg-grey1"
           aria-label="검색"
         >
           <Search className="h-5 w-5" aria-hidden />

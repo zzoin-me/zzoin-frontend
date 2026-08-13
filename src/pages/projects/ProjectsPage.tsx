@@ -270,14 +270,17 @@ export default function ProjectsPage() {
             className="flex-1 lg:w-[280px]"
           />
           <button
+            type="button"
             onClick={() => {
               if (!showFilters) setDraftFilters({ ...appliedFilters });
               setShowFilters((v) => !v);
             }}
+            aria-label={hasActiveFilters ? "상세조건 필터 적용됨" : "상세조건"}
+            aria-expanded={showFilters}
             className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] transition-opacity hover:opacity-90 ${
               hasActiveFilters
                 ? "border-primary bg-primary text-white"
-                : "border-primary bg-primary text-white"
+                : "border-primary bg-bg text-primary"
             }`}
           >
             <SlidersHorizontal className="h-4 w-4" aria-hidden />

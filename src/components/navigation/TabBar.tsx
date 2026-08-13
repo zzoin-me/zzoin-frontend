@@ -17,7 +17,7 @@ export function TabBar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-grey3 bg-bg pb-[max(env(safe-area-inset-bottom),16px)] lg:hidden native:block">
-      <ul className="mx-auto flex max-w-[768px] items-stretch justify-around">
+      <ul className="mx-auto flex h-16 max-w-[768px] items-stretch justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -26,7 +26,7 @@ export function TabBar() {
                 to={tab.to}
                 end={tab.end}
                 className={({ isActive }) =>
-                  `flex flex-col items-center gap-1 py-3 transition-colors ${
+                  `flex h-full flex-col items-center justify-center gap-1 transition-colors ${
                     isActive ? "text-grey9" : "text-grey5"
                   }`
                 }

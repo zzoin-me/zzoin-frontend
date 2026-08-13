@@ -106,7 +106,7 @@ export default function VerifyUnivPage() {
                 setCodeSent(false);
                 setError("");
               }}
-              className="w-1/2 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+              className="min-w-0 flex-1 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
             />
             <span className="shrink-0 font-medium text-[16px] text-grey6">@</span>
             <input
@@ -118,7 +118,7 @@ export default function VerifyUnivPage() {
                 setCodeSent(false);
                 setError("");
               }}
-              className="w-1/2 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+              className="min-w-0 flex-1 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 placeholder:text-grey6 focus:border-grey9 focus:outline-none"
             />
           </div>
           {matchedUniv && (

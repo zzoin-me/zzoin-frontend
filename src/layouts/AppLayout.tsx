@@ -95,7 +95,13 @@ export function AppLayout() {
         </header>
       )}
 
-      <main className={isChatPage ? "pb-0" : "pb-20 lg:pb-0 native:pb-20"}>
+      <main
+        className={
+          isChatPage
+            ? "pb-0"
+            : "pb-[calc(4rem+max(env(safe-area-inset-bottom),16px))] lg:pb-0 native:pb-[calc(4rem+max(env(safe-area-inset-bottom),16px))]"
+        }
+      >
         <Outlet />
       </main>
 

@@ -106,6 +106,7 @@ export default function CommunityPage() {
           <button
             type="button"
             onClick={handleWriteClick}
+            aria-label="글쓰기"
             className={`flex h-[46px] shrink-0 items-center gap-1.5 rounded-tag border px-4 font-bold text-[14px] text-white transition-opacity hover:opacity-90 ${
               isVerified ? "border-primary bg-primary" : "border-grey4 bg-grey4"
             }`}

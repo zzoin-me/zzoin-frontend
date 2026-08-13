@@ -386,7 +386,8 @@ export default function ProjectCreatePage() {
                       <button
                         type="button"
                         onClick={() => removeRecruitment(idx)}
-                        className="text-grey5 hover:text-red-500"
+                        className="flex h-11 w-11 items-center justify-center rounded-full text-grey5 hover:bg-grey1 hover:text-red-500"
+                        aria-label={`모집 역할 ${idx + 1} 삭제`}
                       >
                         <Trash2 className="h-4 w-4" aria-hidden />
                       </button>
@@ -482,7 +483,7 @@ export default function ProjectCreatePage() {
                       <button
                         type="button"
                         onClick={() => removeQuestion(idx)}
-                        className="text-grey5 hover:text-red-500"
+                        className="flex h-11 w-11 items-center justify-center rounded-full text-grey5 hover:bg-grey1 hover:text-red-500"
                         aria-label="질문 삭제"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -545,7 +546,7 @@ export default function ProjectCreatePage() {
                               <button
                                 type="button"
                                 onClick={() => removeOption(idx, optIdx)}
-                                className="shrink-0 text-grey5 hover:text-red-500"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-grey5 hover:bg-grey1 hover:text-red-500"
                                 aria-label="옵션 삭제"
                               >
                                 <Trash2 className="h-4 w-4" />

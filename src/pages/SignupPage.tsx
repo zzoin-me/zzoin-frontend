@@ -163,7 +163,7 @@ export default function SignupPage() {
             <button
               type="button"
               onClick={() => setStep("email")}
-              className="flex items-center gap-1.5 cursor-pointer font-medium text-[14px] text-grey9 underline underline-offset-4`"
+              className="flex cursor-pointer items-center gap-1.5 font-medium text-[14px] text-grey9 underline underline-offset-4"
             >
               이메일로 계속하기
               <ArrowRight className="h-4 w-4" aria-hidden />
