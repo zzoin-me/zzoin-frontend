@@ -277,6 +277,14 @@ export default function ProjectManagePage() {
   };
 
   const updateOptionText = (questionIdx: number, optionIdx: number, text: string) => {
+    if (text.length > 100) {
+      showSnackbar({
+        type: "error",
+        message: "질문 선택지는 각각 100자 이하로 입력해주세요.",
+        dedupeKey: "project-question-option-too-long",
+      });
+      return;
+    }
     setQuestions((prev) =>
       prev.map((question, i) => {
         if (i !== questionIdx) return question;
@@ -367,6 +375,14 @@ export default function ProjectManagePage() {
       );
       if (hasInvalidQuestion) {
         setError("질문 내용을 입력해주세요. 선택형 질문은 옵션을 2개 이상 추가해야 합니다.");
+        return;
+      }
+      if (
+        questions.some((question) =>
+          question.optionsText.some((option) => option.trim().length > 100),
+        )
+      ) {
+        setError("질문 선택지는 각각 100자 이하로 입력해주세요.");
         return;
       }
     }
@@ -794,7 +810,6 @@ export default function ProjectManagePage() {
                                   onChange={(event) =>
                                     updateOptionText(questionIdx, optionIdx, event.target.value)
                                   }
-                                  maxLength={50}
                                   className="min-w-0 flex-1 rounded-tag border border-grey3 bg-bg px-4 py-2 font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none disabled:bg-grey1 disabled:text-grey7"
                                 />
                                 {questionsEditable && (

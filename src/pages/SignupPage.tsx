@@ -122,8 +122,8 @@ export default function SignupPage() {
       setError("닉네임을 입력해주세요.");
       return;
     }
-    if (!/^[가-힣a-zA-Z0-9.]{2,50}$/.test(nickname)) {
-      setError("영문, 한글, 숫자, 점으로 구성된 2~50자 닉네임을 입력해주세요.");
+    if (!/^[가-힣a-zA-Z0-9.]{2,20}$/.test(nickname)) {
+      setError("영문, 한글, 숫자, 점으로 구성된 2~20자 닉네임을 입력해주세요.");
       return;
     }
     if (containsReservedNicknameTerm(nickname)) {
@@ -269,8 +269,9 @@ export default function SignupPage() {
           <Input
             id="nickname"
             label="닉네임"
-            placeholder="영문, 한글, 숫자, 점 2~50자"
+            placeholder="영문, 한글, 숫자, 점 2~20자"
             value={nickname}
+            maxLength={20}
             onChange={(e) => {
               setNickname(e.target.value);
               setError("");

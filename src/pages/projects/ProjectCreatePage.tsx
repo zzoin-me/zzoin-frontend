@@ -15,6 +15,7 @@ import type {
   CreateQuestion,
 } from "@/types";
 import { MAX_RECRUITMENTS } from "@/constants/recruitment";
+import { showSnackbar } from "@/stores/snackbarStore";
 
 const collabOptions: { value: CollaborationType; label: string }[] = [
   { value: "ONLINE", label: "온라인" },
@@ -162,6 +163,14 @@ export default function ProjectCreatePage() {
   };
 
   const updateOptionText = (qIdx: number, optIdx: number, text: string) => {
+    if (text.length > 100) {
+      showSnackbar({
+        type: "error",
+        message: "질문 선택지는 각각 100자 이하로 입력해주세요.",
+        dedupeKey: "project-question-option-too-long",
+      });
+      return;
+    }
     setQuestions((prev) =>
       prev.map((q, i) => {
         if (i !== qIdx) return q;
@@ -231,6 +240,14 @@ export default function ProjectCreatePage() {
     );
     if (hasInvalidQuestion) {
       setError("질문 내용을 입력해주세요. 선택형 질문은 옵션을 2개 이상 추가해야 합니다.");
+      return;
+    }
+    if (
+      questions.some((question) =>
+        (question.optionsText ?? []).some((option) => option.trim().length > 100),
+      )
+    ) {
+      setError("질문 선택지는 각각 100자 이하로 입력해주세요.");
       return;
     }
 
@@ -540,7 +557,6 @@ export default function ProjectCreatePage() {
                                 placeholder={`옵션 ${optIdx + 1}`}
                                 value={opt}
                                 onChange={(e) => updateOptionText(idx, optIdx, e.target.value)}
-                                maxLength={50}
                                 className="min-w-0 flex-1 rounded-tag border border-grey3 px-4 py-2 font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                               />
                               <button

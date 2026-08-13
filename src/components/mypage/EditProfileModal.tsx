@@ -129,6 +129,10 @@ export function EditProfileModal({
       setError("닉네임을 입력해주세요.");
       return;
     }
+    if (!/^[가-힣a-zA-Z0-9.]{2,20}$/.test(nickName.trim())) {
+      setError("영문, 한글, 숫자, 점으로 구성된 2~20자 닉네임을 입력해주세요.");
+      return;
+    }
     if (
       nickName.trim() !== profile?.name &&
       containsReservedNicknameTerm(nickName.trim())

@@ -13,10 +13,10 @@ import {
 
 type Step = "confirm" | "nickname";
 
-const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9.]{2,50}$/;
+const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9.]{2,20}$/;
 
 function createNicknameCandidate(value: string, providerLabel: string): string {
-  const candidate = value.replace(/[^가-힣a-zA-Z0-9.]/g, "").slice(0, 50);
+  const candidate = value.replace(/[^가-힣a-zA-Z0-9.]/g, "").slice(0, 20);
   return candidate.length >= 2 ? candidate : providerLabel;
 }
 
@@ -44,7 +44,7 @@ export default function SocialSignupPage() {
 
     const normalizedNickname = nickname.trim();
     if (!NICKNAME_PATTERN.test(normalizedNickname)) {
-      setError("영문, 한글, 숫자, 점으로 구성된 2~50자 닉네임을 입력해주세요.");
+      setError("영문, 한글, 숫자, 점으로 구성된 2~20자 닉네임을 입력해주세요.");
       return;
     }
     if (containsReservedNicknameTerm(normalizedNickname)) {
@@ -126,13 +126,13 @@ export default function SocialSignupPage() {
         <Input
           id="social-signup-nickname"
           label="닉네임"
-          placeholder="영문, 한글, 숫자, 점 2~50자"
+          placeholder="영문, 한글, 숫자, 점 2~20자"
           value={nickname}
           onChange={(event) => {
             setNickname(event.target.value);
             setError("");
           }}
-          maxLength={50}
+          maxLength={20}
           autoFocus
         />
         {error && <p className="font-regular text-[13px] text-red-500">{error}</p>}

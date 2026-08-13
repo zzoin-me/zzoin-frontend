@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import type { User } from "@/types";
-import { clearTokens, getAccessToken, getRefreshToken, setTokens } from "@/api/client";
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  setAuthExpiredHandler,
+  setTokens,
+} from "@/api/client";
 import * as authApi from "@/api/auth";
 import { getMyProfile } from "@/api/user";
 
@@ -39,6 +45,17 @@ async function fetchProfileAndSet(): Promise<void> {
   });
 }
 
+async function storeTokensAndFetchProfile(accessToken: string, refreshToken: string): Promise<void> {
+  setTokens(accessToken, refreshToken);
+  try {
+    await fetchProfileAndSet();
+  } catch (error) {
+    clearTokens();
+    useAuthStore.setState({ isLoggedIn: false, user: null });
+    throw error;
+  }
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   isLoggedIn: false,
   user: null,
@@ -50,14 +67,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (!res.accessToken || !res.refreshToken) {
       throw new Error("로그인 토큰이 없습니다.");
     }
-    setTokens(res.accessToken, res.refreshToken);
-    await fetchProfileAndSet();
+    await storeTokensAndFetchProfile(res.accessToken, res.refreshToken);
     return res;
   },
 
   loginWithTokens: async (accessToken, refreshToken) => {
-    setTokens(accessToken, refreshToken);
-    await fetchProfileAndSet();
+    await storeTokensAndFetchProfile(accessToken, refreshToken);
   },
 
   signupAndLogin: async (data) => {
@@ -66,8 +81,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (res.recoveryRequired) {
       throw new Error("로그인 토큰이 없습니다.");
     }
-    setTokens(res.accessToken, res.refreshToken);
-    await fetchProfileAndSet();
+    await storeTokensAndFetchProfile(res.accessToken, res.refreshToken);
   },
 
   logout: async () => {
@@ -99,3 +113,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ initialized: true });
   },
 }));
+
+setAuthExpiredHandler(() => {
+  useAuthStore.setState({ isLoggedIn: false, user: null, initialized: true });
+});

@@ -34,6 +34,17 @@ export function clearTokens(): void {
   localStorage.removeItem("refreshToken");
 }
 
+let authExpiredHandler: (() => void) | null = null;
+
+export function setAuthExpiredHandler(handler: () => void): void {
+  authExpiredHandler = handler;
+}
+
+function clearExpiredSession(): void {
+  clearTokens();
+  authExpiredHandler?.();
+}
+
 function getAuthHeaders(): Record<string, string> {
   const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -43,7 +54,10 @@ let tokenRefreshPromise: Promise<boolean> | null = null;
 
 async function performTokenRefresh(): Promise<boolean> {
   const refreshTokenValue = getRefreshToken();
-  if (!refreshTokenValue) return false;
+  if (!refreshTokenValue) {
+    clearExpiredSession();
+    return false;
+  }
 
   try {
     const res = await fetch(`${apiBaseUrl}/api/auth/refreshToken`, {
@@ -59,7 +73,7 @@ async function performTokenRefresh(): Promise<boolean> {
   } catch {
     // refresh 실패
   }
-  clearTokens();
+  clearExpiredSession();
   return false;
 }
 
