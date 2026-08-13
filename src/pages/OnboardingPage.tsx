@@ -108,15 +108,7 @@ export default function OnboardingPage() {
         ))}
       </div>
 
-      {step !== "done" && (
-        <p className="mb-4 text-center font-regular text-[13px] text-grey6">
-          언제든 내 프로필에서 수정할 수 있어요!
-        </p>
-      )}
-
-      {error && (
-        <p className="mb-4 text-center font-regular text-[13px] text-red-500">{error}</p>
-      )}
+      {error && <p className="mb-4 text-center font-regular text-[13px] text-red-500">{error}</p>}
 
       {step === "field" && (
         <div className="flex flex-col gap-5">
@@ -218,15 +210,19 @@ export default function OnboardingPage() {
         </div>
       )}
 
+      {step !== "done" && (
+        <p className="mt-4 text-center font-regular text-[13px] text-grey6">
+          언제든 내 프로필에서 수정할 수 있어요!
+        </p>
+      )}
+
       {step === "done" && (
         <div className="flex flex-col items-center gap-6 py-6 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-light">
             <CheckCircle2 className="h-10 w-10 text-primary" />
           </div>
           <div className="flex flex-col gap-2">
-            <h2 className="font-bold text-[22px] text-grey9 md:text-[24px]">
-              가입을 환영합니다!
-            </h2>
+            <h2 className="font-bold text-[22px] text-grey9 md:text-[24px]">가입을 환영합니다!</h2>
             <p className="font-regular text-[14px] text-grey6">
               프로필 설정이 완료되었어요. 이제 프로젝트를 탐색해보세요.
             </p>

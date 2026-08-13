@@ -13,6 +13,7 @@ const desktopMenus = [
     group: "계정",
     items: [
       { to: "/mypage/profile", label: "내 프로필", end: false },
+      { to: "/mypage/account", label: "계정 정보", end: false },
       { to: "/mypage/verify-univ", label: "대학 인증", end: false },
     ],
   },

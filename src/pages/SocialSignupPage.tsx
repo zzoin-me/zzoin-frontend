@@ -6,6 +6,10 @@ import { ApiError } from "@/api/client";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  containsReservedNicknameTerm,
+  RESERVED_NICKNAME_MESSAGE,
+} from "@/utils/nickname";
 
 type Step = "confirm" | "nickname";
 
@@ -41,6 +45,10 @@ export default function SocialSignupPage() {
     const normalizedNickname = nickname.trim();
     if (!NICKNAME_PATTERN.test(normalizedNickname)) {
       setError("영문, 한글, 숫자, 점으로 구성된 2~50자 닉네임을 입력해주세요.");
+      return;
+    }
+    if (containsReservedNicknameTerm(normalizedNickname)) {
+      setError(RESERVED_NICKNAME_MESSAGE);
       return;
     }
 

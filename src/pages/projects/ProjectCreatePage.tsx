@@ -636,7 +636,7 @@ export default function ProjectCreatePage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-[20px] bg-grey9 px-5 py-[14px] font-bold text-[24px] text-grey1 transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-[20px] bg-primary px-5 py-[14px] font-bold text-[24px] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "등록 중..." : "등록하기"}
             </button>
@@ -682,7 +682,7 @@ export default function ProjectCreatePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-[20px] bg-grey9 px-5 py-[14px] font-bold text-[24px] text-grey1 transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="w-full rounded-[20px] bg-primary px-5 py-[14px] font-bold text-[24px] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "등록 중..." : "등록하기"}
           </button>

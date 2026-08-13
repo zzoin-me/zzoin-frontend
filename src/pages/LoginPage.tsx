@@ -20,8 +20,19 @@ export default function LoginPage() {
     if (socialError === "social_conflict") {
       const existing = searchParams.get("existingProvider");
       const label =
-        existing === "google" ? "구글" : existing === "kakao" ? "카카오" : existing ?? "다른";
+        existing === "google" ? "구글" : existing === "kakao" ? "카카오" : (existing ?? "다른");
       return `이미 ${label} 계정으로 가입된 이메일입니다. ${label} 로그인을 이용해주세요.`;
+    }
+    if (socialError === "social_email_required") {
+      const provider = searchParams.get("provider");
+      const label = provider === "google" ? "구글" : provider === "kakao" ? "카카오" : "소셜";
+      return `${label} 계정에서 이메일을 제공받지 못해 가입할 수 없습니다. 계정에 이메일을 등록하거나 이메일 제공에 동의한 후 다시 시도해주세요.`;
+    }
+    if (socialError === "recovery_provider_mismatch") {
+      const existing = searchParams.get("existingProvider");
+      const label =
+        existing === "google" ? "구글" : existing === "kakao" ? "카카오" : "이메일";
+      return `탈퇴한 계정은 기존에 연결했던 ${label} 로그인으로만 복구할 수 있습니다.`;
     }
     if (socialError === "social_failed") {
       return "소셜 로그인에 실패했습니다. 다시 시도해주세요.";
@@ -46,7 +57,15 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      await loginWithEmail(email, password);
+      const result = await loginWithEmail(email, password);
+      if (result.recoveryRequired && result.recoveryToken) {
+        sessionStorage.setItem("accountRecoveryToken", result.recoveryToken);
+        const params = new URLSearchParams();
+        if (result.recoverableUntil) params.set("recoverableUntil", result.recoverableUntil);
+        params.set("provider", "local");
+        navigate(`/account-recovery?${params.toString()}`, { replace: true });
+        return;
+      }
       const redirect = searchParams.get("redirect");
       const safe = redirect && redirect.startsWith("/") ? redirect : "/";
       navigate(safe, { replace: true });

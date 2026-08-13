@@ -15,6 +15,10 @@ import {
 } from "@/api/user";
 import type { MyProfile, SchoolProfile, StackInfo } from "@/types";
 import { useModal } from "@/hooks/useModal";
+import {
+  containsReservedNicknameTerm,
+  RESERVED_NICKNAME_MESSAGE,
+} from "@/utils/nickname";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -123,6 +127,13 @@ export function EditProfileModal({
 
     if (!nickName.trim()) {
       setError("닉네임을 입력해주세요.");
+      return;
+    }
+    if (
+      nickName.trim() !== profile?.name &&
+      containsReservedNicknameTerm(nickName.trim())
+    ) {
+      setError(RESERVED_NICKNAME_MESSAGE);
       return;
     }
 

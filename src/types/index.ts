@@ -131,6 +131,10 @@ export interface MyProfile {
   verified: boolean;
   verifiedEmail?: string;
   nicknameChangeableAt?: string;
+  socialProvider?: string;
+  socialLinked: boolean;
+  canUnlinkSocial: boolean;
+  localLoginEnabled: boolean | null;
   stackInfoList?: StackInfo[];
 }
 

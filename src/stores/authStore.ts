@@ -8,7 +8,7 @@ interface AuthState {
   isLoggedIn: boolean;
   user: User | null;
   initialized: boolean;
-  loginWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<authApi.LoginResponse>;
   loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   signupAndLogin: (data: {
     nickName: string;
@@ -46,8 +46,13 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   loginWithEmail: async (email, password) => {
     const res = await authApi.login(email, password);
+    if (res.recoveryRequired) return res;
+    if (!res.accessToken || !res.refreshToken) {
+      throw new Error("로그인 토큰이 없습니다.");
+    }
     setTokens(res.accessToken, res.refreshToken);
     await fetchProfileAndSet();
+    return res;
   },
 
   loginWithTokens: async (accessToken, refreshToken) => {
@@ -58,6 +63,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   signupAndLogin: async (data) => {
     await authApi.signup(data);
     const res = await authApi.login(data.email, data.password);
+    if (res.recoveryRequired) {
+      throw new Error("로그인 토큰이 없습니다.");
+    }
     setTokens(res.accessToken, res.refreshToken);
     await fetchProfileAndSet();
   },

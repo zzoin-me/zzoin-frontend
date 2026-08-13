@@ -8,7 +8,7 @@ export function DesktopFooter() {
       <div className="mx-auto flex min-h-20 w-full max-w-[1440px] items-center justify-between gap-6 px-[120px] py-5">
         <div className="flex shrink-0 items-center gap-2 font-medium text-[14px] text-grey7">
           <Copyright className="h-4 w-4" aria-hidden />
-          <span className="font-bold text-grey9">2026 Zzoin</span>
+          <span className="font-bold text-grey9">Zzoin</span>
         </div>
 
         <nav aria-label="서비스 안내" className="flex flex-wrap items-center justify-end gap-1">

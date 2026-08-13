@@ -219,7 +219,7 @@ export function UsageGuideModal({ isOpen, onClose }: UsageGuideModalProps) {
         <div className="flex items-center justify-between border-t border-grey3 px-2 pt-4 font-regular text-[13px] text-grey6">
           <span className="flex items-center gap-1.5">
             <Copyright className="h-3.5 w-3.5" aria-hidden />
-            <span className="font-medium text-grey8">2026 Zzoin</span>
+            <span className="font-medium text-grey8">Zzoin</span>
           </span>
           {appVersion && <span>{appVersion}</span>}
         </div>

@@ -21,14 +21,30 @@ import { UsageGuideModal } from "@/components/mypage/UsageGuideModal";
 import { getMyProjects, getMyApplications } from "@/api/user";
 import { getPosts } from "@/api/community";
 
-const mobileMenus = [
-  { to: "/mypage/profile", label: "프로필 정보", desc: "닉네임 · 직군 · 기술 스택 · 소개" },
-  { to: "/mypage/verify-univ", label: "대학 인증", desc: "학교 · 학과 · 학년 정보 관리" },
-  { to: "/mypage/notifications", label: "알림", desc: "받은 알림 확인" },
-  { to: "/mypage/chats", label: "프로젝트 대화", desc: "팀원들과 나눈 대화" },
-  { to: "/mypage/applications", label: "프로젝트 지원 현황", desc: "지원한 프로젝트 현황" },
-  { to: "/mypage/projects", label: "내 프로젝트 관리", desc: "생성한 프로젝트 관리" },
-  { to: "/mypage/reviews", label: "프로젝트 후기", desc: "참여한 팀원 평가" },
+const mobileMenuGroups = [
+  {
+    label: "계정",
+    items: [
+      { to: "/mypage/profile", label: "내 프로필", desc: "닉네임 · 직군 · 기술 스택 관리" },
+      { to: "/mypage/account", label: "계정 정보", desc: "이메일 · 소셜 로그인 수단 관리" },
+      { to: "/mypage/verify-univ", label: "대학 인증", desc: "학교 · 학과 · 학년 정보 관리" },
+    ],
+  },
+  {
+    label: "소식 · 대화",
+    items: [
+      { to: "/mypage/notifications", label: "알림", desc: "받은 알림 확인" },
+      { to: "/mypage/chats", label: "프로젝트 대화", desc: "팀원들과 나눈 대화" },
+    ],
+  },
+  {
+    label: "프로젝트",
+    items: [
+      { to: "/mypage/applications", label: "지원 현황", desc: "지원한 프로젝트 현황" },
+      { to: "/mypage/projects", label: "내 프로젝트 관리", desc: "생성한 프로젝트 관리" },
+      { to: "/mypage/reviews", label: "프로젝트 후기", desc: "참여한 팀원 평가" },
+    ],
+  },
 ];
 
 export default function MyPageIndexPage() {
@@ -168,25 +184,40 @@ export default function MyPageIndexPage() {
           })}
         </div>
 
-        <div className="lg:hidden native:block">
-          <nav className="flex flex-col divide-y divide-grey3 overflow-hidden rounded-card border border-grey3 bg-bg">
-            {mobileMenus.map((menu) => (
-              <Link
-                key={menu.to}
-                to={menu.to}
-                className="flex items-center justify-between px-5 py-4 transition-colors hover:bg-grey1"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <span className="font-medium text-[16px] text-grey9">{menu.label}</span>
-                  <span className="font-regular text-[12px] text-grey5">{menu.desc}</span>
-                </div>
-                <ChevronRight className="h-5 w-5 text-grey5" aria-hidden />
-              </Link>
-            ))}
+        <div className="flex flex-col gap-4 lg:hidden native:flex">
+          {mobileMenuGroups.map((group) => (
+            <section
+              key={group.label}
+              className="overflow-hidden rounded-card border border-grey3 bg-bg"
+            >
+              <h2 className="bg-grey1 px-5 py-3 font-bold text-[13px] tracking-wide text-grey6">
+                {group.label}
+              </h2>
+              <nav className="flex flex-col divide-y divide-grey3">
+                {group.items.map((menu) => (
+                  <Link
+                    key={menu.to}
+                    to={menu.to}
+                    className="flex items-center justify-between px-5 py-4 transition-colors hover:bg-grey1"
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium text-[16px] text-grey9">{menu.label}</span>
+                      <span className="font-regular text-[12px] text-grey5">{menu.desc}</span>
+                    </div>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-grey5" aria-hidden />
+                  </Link>
+                ))}
+              </nav>
+            </section>
+          ))}
+          <section className="overflow-hidden rounded-card border border-grey3 bg-bg">
+            <h2 className="bg-grey1 px-5 py-3 font-bold text-[13px] tracking-wide text-grey6">
+              서비스
+            </h2>
             <button
               type="button"
               onClick={() => setUsageGuideOpen(true)}
-              className="flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-grey1"
+              className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-grey1"
             >
               <div className="flex flex-col gap-0.5">
                 <span className="font-medium text-[16px] text-grey9">이용 안내</span>
@@ -194,9 +225,9 @@ export default function MyPageIndexPage() {
                   약관 · 개인정보 · 문의 · 오픈소스
                 </span>
               </div>
-              <ChevronRight className="h-5 w-5 text-grey5" aria-hidden />
+              <ChevronRight className="h-5 w-5 shrink-0 text-grey5" aria-hidden />
             </button>
-          </nav>
+          </section>
         </div>
 
         <div className="flex flex-col gap-3 lg:hidden native:flex">

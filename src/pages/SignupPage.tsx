@@ -8,6 +8,10 @@ import { useAuthStore } from "@/stores/authStore";
 import { ApiError } from "@/api/client";
 import { sendSignupEmail, verifySignupEmail } from "@/api/auth";
 import { useUnivEmail } from "@/hooks/useUnivEmail";
+import {
+  containsReservedNicknameTerm,
+  RESERVED_NICKNAME_MESSAGE,
+} from "@/utils/nickname";
 
 type Step = "method" | "email" | "password" | "nickname";
 
@@ -120,6 +124,10 @@ export default function SignupPage() {
     }
     if (!/^[가-힣a-zA-Z0-9.]{2,50}$/.test(nickname)) {
       setError("영문, 한글, 숫자, 점으로 구성된 2~50자 닉네임을 입력해주세요.");
+      return;
+    }
+    if (containsReservedNicknameTerm(nickname)) {
+      setError(RESERVED_NICKNAME_MESSAGE);
       return;
     }
     setLoading(true);

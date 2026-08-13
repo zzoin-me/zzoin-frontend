@@ -116,9 +116,9 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                 />
               </svg>
             </div>
-            <h2 className="font-bold text-[20px] text-grey9">탈퇴 완료</h2>
+            <h2 className="font-bold text-[20px] text-grey9">탈퇴 접수 완료</h2>
             <p className="font-regular text-[14px] text-grey6">
-              그동안 이용해주셔서 감사합니다. 이용해주신 계정은 삭제되었습니다.
+              30일 이내에 같은 계정으로 로그인하면 복구할 수 있어요.
             </p>
             <Button onClick={handleComplete} className="mt-4">
               확인
@@ -140,7 +140,8 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             <div className="mb-6 rounded-tag border border-grey3 bg-grey1 px-4 py-3">
               <p className="font-medium text-[14px] text-grey8">탈퇴 전 확인해주세요</p>
               <p className="mt-1 font-regular text-[13px] text-grey6">
-                탈퇴 시 계정과 모든 데이터가 삭제되며 복구할 수 없습니다.
+                탈퇴 후 30일 이내에는 로그인해 계정을 복구할 수 있어요. 30일이 지나면 개인정보는
+                익명화되며, 게시글과 댓글은 서비스 기록을 위해 남을 수 있어요.
               </p>
             </div>
 
@@ -182,7 +183,7 @@ export function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                 className="w-full bg-red-600 hover:bg-red-700"
                 disabled={loading || !codeSent}
               >
-                {loading ? "탈퇴 중..." : "탈퇴하기"}
+                {loading ? "탈퇴 접수 중..." : "탈퇴 접수하기"}
               </Button>
             </form>
           </>
