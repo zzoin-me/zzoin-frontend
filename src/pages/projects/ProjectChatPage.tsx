@@ -154,7 +154,7 @@ export default function ProjectChatPage() {
   return (
     <div
       data-pull-to-refresh-ignore
-      className="mx-auto flex h-[calc(100dvh_-_env(safe-area-inset-top))] w-full max-w-[960px] flex-col bg-bg px-0 md:px-8 lg:h-[calc(100dvh_-_72px)] lg:px-0"
+      className="mx-auto flex h-[calc(100dvh_-_env(safe-area-inset-top))] w-full max-w-[960px] flex-col bg-bg px-0 md:px-8 lg:h-[calc(100dvh_-_87px)] lg:px-0"
     >
       <header className="flex shrink-0 items-center gap-3 border-b border-grey3 px-4 py-3 md:px-5">
         <PageBackButton fallbackTo={projectDetailPath} label="프로젝트 상세로 돌아가기" />

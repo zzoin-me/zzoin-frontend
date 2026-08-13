@@ -135,8 +135,8 @@ export default function ProjectDetailPage() {
 
       <div className="flex flex-col gap-6 border-b border-grey3 py-6 md:flex-row md:items-start md:gap-8 md:py-10 lg:items-end lg:justify-between native:flex-col native:items-stretch">
         <div className="flex items-start gap-4 md:gap-8 lg:gap-[50px]">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary md:h-[160px] md:w-[160px] lg:h-[200px] lg:w-[200px] native:h-[160px] native:w-[160px]">
-            <span className="font-bold text-[24px] text-white md:text-[48px] lg:text-[60px] native:text-[48px]">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary md:h-[160px] md:w-[160px] lg:h-[200px] lg:w-[200px]">
+            <span className="font-bold text-[24px] text-white md:text-[48px] lg:text-[60px]">
               {dday}
             </span>
           </div>
@@ -199,7 +199,7 @@ export default function ProjectDetailPage() {
         <h2 className="font-bold text-[20px] text-grey9 md:text-[24px]">
           지금 모집 중인 직군이에요
         </h2>
-        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10 native:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
           {project.recruitments.map((r) => (
             <div key={r.id} className="rounded-card border border-grey5 p-5 md:p-6">
               <div className="flex items-baseline gap-2">
