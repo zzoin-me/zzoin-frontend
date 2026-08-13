@@ -117,6 +117,7 @@ export interface UpdateProjectRequest {
   goalType?: GoalType;
   imageUrl?: string;
   recruitments?: UpdateRecruitment[];
+  questions?: CreateQuestion[];
 }
 
 export interface MyProfile {

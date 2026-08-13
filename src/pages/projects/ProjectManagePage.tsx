@@ -18,6 +18,7 @@ import { getApplicants, updateApplicantStatus } from "@/api/application";
 import { ApiError } from "@/api/client";
 import type {
   CollaborationType,
+  CreateQuestion,
   GoalType,
   ProjectApplicant,
   ProjectStatus,
@@ -64,6 +65,11 @@ interface RecruitmentForm {
   preferred: string;
 }
 
+interface QuestionForm extends CreateQuestion {
+  isMulti: boolean;
+  optionsText: string[];
+}
+
 export default function ProjectManagePage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -86,12 +92,14 @@ export default function ProjectManagePage() {
   const [imageUrl, setImageUrl] = useState("https://via.placeholder.com/300x200");
   const [status, setStatus] = useState<ProjectStatus>("RECRUITING");
   const [recruitments, setRecruitments] = useState<RecruitmentForm[]>([]);
+  const [questions, setQuestions] = useState<QuestionForm[]>([]);
 
   const [applicants, setApplicants] = useState<ProjectApplicant[]>([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [applicantsError, setApplicantsError] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<ProjectApplicant | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const questionsEditable = applicants.length === 0;
 
   useEffect(() => {
     if (!id) return;
@@ -116,6 +124,16 @@ export default function ProjectManagePage() {
             count: r.recruitmentCount,
             qualification: r.qualification,
             preferred: r.preferred,
+          })),
+        );
+        setQuestions(
+          (detail.questions ?? []).map((question) => ({
+            type: question.type,
+            label: question.label,
+            options: question.options ?? [],
+            required: question.required,
+            isMulti: question.type === "MULTI_CHOICE",
+            optionsText: question.options ?? [],
           })),
         );
         setApplicants(applicantsData.applicants);
@@ -179,6 +197,93 @@ export default function ProjectManagePage() {
             }
           : r,
       ),
+    );
+  };
+
+  const addQuestion = () => {
+    if (!questionsEditable || questions.length >= 10) return;
+    setQuestions((prev) => [
+      ...prev,
+      { type: "TEXT", label: "", required: false, isMulti: false, optionsText: [] },
+    ]);
+  };
+
+  const removeQuestion = (idx: number) => {
+    if (!questionsEditable) return;
+    setQuestions((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateQuestionType = (idx: number, isChoice: boolean) => {
+    setQuestions((prev) =>
+      prev.map((question, i) =>
+        i === idx
+          ? {
+              ...question,
+              type: isChoice ? (question.isMulti ? "MULTI_CHOICE" : "SINGLE_CHOICE") : "TEXT",
+              options: isChoice ? question.options : undefined,
+              optionsText: isChoice ? question.optionsText : [],
+            }
+          : question,
+      ),
+    );
+  };
+
+  const updateQuestionLabel = (idx: number, label: string) => {
+    setQuestions((prev) =>
+      prev.map((question, i) => (i === idx ? { ...question, label } : question)),
+    );
+  };
+
+  const updateQuestionRequired = (idx: number, required: boolean) => {
+    setQuestions((prev) =>
+      prev.map((question, i) => (i === idx ? { ...question, required } : question)),
+    );
+  };
+
+  const updateQuestionMulti = (idx: number, isMulti: boolean) => {
+    setQuestions((prev) =>
+      prev.map((question, i) =>
+        i === idx
+          ? { ...question, isMulti, type: isMulti ? "MULTI_CHOICE" : "SINGLE_CHOICE" }
+          : question,
+      ),
+    );
+  };
+
+  const addOption = (idx: number) => {
+    setQuestions((prev) =>
+      prev.map((question, i) =>
+        i === idx
+          ? {
+              ...question,
+              optionsText: [...question.optionsText, ""],
+            }
+          : question,
+      ),
+    );
+  };
+
+  const removeOption = (questionIdx: number, optionIdx: number) => {
+    setQuestions((prev) =>
+      prev.map((question, i) =>
+        i === questionIdx
+          ? {
+              ...question,
+              optionsText: question.optionsText.filter((_, oi) => oi !== optionIdx),
+            }
+          : question,
+      ),
+    );
+  };
+
+  const updateOptionText = (questionIdx: number, optionIdx: number, text: string) => {
+    setQuestions((prev) =>
+      prev.map((question, i) => {
+        if (i !== questionIdx) return question;
+        const optionsText = [...question.optionsText];
+        optionsText[optionIdx] = text;
+        return { ...question, optionsText };
+      }),
     );
   };
 
@@ -253,6 +358,19 @@ export default function ProjectManagePage() {
       return;
     }
 
+    if (questionsEditable) {
+      const hasInvalidQuestion = questions.some(
+        (question) =>
+          !question.label.trim() ||
+          ((question.type === "SINGLE_CHOICE" || question.type === "MULTI_CHOICE") &&
+            question.optionsText.filter((option) => option.trim()).length < 2),
+      );
+      if (hasInvalidQuestion) {
+        setError("질문 내용을 입력해주세요. 선택형 질문은 옵션을 2개 이상 추가해야 합니다.");
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const data: UpdateProjectRequest = {
@@ -272,6 +390,19 @@ export default function ProjectManagePage() {
           qualification: r.qualification,
           preferred: r.preferred,
         })),
+        questions: questionsEditable
+          ? questions.map((question) => ({
+              type: question.type,
+              label: question.label.trim(),
+              options:
+                question.type === "TEXT"
+                  ? undefined
+                  : question.optionsText
+                      .filter((option) => option.trim())
+                      .map((option) => option.trim()),
+              required: question.required,
+            }))
+          : undefined,
       };
       await updateProject(Number(id), data);
       navigate(`/projects/${id}`, { replace: true });
@@ -463,26 +594,20 @@ export default function ProjectManagePage() {
             </section>
 
             <section className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-[18px] text-grey9 md:text-[20px]">3. 모집 역할</h2>
-                <button
-                  type="button"
-                  onClick={addRecruitment}
-                  disabled={recruitments.length >= MAX_RECRUITMENTS}
-                  className="flex items-center gap-1 rounded-tag border border-grey3 px-3 py-2 font-medium text-[14px] text-grey7 hover:border-grey5 hover:text-grey9 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Plus className="h-4 w-4" aria-hidden />
-                  추가 ({recruitments.length}/{MAX_RECRUITMENTS})
-                </button>
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="font-bold text-[20px] text-grey9">3. 팀 구성 및 모집 역할</h2>
+                <span className="shrink-0 font-regular text-[14px] text-grey6">
+                  최대 {MAX_RECRUITMENTS}개
+                </span>
               </div>
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-7">
                 {recruitments.map((r, idx) => (
                   <div
                     key={r.recruitmentId ?? `new-${idx}`}
-                    className="flex flex-col gap-3 rounded-[16px] border border-grey3 p-4 md:rounded-card md:p-5"
+                    className="flex flex-col gap-[17px] rounded-[20px] border border-grey3 p-5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-[14px] text-grey8">
+                      <span className="font-medium text-[18px] text-grey9">
                         모집 역할 {idx + 1}
                       </span>
                       {recruitments.length > 1 && (
@@ -496,41 +621,251 @@ export default function ProjectManagePage() {
                         </button>
                       )}
                     </div>
-                    <RecruitmentSelect
-                      value={{
-                        category: r.category,
-                        jobRoleId: r.jobRoleId,
-                      }}
-                      onChange={(v) => updateRecruitmentRole(idx, v)}
-                    />
-                    <div>
-                      <label className="mb-2 block font-medium text-[14px] text-grey8">
-                        모집 인원
-                      </label>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium text-[16px] text-grey9">모집 직군</span>
+                        <RecruitmentSelect
+                          value={{
+                            category: r.category,
+                            jobRoleId: r.jobRoleId,
+                          }}
+                          onChange={(value) => updateRecruitmentRole(idx, value)}
+                        />
+                      </div>
+                      <div className="flex w-full flex-col gap-1 md:w-[160px]">
+                        <span className="font-medium text-[16px] text-grey9">인원 수</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={100}
+                          value={r.count}
+                          onChange={(event) =>
+                            updateRecruitmentField(idx, "count", Number(event.target.value))
+                          }
+                          placeholder="인원 수 입력"
+                          className="w-full rounded-[20px] border border-grey6 px-4 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium text-[16px] text-grey9">지원자격</span>
                       <input
-                        type="number"
-                        min={1}
-                        max={100}
-                        value={r.count}
-                        onChange={(e) =>
-                          updateRecruitmentField(idx, "count", Number(e.target.value))
+                        placeholder="지원자격을 입력하세요 (2~200자)"
+                        value={r.qualification}
+                        onChange={(event) =>
+                          updateRecruitmentField(idx, "qualification", event.target.value)
                         }
-                        className="w-24 rounded-tag border border-grey3 bg-bg px-4 py-3 font-regular text-[16px] text-grey9 focus:border-grey9 focus:outline-none"
+                        maxLength={200}
+                        className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
                       />
                     </div>
-                    <Input
-                      placeholder="지원 자격 (2~200자)"
-                      value={r.qualification}
-                      onChange={(e) => updateRecruitmentField(idx, "qualification", e.target.value)}
-                    />
-                    <Input
-                      placeholder="우대 사항 (2~200자)"
-                      value={r.preferred}
-                      onChange={(e) => updateRecruitmentField(idx, "preferred", e.target.value)}
-                    />
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium text-[16px] text-grey9">우대사항</span>
+                      <input
+                        placeholder="우대사항을 입력하세요 (2~200자)"
+                        value={r.preferred}
+                        onChange={(event) =>
+                          updateRecruitmentField(idx, "preferred", event.target.value)
+                        }
+                        maxLength={200}
+                        className="w-full rounded-[20px] border border-grey6 px-5 py-[10px] font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none"
+                      />
+                    </div>
                   </div>
                 ))}
+                {recruitments.length < MAX_RECRUITMENTS && (
+                  <button
+                    type="button"
+                    onClick={addRecruitment}
+                    className="flex items-center justify-center gap-1 rounded-tag border border-dashed border-grey4 py-3 font-medium text-[14px] text-grey6 transition-colors hover:border-grey5 hover:text-grey7"
+                  >
+                    <Plus className="h-4 w-4" aria-hidden />
+                    모집 역할 추가
+                  </button>
+                )}
               </div>
+            </section>
+          </fieldset>
+
+          <fieldset disabled={!canEdit || !questionsEditable} className="min-w-0 border-0 p-0">
+            <section className="flex flex-col gap-4">
+              <h2 className="font-bold text-[20px] text-grey9">4. 추가 질문 (선택)</h2>
+              <p className="font-regular text-[14px] text-grey6">
+                지원자에게 추가로 받을 질문을 설정할 수 있어요. (최대 10개)
+              </p>
+              {!questionsEditable && (
+                <div className="rounded-[14px] border border-primary/30 bg-primary-light px-4 py-3 font-medium text-[13px] text-grey8 md:text-[14px]">
+                  기존 지원서의 답변을 보호하기 위해 지원자가 생긴 뒤에는 추가 질문을 수정할 수
+                  없습니다.
+                </div>
+              )}
+
+              {questions.length === 0 ? (
+                <div className="flex flex-col gap-4">
+                  <p className="rounded-[20px] border border-dashed border-grey3 px-5 py-8 text-center font-regular text-[14px] text-grey6">
+                    추가 질문이 없습니다. 아래 버튼을 눌러 지원자에게 받을 질문을 만들어보세요.
+                  </p>
+                  {questionsEditable && questions.length < 10 && (
+                    <button
+                      type="button"
+                      onClick={addQuestion}
+                      className="flex items-center justify-center gap-1 rounded-tag border border-dashed border-grey4 py-3 font-medium text-[14px] text-grey6 transition-colors hover:border-grey5 hover:text-grey7 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden />
+                      질문 추가
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {questions.map((question, questionIdx) => (
+                    <div
+                      key={questionIdx}
+                      className="flex flex-col gap-3 rounded-[20px] border border-grey3 p-5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-[18px] text-grey9">
+                          질문 {questionIdx + 1}
+                        </span>
+                        {questionsEditable && (
+                          <button
+                            type="button"
+                            onClick={() => removeQuestion(questionIdx)}
+                            className="flex h-11 w-11 items-center justify-center rounded-full text-grey5 hover:bg-grey1 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                            aria-label={`질문 ${questionIdx + 1} 삭제`}
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium text-[16px] text-grey8">답변 형식</span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateQuestionType(questionIdx, false)}
+                            className={`rounded-tag border px-3 py-1.5 font-medium text-[14px] transition-colors disabled:cursor-not-allowed ${
+                              question.type === "TEXT"
+                                ? "border-primary bg-primary text-white"
+                                : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
+                            }`}
+                          >
+                            장문
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateQuestionType(questionIdx, true)}
+                            className={`rounded-tag border px-3 py-1.5 font-medium text-[14px] transition-colors disabled:cursor-not-allowed ${
+                              question.type === "SINGLE_CHOICE" || question.type === "MULTI_CHOICE"
+                                ? "border-primary bg-primary text-white"
+                                : "border-grey3 bg-bg text-grey7 hover:border-primary hover:text-primary"
+                            }`}
+                          >
+                            선택
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium text-[16px] text-grey8">질문 내용</span>
+                        <input
+                          placeholder={
+                            question.type === "SINGLE_CHOICE" || question.type === "MULTI_CHOICE"
+                              ? "예: 협업 프로젝트를 진행한 횟수가 얼마나 되나요?"
+                              : "예: 포트폴리오 링크를 남겨주세요."
+                          }
+                          value={question.label}
+                          onChange={(event) => updateQuestionLabel(questionIdx, event.target.value)}
+                          maxLength={100}
+                          className="w-full rounded-tag border border-grey3 bg-bg px-4 py-2.5 font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none disabled:bg-grey1 disabled:text-grey7"
+                        />
+                      </div>
+
+                      {(question.type === "SINGLE_CHOICE" || question.type === "MULTI_CHOICE") && (
+                        <div className="flex flex-col gap-2">
+                          <span className="font-medium text-[16px] text-grey8">옵션</span>
+                          <div className="flex flex-col gap-2">
+                            {question.optionsText.map((option, optionIdx) => (
+                              <div key={optionIdx} className="flex items-center gap-2">
+                                <input
+                                  placeholder={`옵션 ${optionIdx + 1}`}
+                                  value={option}
+                                  onChange={(event) =>
+                                    updateOptionText(questionIdx, optionIdx, event.target.value)
+                                  }
+                                  maxLength={50}
+                                  className="min-w-0 flex-1 rounded-tag border border-grey3 bg-bg px-4 py-2 font-regular text-[16px] text-grey9 placeholder:text-[16px] placeholder:text-grey6 focus:border-grey9 focus:outline-none disabled:bg-grey1 disabled:text-grey7"
+                                />
+                                {questionsEditable && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeOption(questionIdx, optionIdx)}
+                                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-grey5 hover:bg-grey1 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                    aria-label={`질문 ${questionIdx + 1} 옵션 ${optionIdx + 1} 삭제`}
+                                  >
+                                    <Trash2 className="h-4 w-4" aria-hidden />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                            {questionsEditable && (
+                              <button
+                                type="button"
+                                onClick={() => addOption(questionIdx)}
+                                className="flex items-center justify-center gap-1 rounded-tag border border-dashed border-grey4 py-2 font-medium text-[14px] text-grey6 transition-colors hover:border-grey5 hover:text-grey7 disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                <Plus className="h-4 w-4" aria-hidden /> 옵션 추가
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-5 pt-1">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={question.required}
+                            onChange={(event) =>
+                              updateQuestionRequired(questionIdx, event.target.checked)
+                            }
+                            className="h-4 w-4 accent-grey9"
+                          />
+                          <span className="font-medium text-[14px] text-grey7">필수 질문</span>
+                        </label>
+                        {(question.type === "SINGLE_CHOICE" ||
+                          question.type === "MULTI_CHOICE") && (
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={question.isMulti}
+                              onChange={(event) =>
+                                updateQuestionMulti(questionIdx, event.target.checked)
+                              }
+                              className="h-4 w-4 accent-grey9"
+                            />
+                            <span className="font-medium text-[14px] text-grey7">
+                              복수선택 가능
+                            </span>
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {questionsEditable && questions.length < 10 && (
+                    <button
+                      type="button"
+                      onClick={addQuestion}
+                      className="flex items-center justify-center gap-1 rounded-tag border border-dashed border-grey4 py-3 font-medium text-[14px] text-grey6 transition-colors hover:border-grey5 hover:text-grey7 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <Plus className="h-4 w-4" aria-hidden />
+                      질문 추가
+                    </button>
+                  )}
+                </div>
+              )}
             </section>
           </fieldset>
 

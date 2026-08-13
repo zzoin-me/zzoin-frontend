@@ -276,7 +276,7 @@ export default function ProjectCreatePage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-6 md:px-8 lg:px-[120px]">
-      <PageHeader title="프로젝트 생성" backTo="/projects" className="mb-8" />
+      <PageHeader title="프로젝트 등록" backTo="/projects" className="mb-8" />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10 lg:flex-row lg:items-start">
         <div className="flex flex-1 flex-col gap-10">
