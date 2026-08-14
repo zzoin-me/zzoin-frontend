@@ -4,6 +4,7 @@ import { getAccessToken, refreshStoredTokens } from "@/api/client";
 import type { NotificationItem } from "@/api/notification";
 import { apiBaseUrl } from "@/config";
 import { useAuthStore } from "@/stores/authStore";
+import { invalidateNotificationTargetQueries } from "@/utils/notificationTarget";
 
 const TOKEN_REFRESH_MARGIN_MS = 30_000;
 const RECONNECT_DELAY_MS = 5_000;
@@ -95,7 +96,9 @@ export function useNotificationSSE() {
 
       eventSource.addEventListener("notification", (event) => {
         try {
-          setLatestNotification(JSON.parse(event.data) as RealtimeNotification);
+          const notification = JSON.parse(event.data) as RealtimeNotification;
+          setLatestNotification(notification);
+          void invalidateNotificationTargetQueries(queryClient, notification);
         } catch {
           setLatestNotification(null);
         }

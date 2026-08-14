@@ -23,6 +23,7 @@ import { MyPageTitle } from "@/components/mypage/MyPageTitle";
 import { InlineLoading } from "@/components/common/InlineLoading";
 import { NotificationListSkeleton } from "@/components/mypage/MyPageSkeletons";
 import { QueryErrorState } from "@/components/common/QueryErrorState";
+import { invalidateNotificationTargetQueries } from "@/utils/notificationTarget";
 
 const iconMap: Record<string, typeof Bell> = {
   APPLICATION_RECEIVED: UserPlus,
@@ -58,6 +59,7 @@ export default function NotificationsPage() {
         queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
       }
       if (n.targetUrl) {
+        await invalidateNotificationTargetQueries(queryClient, n);
         const [path, hash] = n.targetUrl.split("#");
         let scrollTarget = hash || undefined;
         if (!scrollTarget && n.type === "APPLICATION_RECEIVED") {

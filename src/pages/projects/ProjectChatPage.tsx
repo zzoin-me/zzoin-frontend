@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router";
 import { Loader2, Lock, Send } from "lucide-react";
 import { getChatMessages, getChatRooms, markChatRead, sendChatMessage } from "@/api/chat";
 import { ApiError } from "@/api/client";
+import { Avatar } from "@/components/common/Avatar";
 import { LoadingState } from "@/components/common/LoadingState";
 import { PageBackButton } from "@/components/common/PageBackButton";
 import { useBackNavigation } from "@/hooks/useBackNavigation";
@@ -207,15 +208,11 @@ export default function ProjectChatPage() {
                 className={`flex items-end gap-2 ${message.mine ? "justify-end" : "justify-start"}`}
               >
                 {!message.mine && (
-                  <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-grey3">
-                    {message.senderProfileUrl && (
-                      <img
-                        src={message.senderProfileUrl}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    )}
-                  </div>
+                  <Avatar
+                    nickname={message.senderNickname}
+                    profileUrl={message.senderProfileUrl}
+                    size="sm"
+                  />
                 )}
                 <div
                   className={`flex max-w-[78%] flex-col ${message.mine ? "items-end" : "items-start"}`}

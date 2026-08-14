@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { markAsRead } from "@/api/notification";
 import type { RealtimeNotification } from "@/hooks/useNotificationSSE";
 import { showSnackbar } from "@/stores/snackbarStore";
+import { invalidateNotificationTargetQueries } from "@/utils/notificationTarget";
 
 interface NotificationToastProps {
   notification: RealtimeNotification | null;
@@ -34,7 +35,9 @@ export function NotificationToast({ notification }: NotificationToastProps) {
 
         if (notification.targetUrl) {
           const [path, hash] = notification.targetUrl.split("#");
-          navigate(path, { state: { scrollTo: hash || undefined } });
+          void invalidateNotificationTargetQueries(queryClient, notification).finally(() => {
+            navigate(path, { state: { scrollTo: hash || undefined } });
+          });
         }
       },
     });
